@@ -1,25 +1,18 @@
 buildscript {
-  ext.getExtOrDefault = {name ->
-    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['Cas_' + name]
+  ext.getExtOrDefault = { name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["Cas_" + name]
   }
 
-  repositories {
-    google()
-    mavenCentral()
-  }
-
+  repositories { google(); mavenCentral() }
   dependencies {
     classpath "com.android.tools.build:gradle:8.7.2"
-    // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
   }
 }
 
-
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
-
-apply plugin: "com.facebook.react"
+apply plugin: "org.jetbrains.kotlin.android"   // сучасний id
+apply plugin: "com.facebook.react"             // Turbo/codegen
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["Cas_" + name]).toInteger()
@@ -33,40 +26,44 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    consumerProguardFiles "consumer-rules.pro"
   }
 
-  buildFeatures {
-    buildConfig true
-  }
+  buildFeatures { buildConfig true }
 
-  buildTypes {
-    release {
-      minifyEnabled false
-    }
-  }
+  buildTypes { release { minifyEnabled false } }
 
-  lintOptions {
-    disable "GradleCompatible"
-  }
-
+  // AGP 8.x вимагає Java 17
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
   }
+  kotlinOptions { jvmTarget = "17" }
 
+  // якщо генеруєш Java/Kotlin класи codegen’ом — додаємо папки
   sourceSets {
     main {
-      java.srcDirs += [
-        "generated/java",
-        "generated/jni"
-      ]
+      java.srcDirs += ["generated/java", "generated/jni"]
     }
   }
+
+  // новий синтаксис lint (lintOptions застарілий)
+  lint { disable += ["GradleCompatible"] }
+}
+
+/** TurboModule codegen конфіг **/
+react {
+  // має збігатися з ім’ям модуля у Spec (NativeCas.ts) і Android класом
+  libraryName = "Cas"
+  // Java пакет для згенерованих класів
+  codegenJavaPackageName = "com.cas"
 }
 
 repositories {
-  mavenCentral()
   google()
+  mavenCentral()
+  // репозиторій CAS SDK
+  maven { url 'https://sdk.cleveradssolutions.com/repo' }
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
@@ -74,4 +71,9 @@ def kotlin_version = getExtOrDefault("kotlinVersion")
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+  // щоб модуль компілився проти CAS, але не тягнув його в апки
+  compileOnly "com.cleveradssolutions:cas-sdk:4.3.0"
+
+  implementation 'androidx.preference:preference-ktx:1.2.1'
 }

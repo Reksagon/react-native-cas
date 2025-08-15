@@ -1,4 +1,4 @@
-package cas.example
+package com.YOZHStudio.RailRoad
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -31,7 +31,7 @@ class MainApplication : Application(), ReactApplication {
       }
 
   override val reactHost: ReactHost
-    get() = getDefaultReactHost(applicationContext, reactNativeHost)
+    get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
 
   override fun onCreate() {
     super.onCreate()

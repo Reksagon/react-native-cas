@@ -1,5 +1,3 @@
-import Cas from './NativeCas';
-
-export function multiply(a: number, b: number): number {
-  return Cas.multiply(a, b);
-}
+export * from './utils/types';
+export { CAS } from './modules/cas.module';
+export { BannerAd } from './views/banner-ad.view';
