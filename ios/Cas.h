@@ -1,5 +1,5 @@
-#import <CasSpec/CasSpec.h>
+#import <CASSpec/CASSpec.h>
 
-@interface Cas : NSObject <NativeCasSpec>
+@interface CAS : NSObject <NativeCASSpec>
 
 @end
