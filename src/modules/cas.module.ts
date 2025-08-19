@@ -1,4 +1,4 @@
-import { CasModule } from '../utils/native';
+import { CasModule } from '../views/NativeView';
 import type {
   BuildManagerParams,
   BuildManagerResult,
