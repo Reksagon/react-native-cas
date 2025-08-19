@@ -10,22 +10,28 @@ import com.cleversolutions.ads.AdImpression
 import com.cleversolutions.ads.AdSize
 import com.cleversolutions.ads.AdViewListener
 import com.cleversolutions.ads.android.CASBannerView
-import com.facebook.infer.annotation.Assertions
-import com.facebook.react.bridge.*
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.RCTEventEmitter
 
-class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): SimpleViewManager<CASBannerView>(), AdViewListener {
-  private val updateSubs = HashMap<CASBannerView, String>()
+@ReactModule(name = "BannerAdView")
+class BannerAdViewManager(
+  private val managerWrapper: MediationManagerWrapper
+) : SimpleViewManager<CASBannerView>(), AdViewListener {
+
+  private val subs = HashMap<CASBannerView, String>()
 
   override fun getName() = "BannerAdView"
 
   override fun createViewInstance(reactContext: ThemedReactContext): CASBannerView {
     val view = CASBannerView(reactContext, managerWrapper.manager)
 
-    updateSubs[view] = managerWrapper.addChangeListener { view.manager = it }
+    subs[view] = managerWrapper.addChangeListener { view.manager = it }
 
     view.layoutParams = ViewGroup.LayoutParams(
       ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -33,152 +39,98 @@ class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): 
     )
 
     view.adListener = this
-
     return view
   }
 
-  @Suppress("unused")
-  @ReactProp(name="isAutoloadEnabled")
-  fun setAutoloadEnabled(view: CASBannerView, enabled: Boolean) {
-    view.isAutoloadEnabled = enabled
-  }
-
-  @Suppress("unused")
-  @ReactProp(name="refreshInterval")
-  fun setRefreshInterval(view: CASBannerView, interval: Int) {
-    if (interval == 0) {
-      view.disableAdRefresh()
-    } else {
-      view.refreshInterval = interval
-    }
-  }
-
-  @Suppress("unused")
   @ReactProp(name = "size")
-  fun setSize(view: CASBannerView, sizeMap: ReadableMap) {
+  fun setSize(view: CASBannerView, sizeMap: ReadableMap?) {
+    if (sizeMap == null) return
     var size = AdSize.BANNER
 
     if (sizeMap.hasKey("isAdaptive")) {
-      sizeMap.getIntOrZero("maxWidthDpi").let {
-        size = if (it == 0) {
-          AdSize.getAdaptiveBannerInScreen(view.context)
-        } else {
-          AdSize.getAdaptiveBanner(view.context, it)
-        }
-      }
+      val w = sizeMap.getIntOrZero("maxWidthDpi")
+      size = if (w == 0) AdSize.getAdaptiveBannerInScreen(view.context)
+             else AdSize.getAdaptiveBanner(view.context, w)
     } else {
       when (sizeMap.getStringOrEmpty("size")) {
-        "LEADERBOARD" -> size = AdSize.LEADERBOARD
+        "LEADERBOARD"      -> size = AdSize.LEADERBOARD
         "MEDIUM_RECTANGLE" -> size = AdSize.MEDIUM_RECTANGLE
-        "SMART" -> size = AdSize.getSmartBanner(view.context)
+        "SMART"            -> size = AdSize.getSmartBanner(view.context)
       }
     }
-
     view.size = size
   }
 
+  @ReactProp(name = "isAutoloadEnabled")
+  fun setAutoload(view: CASBannerView, enabled: Boolean?) {
+    enabled?.let { view.isAutoloadEnabled = it }
+  }
+
+  @ReactProp(name = "refreshInterval")
+  fun setRefreshInterval(view: CASBannerView, seconds: Int?) {
+    if (seconds == null) return
+    if (seconds == 0) view.disableAdRefresh() else view.refreshInterval = seconds
+  }
+
   override fun onDropViewInstance(view: CASBannerView) {
-    super.onDropViewInstance(view)
-    managerWrapper.removeChangeListener(updateSubs[view] ?: "")
+    subs.remove(view)?.let { managerWrapper.removeChangeListener(it) }
     view.destroy()
+    super.onDropViewInstance(view)
   }
 
-  override fun onAdViewPresented(view: CASBannerView, info: AdImpression) {
-    val map = WritableNativeMap()
+  // -------- AdViewListener -> JS events (DIRECT) --------
 
-    map.putMap("impression", info.toReadableMap())
-
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "onAdViewPresented", map)
-
-    super.onAdViewPresented(view, info)
-  }
-
-  override fun onAdViewClicked(view: CASBannerView) {
-    val map = WritableNativeMap()
-
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "onAdViewClicked", map)
-
-    super.onAdViewClicked(view)
+  override fun onAdViewLoaded(view: CASBannerView) {
+    val map = WritableNativeMap().apply {
+      putInt("width",  view.width)
+      putInt("height", view.height)
+    }
+    emit(view, "onAdViewLoaded", map)
   }
 
   override fun onAdViewFailed(view: CASBannerView, error: AdError) {
-    val map = WritableNativeMap()
-
-    map.putInt("code", error.code)
-    map.putString("message", error.message)
-
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "onAdViewFailed", map)
-
-    super.onAdViewFailed(view, error)
+    val map = WritableNativeMap().apply {
+      putInt("code", error.code)
+      putString("message", error.message)
+    }
+    emit(view, "onAdViewFailed", map)
   }
 
-  override fun onAdViewLoaded(view: CASBannerView) {
-    val map = WritableNativeMap()
-
-    map.putInt("width", view.width)
-    map.putInt("height", view.height)
-
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "onAdViewLoaded", map)
-
-    super.onAdViewLoaded(view)
+  override fun onAdViewClicked(view: CASBannerView) {
+    emit(view, "onAdViewClicked", null)
   }
 
-  override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {
+  override fun onAdViewPresented(view: CASBannerView, info: AdImpression) {
+    val map = WritableNativeMap().apply {
+      putMap("impression", info.toReadableMap())
+    }
+    emit(view, "onAdViewPresented", map)
+  }
+
+  private fun emit(view: CASBannerView, event: String, payload: com.facebook.react.bridge.WritableMap?) {
+    (view.context as ThemedReactContext)
+      .getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(view.id, event, payload)
+  }
+
+  // -------- RN 0.79: direct events з registrationName --------
+  override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
+    fun reg(name: String) = mapOf("registrationName" to name)
     return mapOf(
-      "onAdViewLoaded" to mapOf(
-        "phasedRegistrationNames" to mapOf(
-          "bubbled" to "onAdViewLoaded"
-        )
-      ),
-      "onAdViewFailed" to mapOf(
-        "phasedRegistrationNames" to mapOf(
-          "bubbled" to "onAdViewFailed"
-        )
-      ),
-      "onAdViewClicked" to mapOf(
-        "phasedRegistrationNames" to mapOf(
-          "bubbled" to "onAdViewClicked"
-        )
-      ),
-      "onAdViewPresented" to mapOf(
-        "phasedRegistrationNames" to mapOf(
-          "bubbled" to "onAdViewPresented"
-        )
-      ),
-      "isAdReady" to mapOf(
-        "phasedRegistrationNames" to mapOf(
-          "bubbled" to "isAdReady"
-        )
-      )
+      "onAdViewLoaded"     to reg("onAdViewLoaded"),
+      "onAdViewFailed"     to reg("onAdViewFailed"),
+      "onAdViewClicked"    to reg("onAdViewClicked"),
+      "onAdViewPresented"  to reg("onAdViewPresented"),
+      "isAdReady"          to reg("isAdReady")
     )
   }
 
-  override fun getCommandsMap(): MutableMap<String, Int>? {
-    return mutableMapOf(
-      "isAdReady" to 0,
-      "loadNextAd" to 1
-    )
-  }
-
-  override fun receiveCommand(root: CASBannerView, commandId: String?, args: ReadableArray?) {
-    Assertions.assertNotNull(commandId)
-
-    when(commandId) {
+  // -------- Рядкові команди --------
+  override fun receiveCommand(root: CASBannerView, commandId: String, args: ReadableArray?) {
+    when (commandId) {
       "isAdReady" -> {
-        val map = WritableNativeMap()
-        map.putBoolean("isAdReady", root.isAdReady)
-
-        (root.context as ThemedReactContext)
-          .getJSModule(RCTEventEmitter::class.java)
-          .receiveEvent(root.id, "isAdReady", map)
+        val map = WritableNativeMap().apply { putBoolean("isAdReady", root.isAdReady) }
+        emit(root, "isAdReady", map)
       }
       "loadNextAd" -> root.loadNextAd()
     }

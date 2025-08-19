@@ -54,10 +54,9 @@ android {
 dependencies {
   // версію react-android задає RN Gradle Plugin
   implementation("com.facebook.react:react-android")
-
   // Kotlin stdlib під твою версію Kotlin
   implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
-
+  implementation project(':react-native-cas')
   // CAS (актуальні з того, що ти вже ставив)
   implementation("com.cleveradssolutions:cas-sdk:4.3.0")
   implementation("com.cleveradssolutions:cas-families:3.9.10")
@@ -82,7 +81,5 @@ dependencies {
   } else {
     implementation jscFlavor
   }
-
-  // Flipper у debug (опційно, якщо в тебе є FLIPPER_VERSION у gradle.properties)
 
 }

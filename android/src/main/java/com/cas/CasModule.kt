@@ -9,8 +9,9 @@ import com.cleversolutions.ads.ConsentFlow
 import com.cleversolutions.ads.android.CAS
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.module.annotations.ReactModule
 
-
+@ReactModule(name = "CasModule")
 class CasModule(context: ReactApplicationContext, private val managerWrapper: MediationManagerWrapper): ReactContextBaseJavaModule(context) {
   override fun getName() = "CasModule"
 

@@ -4,7 +4,6 @@ import com.cleversolutions.ads.AdLoadCallback
 import com.cleversolutions.ads.AdType
 import com.cleversolutions.ads.MediationManager
 import java.util.UUID
-import kotlin.collections.HashMap
 
 typealias MediationManagerListener = (manager: MediationManager?) -> Unit
 

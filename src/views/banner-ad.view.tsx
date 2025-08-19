@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import type { ForwardedRef } from 'react';
-import { BannerAdView } from '../utils/native';
+import { BannerAdView, BannerAdViewCommands } from '../utils/native';
 import type {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -130,7 +130,7 @@ export const BannerAd = forwardRef(
 
         UIManager.dispatchViewManagerCommand(
           findNodeHandle(bannerRef.current as any),
-          'isAdReady',
+          BannerAdViewCommands.isAdReady,
           []
         );
       });
@@ -138,8 +138,8 @@ export const BannerAd = forwardRef(
 
     const loadNextAd = useCallback(async () => {
       UIManager.dispatchViewManagerCommand(
-        findNodeHandle(bannerRef.current as any),
-        'loadNextAd',
+        findNodeHandle(bannerRef.current as any)!,
+        BannerAdViewCommands.loadNextAd,
         []
       );
     }, []);

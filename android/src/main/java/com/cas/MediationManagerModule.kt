@@ -10,8 +10,9 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.facebook.react.module.annotations.ReactModule
 
-
+@ReactModule(name = "MediationManagerModule")
 class MediationManagerModule(context: ReactApplicationContext, private val managerWrapper: MediationManagerWrapper): ReactContextBaseJavaModule(context), AdLoadCallback,
   AdCallback {
   override fun getName() = "MediationManagerModule"

@@ -1,17 +1,19 @@
-import { requireNativeComponent, UIManager, NativeModules } from 'react-native';
-import { LINKING_ERROR } from './strings';
-import type {
-  StyleProp,
-  ViewStyle,
-  NativeSyntheticEvent,
-  ViewProps,
+// src/utils/native.ts
+import React from 'react';
+import {
+  requireNativeComponent,
+  NativeModules,
+  type ViewProps,
+  type StyleProp,
+  type ViewStyle,
+  type NativeSyntheticEvent,
 } from 'react-native';
-import { BannerAdSize } from './types';
 import type { AdViewFailedEvent, AdViewPresentedEvent } from './types';
+import { BannerAdSize } from './types';
 
-const ComponentName = 'BannerAdView';
+const COMPONENT = 'BannerAdView';
 
-type NativeBannerProps = ViewProps & {
+export type NativeBannerProps = ViewProps & {
   style: StyleProp<ViewStyle>;
   onAdViewLoaded: (
     e: NativeSyntheticEvent<{ width: number; height: number }>
@@ -29,15 +31,16 @@ type NativeBannerProps = ViewProps & {
   refreshInterval?: number;
 };
 
+// ✅ без будь-яких перевірок/фолбеків — хай впаде одразу, якщо немає в’ю
 export const BannerAdView =
-  UIManager.getViewManagerConfig(ComponentName) != null
-    ? requireNativeComponent<NativeBannerProps>(ComponentName)
-    : () => {
-        throw new Error(LINKING_ERROR);
-      };
+  requireNativeComponent<NativeBannerProps>(COMPONENT);
 
-export const BannerAdViewCommands =
-  UIManager.getViewManagerConfig('BannerAdView').Commands;
+// ✅ Команди задаємо РЯДКАМИ (RN 0.79, Paper)
+export const BannerAdViewCommands = {
+  isAdReady: 'isAdReady',
+  loadNextAd: 'loadNextAd',
+} as const;
 
+// ✅ Нативні модулі
 export const CasModule = NativeModules.CasModule;
 export const MediationManagerModule = NativeModules.MediationManagerModule;
