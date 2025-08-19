@@ -1,4 +1,4 @@
-import { CasModule as CASModule } from '../utils/native';
+import { CasModule } from '../utils/native';
 import type {
   BuildManagerParams,
   BuildManagerResult,
@@ -8,11 +8,10 @@ import type {
   onDismissConsentFlowListener,
   ConsentFlowParams,
 } from '../utils/types';
-import { MediationManager } from './mediation-manager.module';
 import { NativeEventEmitter, Platform } from 'react-native';
 
 class Cas {
-  private eventEmitter = new NativeEventEmitter(CASModule);
+  private eventEmitter = new NativeEventEmitter(CasModule);
 
   buildManager = async (
     params: BuildManagerParams,
@@ -23,49 +22,48 @@ class Cas {
       unsub.remove();
     });
 
-    const result = await CASModule.buildManager(params);
+    const result = await CasModule.buildManager(params);
 
     return {
-      result,
-      manager: new MediationManager(),
+      result      
     };
   };
 
   showConsentFlow = async (
     params: Omit<ConsentFlowParams, 'enabled'>,
     cb: onDismissConsentFlowListener
-  ) => CASModule.showConsentFlow(params, cb);
+  ) => CasModule.showConsentFlow(params, cb);
 
-  getSDKVersion = async (): Promise<string> => CASModule.getSDKVersion();
+  getSDKVersion = async (): Promise<string> => CasModule.getSDKVersion();
 
   getTargetingOptions = async (): Promise<TargetingOptions> =>
-    CASModule.getTargetingOptions();
+    CasModule.getTargetingOptions();
 
   setTargetingOptions = async (options: Partial<TargetingOptions>) =>
-    CASModule.setTargetingOptions(options);
+    CasModule.setTargetingOptions(options);
 
-  getSettings = async (): Promise<CASSettings> => CASModule.getSettings();
+  getSettings = async (): Promise<CASSettings> => CasModule.getSettings();
 
   setSettings = async (settings: Partial<CASSettings>) =>
-    CASModule.setSettings(settings);
+    CasModule.setSettings(settings);
 
   restartInterstitialInterval = async () =>
-    CASModule.restartInterstitialInterval();
+    CasModule.restartInterstitialInterval();
 
-  debugValidateIntegration = async () => CASModule.debugValidateIntegration();
+  debugValidateIntegration = async () => CasModule.debugValidateIntegration();
 
   // Facebook specific
   setAudienceNetworkDataProcessingOptions = async (
     params: AudienceNetworkDataProcessingOptions
-  ) => CASModule.setAudienceNetworkDataProcessingOptions(params);
+  ) => CasModule.setAudienceNetworkDataProcessingOptions(params);
 
   setAdvertiserTrackingEnabled = async (enable: boolean) =>
-    Platform.OS === 'ios' && CASModule.setAdvertiserTrackingEnabled(enable);
+    Platform.OS === 'ios' && CasModule.setAdvertiserTrackingEnabled(enable);
 
   // Google specific
   setGoogleAdsConsentForCookies = async (enabled: boolean) =>
     Platform.OS === 'android' &&
-    CASModule.setGoogleAdsConsentForCookies(enabled);
+    CasModule.setGoogleAdsConsentForCookies(enabled);
 }
 
 export const CAS = new Cas();

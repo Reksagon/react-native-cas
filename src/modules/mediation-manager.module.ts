@@ -1,8 +1,6 @@
-import { MediationManagerModule } from '../utils/native';
+import { MediationManagerModule } from '../views/NativeView';
 import type {
   LastPageAdContent,
-  MediationManagerEventListener,
-  ShowAdCallbacks,
 } from '../utils/types';
 import { NativeEventEmitter } from 'react-native';
 import { MediationManagerEvent } from '../utils/types';

@@ -1,4 +1,3 @@
-import { MediationManager } from '../modules/mediation-manager.module';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export type ConsentFlowParams = {
@@ -124,8 +123,7 @@ export type BuildManagerResultNative = {
 };
 
 export type BuildManagerResult = {
-  result: BuildManagerResultNative;
-  manager: MediationManager;
+  result: BuildManagerResultNative;  
 };
 
 export type LastPageAdContent = {
@@ -136,22 +134,21 @@ export type LastPageAdContent = {
   iconURL?: string;
 };
 
-export enum BannerAdSize {
-  Banner = 'BANNER',
-  Leaderboard = 'LEADERBOARD',
-  MediumRectangle = 'MEDIUM_RECTANGLE',
-  Adaptive = 'ADAPTIVE',
-  Smart = 'SMART',
+export enum AdViewSize {
+  B = 'BANNER',
+  L = 'LEADERBOARD',
+  M = 'MEDIUM_RECTANGLE',
+  A = 'ADAPTIVE',
+  S = 'SMART',
 }
 
-export type BannerAdProps = {
+export type AdViewProps = {
   style?: StyleProp<ViewStyle>;
-  size: BannerAdSize;
-  maxWidthDpi?: number;
+  size: AdViewSize;  
   onAdViewLoaded?: () => void;
   onAdViewFailed?: (e: AdViewFailedEvent) => void;
   onAdViewClicked?: () => void;
-  onAdViewPresented?: (e: AdViewPresentedEvent) => void;
+  onAdViewImpression?: (e: AdViewPresentedEvent) => void;
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
 };
@@ -179,23 +176,7 @@ export type AdViewPresentedEvent = {
   impression: AdImpression;
 };
 
-export type BannerAdRef = {
-  loadNextAd: () => Promise<void>;
-  isAdReady: () => Promise<boolean>;
+export type AdViewRef = {
+  loadAd: () => Promise<void>;
+  isAdLoaded: () => Promise<boolean>;
 };
-
-export type ShowAdCallbacks = {
-  onImpression?: (ad: AdImpression) => void;
-  onShown?: () => void;
-  onShowFailed?: (message: string) => void;
-  onClicked?: () => void;
-  onComplete?: () => void;
-  onClosed?: () => void;
-};
-
-type InternalListener = {
-  type: AdType;
-  error?: string;
-};
-
-export type MediationManagerEventListener = (data: InternalListener) => void;
