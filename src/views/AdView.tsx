@@ -102,7 +102,7 @@ export const BannerAd = forwardRef<AdViewRef, AdViewProps>(
       [props.onAdViewImpression]
     );
 
-    // API fot ref
+    // API for ref
     const isAdLoaded = useCallback(async (): Promise<boolean> => {
       return new Promise((resolve) => {
         const nodeHandle = findNodeHandle(bannerRef.current);

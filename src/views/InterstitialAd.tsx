@@ -1,9 +1,6 @@
-// InterstitialAd.ts
-import { addEventListener, removeEventListener } from '../EventEmitter';
-import { NativeModules } from 'react-native';
+import { CASMobileAds } from '../modules/CASMobileAds';
 import type { FullscreenAdType } from '../types/FullscreenAdType';
-
-const { MediationManagerModule } = NativeModules;
+import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const EVENTS = {
   LOADED: 'onInterstitialLoaded',
@@ -15,99 +12,29 @@ const EVENTS = {
   IMPRESSION: 'onInterstitialImpression',
 };
 
-const isAdReady = (): Promise<boolean> => {
-  return MediationManagerModule.isInterstitialReady();
-};
-
-const loadAd = (): Promise<void> => {
-  return MediationManagerModule.loadInterstitial();
-};
-
-const showAd = (): Promise<void> => {
-  return MediationManagerModule.showInterstitial();
-};
-
-const addAdLoadedEventListener = (listener: () => void): void => {
-  addEventListener(EVENTS.LOADED, listener);
-};
-
-const removeAdLoadedEventListener = (): void => {
-  removeEventListener(EVENTS.LOADED);
-};
-
-const addAdLoadFailedEventListener = (listener: (error: string) => void): void => {
-  addEventListener(EVENTS.LOAD_FAILED, listener);
-};
-
-const removeAdLoadFailedEventListener = (): void => {
-  removeEventListener(EVENTS.LOAD_FAILED);
-};
-
-const addAdClickedEventListener = (listener: () => void): void => {
-  addEventListener(EVENTS.CLICKED, listener);
-};
-
-const removeAdClickedEventListener = (): void => {
-  removeEventListener(EVENTS.CLICKED);
-};
-
-const addAdDisplayedEventListener = (listener: () => void): void => {
-  addEventListener(EVENTS.DISPLAYED, listener);
-};
-
-const removeAdDisplayedEventListener = (): void => {
-  removeEventListener(EVENTS.DISPLAYED);
-};
-
-const addAdFailedToShowEventListener = (listener: (error: string) => void): void => {
-  addEventListener(EVENTS.FAILED_TO_SHOW, listener);
-};
-
-const removeAdFailedToShowEventListener = (): void => {
-  removeEventListener(EVENTS.FAILED_TO_SHOW);
-};
-
-const addAdDismissedEventListener = (listener: () => void): void => {
-  addEventListener(EVENTS.HIDDEN, listener);
-};
-
-const removeAdDismissedEventListener = (): void => {
-  removeEventListener(EVENTS.HIDDEN);
-};
-
-const addAdImpressionEventListener = (listener: (info: any) => void): void => {
-  addEventListener(EVENTS.IMPRESSION, listener);
-};
-
-const removeAdImpressionEventListener = (): void => {
-  removeEventListener(EVENTS.IMPRESSION);
-};
-
 export const InterstitialAd: FullscreenAdType = {
-  isAdReady,
-  loadAd,
-  showAd,
+  isAdReady: CASMobileAds.isInterstitialReady,
+  loadAd: CASMobileAds.loadInterstitial,
+  showAd: CASMobileAds.showInterstitial,
 
-  addAdLoadedEventListener,
-  removeAdLoadedEventListener,
+  addAdLoadedEventListener: (listener) => addEventListener(EVENTS.LOADED, listener),
+  removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
 
-  addAdLoadFailedEventListener,
-  removeAdLoadFailedEventListener,
+  addAdLoadFailedEventListener: (listener) => addEventListener(EVENTS.LOAD_FAILED, listener),
+  removeAdLoadFailedEventListener: () => removeEventListener(EVENTS.LOAD_FAILED),
 
-  addAdClickedEventListener,
-  removeAdClickedEventListener,
+  addAdClickedEventListener: (listener) => addEventListener(EVENTS.CLICKED, listener),
+  removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
 
-  addAdDisplayedEventListener,
-  removeAdDisplayedEventListener,
+  addAdDisplayedEventListener: (listener) => addEventListener(EVENTS.DISPLAYED, listener),
+  removeAdDisplayedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
 
-  addAdFailedToShowEventListener,
-  removeAdFailedToShowEventListener,
+  addAdFailedToShowEventListener: (listener) => addEventListener(EVENTS.FAILED_TO_SHOW, listener),
+  removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),
 
-  addAdDismissedEventListener,
-  removeAdDismissedEventListener,
+  addAdDismissedEventListener: (listener) => addEventListener(EVENTS.HIDDEN, listener),
+  removeAdDismissedEventListener: () => removeEventListener(EVENTS.HIDDEN),
 
-  addAdImpressionEventListener,
-  removeAdImpressionEventListener,
+  addAdImpressionEventListener: (listener) => addEventListener(EVENTS.IMPRESSION, listener),
+  removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
 };
-
-export default InterstitialAd;
