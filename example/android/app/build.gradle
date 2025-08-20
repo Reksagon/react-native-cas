@@ -1,29 +1,26 @@
 plugins {
-  id "com.android.application"
-  id "org.jetbrains.kotlin.android"
-  id "com.facebook.react"
+  id 'com.android.application'
+  id 'org.jetbrains.kotlin.android'
+  id 'com.facebook.react'
+  id 'com.cleveradssolutions.gradle-plugin'
 }
 
 react {
-  // використовуємо автолінк
   autolinkLibrariesWithApp()
 }
 
 def enableProguardInReleaseBuilds = false
-
-// JSC як альтернатива Hermes
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
-  namespace "com.YOZHStudio.RailRoad"
-
+  namespace 'com.YOZHStudio.RailRoad'
 
   ndkVersion rootProject.ext.ndkVersion
   buildToolsVersion rootProject.ext.buildToolsVersion
   compileSdk rootProject.ext.compileSdkVersion
 
   defaultConfig {
-    applicationId "com.YOZHStudio.RailRoad"
+    applicationId 'com.YOZHStudio.RailRoad'
     minSdkVersion rootProject.ext.minSdkVersion
     targetSdkVersion rootProject.ext.targetSdkVersion
     versionCode 1
@@ -40,46 +37,46 @@ android {
   }
 
   buildTypes {
-    debug {
-      signingConfig signingConfigs.debug
-    }
+    debug { signingConfig signingConfigs.debug }
     release {
-      signingConfig signingConfigs.debug // заміниш своїм keystore для продакшену
+      signingConfig signingConfigs.debug
       minifyEnabled enableProguardInReleaseBuilds
-      proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions { jvmTarget = "17" }
 }
 
 dependencies {
-  // версію react-android задає RN Gradle Plugin
-  implementation("com.facebook.react:react-android")
-  // Kotlin stdlib під твою версію Kotlin
-  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
-  implementation project(':react-native-cas')
-  // CAS (актуальні з того, що ти вже ставив)
-  implementation("com.cleveradssolutions:cas-sdk:4.3.0")
-  implementation("com.cleveradssolutions:cas-families:3.9.10")
-  implementation("com.cleveradssolutions:cas-sdk:4.3.0")
-  implementation("com.google.android.gms:play-services-ads-identifier:18.2.0")
-  implementation("com.cleveradssolutions:google:24.5.0.0") // Google Ads / AdMob
-  implementation("com.cleveradssolutions:applovin:13.3.1.1")
-  // implementation("com.cleveradssolutions:ironsource:8.7.0.0")
-  // implementation("com.cleveradssolutions:vungle:7.4.3.0")
-  // implementation("com.cleveradssolutions:facebook:6.19.0.0")
-  // implementation("com.cleveradssolutions:mintegral:16.9.51.0")
-  // implementation("com.cleveradssolutions:pangle:6.5.0.4")
-  // implementation("com.cleveradssolutions:chartboost:9.8.3.0")
-  // implementation("com.cleveradssolutions:fyber:8.3.6.0")
-  // implementation("com.cleveradssolutions:inmobi:10.8.0.0")
-  // implementation("com.cleveradssolutions:unity:4.13.2.0")
-  // implementation("com.cleveradssolutions:bigo:5.1.0.0")
+  implementation 'com.facebook.react:react-android'
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
 
-  // Hermes або JSC
   if (hermesEnabled.toBoolean()) {
-    implementation("com.facebook.react:hermes-android")
+    implementation 'com.facebook.react:hermes-android'
   } else {
     implementation jscFlavor
   }
+}
 
+cas {
+  useAdvertisingId = true
+
+  adapters {
+    googleAds = true
+    appLovin  = true
+    ironSource = true
+    chartboost = true
+    mintegral = true
+    pangle = true
+    inMobi = true
+    yandexAds = true
+    unityAds = true
+    liftoffMonetize = true
+  }
+  // includeOptimalAds = true
 }
