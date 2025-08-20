@@ -13,6 +13,7 @@ import { BannerAdSize } from './types';
 
 const COMPONENT = 'BannerAdView';
 
+
 export type NativeBannerProps = ViewProps & {
   style: StyleProp<ViewStyle>;
   onAdViewLoaded: (

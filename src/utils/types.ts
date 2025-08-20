@@ -1,17 +1,5 @@
-import { MediationManager } from '../modules/mediation-manager.module';
 import type { StyleProp, ViewStyle } from 'react-native';
-
-export type ConsentFlowParams = {
-  enabled?: boolean;
-  privacyPolicy?: string;
-  requestGDPR?: boolean;
-  requestATT?: boolean;
-};
-
-export type MediationExtraParams = {
-  key: string;
-  value: string;
-};
+import { MediationManager } from '../modules/mediation-manager.module';
 
 export enum AdType {
   Banner = 0,
@@ -68,14 +56,23 @@ export type Location = {
   longitude: number;
 };
 
-export type BuildManagerParams = {
+export type InitParams = {
+  /** optional CAS ID; якщо не задано бере packageName/bundleId */
   casId?: string;
-  consentFlow?: ConsentFlowParams;
-  managerId?: string;
-  userId?: string;
+  /** вмикає/вимикає показ consent flow у SDK */
+  consentFlowEnabled?: boolean;
+  /** test mode for CAS */
   testMode?: boolean;
-  adTypes?: Array<AdType>;
-  mediationExtra?: MediationExtraParams;
+  /** extra kv for mediation */
+  mediationExtra?: { key: string; value: string };
+};
+
+export type InitConfiguration = {
+  error?: string;
+  countryCode?: string;
+  isConsentRequired: boolean;
+  /**статус закриття consent flow, якщо SDK вже знає (або -1, якщо ще ні) */
+  consentFlowStatus: number;
 };
 
 export type TargetingOptions = {
@@ -84,12 +81,6 @@ export type TargetingOptions = {
   location?: Location;
   contentUrl: string;
   keywords: Array<string>;
-};
-
-export type AudienceNetworkDataProcessingOptions = {
-  country?: number;
-  state?: number;
-  options: Array<string>;
 };
 
 export type CASSettings = {
@@ -106,26 +97,6 @@ export type CASSettings = {
   deprecated_analyticsCollectionEnabled: boolean;
   trackLocation?: boolean; // iOS Only
   testDeviceIDs: Array<string>;
-};
-
-export type DismissConsentFlowEvent = {
-  status: number;
-  settings: CASSettings;
-};
-
-export type onDismissConsentFlowListener = (
-  params: DismissConsentFlowEvent
-) => void;
-
-export type BuildManagerResultNative = {
-  error?: string;
-  countryCode?: string;
-  isConsentRequired: boolean;
-};
-
-export type BuildManagerResult = {
-  result: BuildManagerResultNative;
-  manager: MediationManager;
 };
 
 export type LastPageAdContent = {
