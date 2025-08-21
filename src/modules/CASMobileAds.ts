@@ -1,56 +1,48 @@
 import type {
     BuildManagerParams,
-    BuildManagerResult,
+    InitConfiguration,
     TargetingOptions,
-    AudienceNetworkDataProcessingOptions,
     CASSettings,
-    ConsentFlowParams,
 } from '../utils/types';
 import CASMobileAdsModule from './CASMobileAdsSpec';
-import { Platform } from 'react-native';
+import { NativeEventEmitter } from 'react-native';
+
+const eventEmitter = new NativeEventEmitter(CASMobileAdsModule);
 
 export class CASMobileAds {
     // Init
-    static async initialize(sdkKey: string) {
-        return CASMobileAdsModule.initialize(sdkKey);
-    }
-    static async getSDKVersion(): Promise<string> {
-        return CASMobileAdsModule.getSDKVersion();
-    }
-
-    // Build Manager
-    static async buildManager(
+    static async initialize(
         params: BuildManagerParams
-    ): Promise<BuildManagerResult> {
+    ): Promise<InitConfiguration> {
         return CASMobileAdsModule.buildManager(params);
     }
 
     // Ad Formats    
-    static isInterstitialReady() {
-        return CASMobileAdsModule.isInterstitialReady();
+    static isInterstitialAdLoaded() {
+        return CASMobileAdsModule.isInterstitialAdLoaded();
     }
-    static loadInterstitial() {
-        return CASMobileAdsModule.loadInterstitial();
+    static loadInterstitialAd() {
+        return CASMobileAdsModule.loadInterstitialAd();
     }
-    static showInterstitial() {
-        return CASMobileAdsModule.showInterstitial();
-    }
-
-    static isRewardedReady() {
-        return CASMobileAdsModule.isRewardedReady();
-    }
-    static loadRewarded() {
-        return CASMobileAdsModule.loadRewarded();
-    }
-    static showRewarded() {
-        return CASMobileAdsModule.showRewarded();
+    static showInterstitialAd() {
+        return CASMobileAdsModule.showInterstitialAd();
     }
 
-    static isAppOpenAdAvailable() {
-        return CASMobileAdsModule.isAppOpenAdAvailable();
+    static isRewardedAdLoaded() {
+        return CASMobileAdsModule.isRewardedAdLoaded();
     }
-    static loadAppOpenAd(isLandscape?: boolean) {
-        return CASMobileAdsModule.loadAppOpenAd(isLandscape ?? false);
+    static loadRewardedAd() {
+        return CASMobileAdsModule.loadRewardedAd();
+    }
+    static showRewardedAd() {
+        return CASMobileAdsModule.showRewardedAd();
+    }
+
+    static isAppOpenAdLoaded() {
+        return CASMobileAdsModule.isAppOpenAdLoaded();
+    }
+    static loadAppOpenAd() {
+        return CASMobileAdsModule.loadAppOpenAd();
     }
     static showAppOpenAd() {
         return CASMobileAdsModule.showAppOpenAd();
@@ -64,11 +56,28 @@ export class CASMobileAds {
     }
 
     // Additional Methods
+    static async getSDKVersion(): Promise<string> {
+        return CASMobileAdsModule.getSDKVersion();
+    }
+
     static setTestMode(enabled: boolean) {
         CASMobileAdsModule.setTestMode(enabled);
     }
-    static async showConsentFlow(params: Omit<ConsentFlowParams, 'enabled'>) {
-        return CASMobileAdsModule.showConsentFlow(params);
+
+    // Consent Flow
+    static async showConsentFlow() {
+        return CASMobileAdsModule.showConsentFlow();
+    }
+
+    static async setConsentFlowEnabled(enabled: boolean) {
+        CASMobileAdsModule.setConsentFlowEnabled(enabled);
+    }
+
+    static addConsentFlowDismissedEventListener(listener: (status: number) => void): () => void {
+        const sub = eventEmitter.addListener('consentFlowDismissed', (status) =>
+            listener(status)
+        );
+        return () => sub.remove();
     }
 
     static async getTargetingOptions(): Promise<TargetingOptions> {
@@ -85,31 +94,5 @@ export class CASMobileAds {
 
     static async setSettings(settings: Partial<CASSettings>) {
         return CASMobileAdsModule.setSettings(settings);
-    }
-
-    static async debugValidateIntegration() {
-        return CASMobileAdsModule.debugValidateIntegration();
-    }
-
-    static async restartInterstitialInterval() {
-        return CASMobileAdsModule.restartInterstitialInterval();
-    }
-
-    static async setAudienceNetworkDataProcessingOptions(
-        params: AudienceNetworkDataProcessingOptions
-    ) {
-        return CASMobileAdsModule.setAudienceNetworkDataProcessingOptions(params);
-    }
-
-    static async setAdvertiserTrackingEnabled(enable: boolean) {
-        if (Platform.OS === 'ios') {
-            return CASMobileAdsModule.setAdvertiserTrackingEnabled(enable);
-        }
-    }
-
-    static async setGoogleAdsConsentForCookies(enabled: boolean) {
-        if (Platform.OS === 'android') {
-            return CASMobileAdsModule.setGoogleAdsConsentForCookies(enabled);
-        }
     }
 }

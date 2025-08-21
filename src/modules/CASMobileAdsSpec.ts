@@ -1,49 +1,39 @@
 import type {
   BuildManagerParams,
-  BuildManagerResult,
-  TargetingOptions,
-  AudienceNetworkDataProcessingOptions,
+  InitConfiguration,
+  TargetingOptions,  
   CASSettings,  
-  ConsentFlowParams,
 } from '../utils/types';
 import { TurboModule, TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
     // Init
-    initialize(sdkKey: string): Promise<void>;
-    getSDKVersion(): Promise<string>;
-
-    // Build Manager
-    buildManager(params: BuildManagerParams): Promise<BuildManagerResult>;
+    initialize(params: BuildManagerParams): Promise<InitConfiguration>;    
 
     // Ad formats
-    isInterstitialReady(): Promise<boolean>;
-    loadInterstitial(): Promise<void>;
-    showInterstitial(): Promise<void>;
+    isInterstitialAdLoaded(): Promise<boolean>;
+    loadInterstitialAd(): Promise<void>;
+    showInterstitialAd(): Promise<void>;
 
-    isRewardedReady(): Promise<boolean>;
-    loadRewarded(): Promise<void>;
-    showRewarded(): Promise<void>;
+    isRewardedAdLoaded(): Promise<boolean>;
+    loadRewardedAd(): Promise<void>;
+    showRewardedAd(): Promise<void>;
 
-    isAppOpenAdAvailable(): Promise<boolean>;
-    loadAppOpenAd(isLandscape?: boolean): Promise<void>;
+    isAppOpenAdLoaded(): Promise<boolean>;
+    loadAppOpenAd(): Promise<void>;
     showAppOpenAd(): Promise<void>;
 
     loadBanner(size: string, adaptive: boolean): Promise<void>;
     destroyBanner(): Promise<void>;
 
     // Additional Methods
+    getSDKVersion(): Promise<string>;
     setTestMode(enabled: boolean): void;
 
     // Consent    
-    showConsentFlow(params: ConsentFlowParams): Promise<void>;
-
-    // Facebook
-    setAudienceNetworkDataProcessingOptions(params: AudienceNetworkDataProcessingOptions): Promise<void>;
-    setAdvertiserTrackingEnabled(enable: boolean): Promise<void>;
-
-    // Google
-    setGoogleAdsConsentForCookies(enabled: boolean): Promise<void>;
+    showConsentFlow(): Promise<void>;
+    setConsentFlowEnabled(enabled: boolean): Promise<void>;
+    addConsentFlowDismissedEventListener(listener: (status: number) => void): () => Promise<void>;
 
     // Targeting
     getTargetingOptions(): Promise<TargetingOptions>;
@@ -52,10 +42,6 @@ export interface Spec extends TurboModule {
     // Settings
     getSettings(): Promise<CASSettings>;
     setSettings(settings: Partial<CASSettings>): Promise<void>;
-
-    // Debug
-    debugValidateIntegration(): Promise<void>;
-    restartInterstitialInterval(): Promise<void>;    
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');

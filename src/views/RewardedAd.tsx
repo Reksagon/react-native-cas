@@ -10,14 +10,13 @@ const EVENTS = {
   FAILED_TO_SHOW: 'onRewardedFailedToShow',
   HIDDEN: 'onRewardedHidden',
   COMPLETED: 'onRewardedCompleted',
-  IMPRESSION: 'onRewardedImpression',
-  REVENUE: 'onRewardedRevenue',
+  IMPRESSION: 'onRewardedImpression'
 };
 
 export const RewardedAd: FullscreenAdType = {
-  isAdReady: CASMobileAds.isRewardedReady,
-  loadAd: CASMobileAds.loadRewarded,
-  showAd: CASMobileAds.showRewarded,
+  isAdLoaded: CASMobileAds.isRewardedAdLoaded,
+  loadAd: CASMobileAds.loadRewardedAd,
+  showAd: CASMobileAds.showRewardedAd,
 
   addAdLoadedEventListener: (listener) => addEventListener(EVENTS.LOADED, listener),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
@@ -39,7 +38,4 @@ export const RewardedAd: FullscreenAdType = {
 
   addAdImpressionEventListener: (listener) => addEventListener(EVENTS.IMPRESSION, listener),
   removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
-
-  addAdRevenuePaidListener: (listener) => addEventListener(EVENTS.REVENUE, listener),
-  removeAdRevenuePaidListener: () => removeEventListener(EVENTS.REVENUE),
 };

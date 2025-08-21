@@ -13,9 +13,9 @@ const EVENTS = {
 };
 
 export const AppOpenAd: FullscreenAdType = {
-  isAdReady: CASMobileAds.isRewardedReady,
-  loadAd: CASMobileAds.loadRewarded,
-  showAd: CASMobileAds.showRewarded,
+  isAdLoaded: CASMobileAds.isAppOpenAdLoaded,
+  loadAd: CASMobileAds.loadAppOpenAd,
+  showAd: CASMobileAds.showAppOpenAd,
 
   addAdLoadedEventListener: (listener) => addEventListener(EVENTS.LOADED, listener),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),

@@ -32,21 +32,6 @@ export const Settings = () => {
     await getSettings();
   }, [getSettings]);
 
-  const setAudienceNetworkDataProcessingOptions = useCallback(async () => {
-    const params = {
-      state: 1,
-      options: ['LDU'],
-      country: 1000,
-    };
-
-    await CAS.setAudienceNetworkDataProcessingOptions(params);
-
-    context.logCasInfo(
-      'Set AudienceNetworkDataProcessingOptions (Facebook):',
-      JSON.stringify(params)
-    );
-  }, [context]);
-
   const setGoogleAdsConsentForCookies = useCallback(async () => {
     await CAS.setGoogleAdsConsentForCookies(true);
 
@@ -61,10 +46,6 @@ export const Settings = () => {
           'Change settings (taggedAudience to Children, age to 12, gender to Male)'
         }
         onPress={setSettings}
-      />
-      <Button
-        title={'Set AudienceNetworkDataProcessingOptions (Facebook)'}
-        onPress={setAudienceNetworkDataProcessingOptions}
       />
       <Button
         title={'Set ConsentForCookies (Google)'}

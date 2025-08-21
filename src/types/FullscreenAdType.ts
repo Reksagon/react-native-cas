@@ -1,5 +1,5 @@
 export type FullscreenAdType = {
-  isAdReady(): Promise<boolean>;
+  isAdLoaded(): Promise<boolean>;
   loadAd(options?: any): Promise<void>;
   showAd(): Promise<void>;
 
@@ -23,7 +23,4 @@ export type FullscreenAdType = {
 
   addAdImpressionEventListener(listener: (info: any) => void): void;
   removeAdImpressionEventListener(): void;
-
-  addAdRevenuePaidListener?(listener: (info: any) => void): void;
-  removeAdRevenuePaidListener?(): void;
 };

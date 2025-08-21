@@ -13,9 +13,9 @@ const EVENTS = {
 };
 
 export const InterstitialAd: FullscreenAdType = {
-  isAdReady: CASMobileAds.isInterstitialReady,
-  loadAd: CASMobileAds.loadInterstitial,
-  showAd: CASMobileAds.showInterstitial,
+  isAdLoaded: CASMobileAds.isInterstitialAdLoaded,
+  loadAd: CASMobileAds.loadInterstitialAd,
+  showAd: CASMobileAds.showInterstitialAd,
 
   addAdLoadedEventListener: (listener) => addEventListener(EVENTS.LOADED, listener),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),

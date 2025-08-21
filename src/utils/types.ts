@@ -69,11 +69,8 @@ export type Location = {
 
 export type BuildManagerParams = {
   casId?: string;
-  consentFlow?: ConsentFlowParams;
-  managerId?: string;
-  userId?: string;
-  testMode?: boolean;
-  adTypes?: Array<AdType>;
+  consentFlow?: ConsentFlowParams;    
+  testMode?: boolean;  
   mediationExtra?: MediationExtraParams;
 };
 
@@ -83,12 +80,6 @@ export type TargetingOptions = {
   location?: Location;
   contentUrl: string;
   keywords: Array<string>;
-};
-
-export type AudienceNetworkDataProcessingOptions = {
-  country?: number;
-  state?: number;
-  options: Array<string>;
 };
 
 export type CASSettings = {
@@ -109,21 +100,13 @@ export type CASSettings = {
 
 export type DismissConsentFlowEvent = {
   status: number;
-  settings: CASSettings;
-};
+};;
 
-export type onDismissConsentFlowListener = (
-  params: DismissConsentFlowEvent
-) => void;
-
-export type BuildManagerResultNative = {
+export type InitConfiguration = {
   error?: string;
   countryCode?: string;
   isConsentRequired: boolean;
-};
-
-export type BuildManagerResult = {
-  result: BuildManagerResultNative;  
+  consentFlowStatus: number;
 };
 
 export type LastPageAdContent = {
