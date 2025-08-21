@@ -20,7 +20,6 @@ export type NativeBannerProps = ViewProps & {
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
 
-  // Events
   onAdViewLoaded?: (e: NativeSyntheticEvent<{ width: number; height: number }>) => void;
   onAdViewFailed?: (e: NativeSyntheticEvent<AdViewFailedEvent>) => void;
   onAdViewClicked?: () => void;

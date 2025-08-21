@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 
 import { BannerAdView, AdViewCommands } from './NativeView';
-import { AdViewSize, AdViewFailedEvent, AdViewPresentedEvent, AdViewRef, AdViewProps } from './types';
+import { AdViewSize, AdViewFailedEvent, AdViewPresentedEvent, AdViewRef, AdViewProps } from '../utils/types';
 
 const pr = PixelRatio.get();
 

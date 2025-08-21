@@ -13,7 +13,7 @@ class CasPackage : ReactPackage {
 
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
     return listOf(
-      CasModule(reactContext, managerWrapper),
+      CASMobileAds(reactContext, managerWrapper),
       MediationManagerModule(reactContext, managerWrapper)
     )
   }

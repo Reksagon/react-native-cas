@@ -1,38 +1,34 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useCasContext } from './cas.context';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCasContext } from './cas.context';
 
 export const LoggerTerminal = () => {
   const [logs, setLogs] = useState<Array<string>>([]);
-  const context = useCasContext();
+  const { setCasLogger } = useCasContext();
   const ref = useRef<ScrollView | null>(null);
 
   const logger = useCallback((...data: any[]) => {
-    const _data = data.filter((f) => !!f);
-
-    !!_data.length &&
-      setLogs((state) => [
-        ...state,
-        _data
-          .map((d) => d.toString())
-          .join('')
-          .toString(),
-      ]);
-
-    setTimeout(() => {
-      ref.current?.scrollToEnd();
-    }, 200);
+    const line = data
+      .filter((x) => x !== undefined && x !== null)
+      .map((d) => {
+        if (typeof d === 'string') return d;
+        try { return JSON.stringify(d); } catch { return String(d); }
+      })
+      .join(' ');
+    if (!line) return;
+    setLogs((s) => [...s, line]);
+    setTimeout(() => ref.current?.scrollToEnd({ animated: true }), 50);
   }, []);
 
   useEffect(() => {
-    context.setCasLogger(logger);
-  }, [logger, context]);
+    setCasLogger(logger);
+  }, [logger, setCasLogger]);
 
   return (
     <View style={styles.container}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-        <Text style={styles.text}>Logger terminal: </Text>
-        <Button title={'clear'} onPress={() => setLogs([])} />
+      <View style={styles.header}>
+        <Text style={styles.text}>Logger terminal:</Text>
+        <Button title="clear" onPress={() => setLogs([])} />
       </View>
       <ScrollView ref={ref} contentContainerStyle={styles.scroll}>
         {logs.map((log, i) => (
@@ -44,17 +40,8 @@ export const LoggerTerminal = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: 'black',
-    height: 200,
-    padding: 16,
-  },
-  text: {
-    color: 'white',
-    marginVertical: 4,
-  },
-  scroll: {
-    paddingTop: 16,
-  },
-})
+  container: { width: '100%', backgroundColor: 'black', height: 200, padding: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  text: { color: 'white', marginVertical: 4 },
+  scroll: { paddingTop: 16 },
+});

@@ -20,7 +20,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter
 class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): SimpleViewManager<CASBannerView>(), AdViewListener {
   private val updateSubs = HashMap<CASBannerView, String>()
 
-  override fun getName() = "BannerAdView"
+  override fun getName() = "AdView"
 
   override fun createViewInstance(reactContext: ThemedReactContext): CASBannerView {
     val view = CASBannerView(reactContext, managerWrapper.manager)
