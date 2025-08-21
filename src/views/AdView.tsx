@@ -1,162 +1,201 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
+import * as React from 'react';
 import {
-  Dimensions,
-  LayoutChangeEvent,
-  LayoutRectangle,
-  NativeSyntheticEvent,
-  PixelRatio,
-  Platform,
-  StyleSheet,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+  useEffect,
+  useState,
+  useReducer,
+  findNodeHandle,
   UIManager,
   View,
-  findNodeHandle,
+  useWindowDimensions,
+  NativeSyntheticEvent,
 } from 'react-native';
+import { NativeAdView } from '../native/NativeAdView';
+import { Commands } from '../native/Commands';
+import { addEventListener, removeEventListener } from '../EventEmitter';
+import type {
+  AdViewRef,
+  AdViewProps,
+  AdInfoEvent,
+  AdLoadFailedEvent,
+  AdViewPresentedEvent,
+} from '../types/Types';
+import { CASMobileAds } from '../modules/CASMobileAds';
 
-import { BannerAdView, AdViewCommands } from './NativeView';
-import { AdViewSize, AdViewFailedEvent, AdViewPresentedEvent, AdViewRef, AdViewProps } from './types';
-
-const pr = PixelRatio.get();
-
-export const isTablet = (() => {
-  const pixelDensity = PixelRatio.get();
-  const adjustedWidth = Dimensions.get('window').width * pixelDensity;
-  const adjustedHeight = Dimensions.get('window').height * pixelDensity;
-  if (pixelDensity < 2 && (adjustedWidth >= 1000 || adjustedHeight >= 1000)) {
-    return true;
-  }
-  return pixelDensity === 2 && (adjustedWidth >= 1920 || adjustedHeight >= 1920);
-})();
-
-const sizes = {
-  [AdViewSize.B]: { width: 320, height: 50 },
-  [AdViewSize.L]: { width: 728, height: 90 },
-  [AdViewSize.M]: { width: 300, height: 250 },
-  [AdViewSize.A]: { width: 0, height: 0 },
-  [AdViewSize.S]: {
-    width: isTablet ? 728 : 320,
-    height: isTablet ? 90 : 50,
-  },
+// Default sizes
+const ADVIEW_SIZE = {
+  banner: { width: 320, height: 50 },
+  leader: { width: 728, height: 90 },
+  mrec: { width: 300, height: 250 },
 };
 
-export const BannerAd = forwardRef<AdViewRef, AdViewProps>(
-  (props, ref) => {
-    const [size, setSize] = useState(sizes[props.size]);
-    const layout = useRef<LayoutRectangle | null>(null);
-    const bannerRef = useRef(null);
+// Event constants
+const ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT = ""
+const ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT = ""
 
-    const style = useMemo(() => {
-      return props.size === AdViewSize.A
-        ? {
-            flex: 1,
-            width: Dimensions.get('window').width,
-          }
-        : StyleSheet.compose(props.style, sizes[props.size]);
-    }, [props.size, props.style]);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-      layout.current = e.nativeEvent.layout;
-      setSize(e.nativeEvent.layout);
-    }, []);
+const handleAdViewEvent = <T extends AdInfoEvent | AdLoadFailedEvent | AdViewPresentedEvent>(
+  event: NativeSyntheticEvent<T>,
+  callback?: (adInfo: T) => void
+) => {
+  if (!callback) return;
+  callback(event.nativeEvent);
+};
 
-    const onAdViewLoaded = useCallback(
-      (e: NativeSyntheticEvent<{ width: number; height: number }>) => {
-        if (Platform.OS === 'android') {
-          let width = e.nativeEvent.width / pr;
-          const height = layout.current?.height ?? e.nativeEvent.height / pr;
+export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
+  {
+    style,
+    size,
+    adUnitId,
+    placement,
+    customData,
+    extraParameters,
+    localExtraParameters,
+    isAutoloadEnabled = true,
+    refreshInterval,
+    //
+    onAdViewLoaded,
+    onAdViewFailed,
+    onAdViewClicked,
+    onAdViewExpanded,
+    onAdViewCollapsed,
+    onAdViewRevenuePaid,
+    onAdViewDisplayed,
+    ...props
+  },
+  ref
+) {
+  const adViewRef = useRef<any>();
+  const { width: screenWidth } = useWindowDimensions();
+  const dimensions = useRef<{ width?: number | string; height?: number | string }>({});
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-          if (Math.floor(width) % 2) {
-            width += 1;
-          } else {
-            width -= 1;
-          }
-
-          setSize({ height, width });
-        }
-        props.onAdViewLoaded?.();
-      },
-      [props.onAdViewLoaded]
+  const sendCommand = (command: string, args: any[] = []) => {
+    if (!adViewRef.current) return;
+    const reactTag = findNodeHandle(adViewRef.current);
+    if (!reactTag) return;
+    UIManager.dispatchViewManagerCommand(
+      reactTag,
+      UIManager.getViewManagerConfig('AdView').Commands[command],
+      args
     );
+  };
 
-    const onAdViewFailed = useCallback(
-      (e: NativeSyntheticEvent<AdViewFailedEvent>) => {
-        props.onAdViewFailed?.(e.nativeEvent);
-      },
-      [props.onAdViewFailed]
-    );
+  useImperativeHandle(ref, () => ({
+    loadAd: () => sendCommand('loadAd'),
+    startAutoRefresh: () => sendCommand('startAutoRefresh'),
+    stopAutoRefresh: () => sendCommand('stopAutoRefresh'),
+    destroy: () => sendCommand('destroy'),
+    isAdLoaded: async () => Commands.isAdLoaded(adViewRef.current),
+  }));
 
-    const onAdViewClicked = useCallback(() => {
-      props.onAdViewClicked?.();
-    }, [props.onAdViewClicked]);
+  // Calculate size
+  useEffect(() => {
+    (async () => {
+      const initialized = await CASMobileAds.isInitialized();
+      setIsInitialized(initialized);
+      if (!initialized) console.warn('AdView mounted before SDK initialized.');
 
-    const onAdViewImpression = useCallback(
-      (e: NativeSyntheticEvent<AdViewPresentedEvent>) => {
-        props.onAdViewImpression?.(e.nativeEvent);
-      },
-      [props.onAdViewImpression]
-    );
+      let width: number | string = 'auto';
+      let height: number | string = 'auto';
 
-    // API for ref
-    const isAdLoaded = useCallback(async (): Promise<boolean> => {
-      return new Promise((resolve) => {
-        const nodeHandle = findNodeHandle(bannerRef.current);
-        if (nodeHandle) {
-          UIManager.dispatchViewManagerCommand(
-            nodeHandle,
-            AdViewCommands.isAdLoaded,
-            []
-          );
-        }
-        // BannerAdView call callback isAdLoaded
-        (bannerRef.current as any).onCheckIsAdLoaded = resolve;
-      });
-    }, []);
-
-    const loadAd = useCallback(async () => {
-      const nodeHandle = findNodeHandle(bannerRef.current);
-      if (nodeHandle) {
-        UIManager.dispatchViewManagerCommand(
-          nodeHandle,
-          AdViewCommands.loadAd,
-          []
-        );
+      switch (size) {
+        case 'BANNER':
+          width = screenWidth;
+          height = ADVIEW_SIZE.banner.height;
+          break;
+        case 'LEADERBOARD':
+          width = screenWidth;
+          height = ADVIEW_SIZE.leader.height;
+          break;
+        case 'MREC':
+          width = ADVIEW_SIZE.mrec.width;
+          height = ADVIEW_SIZE.mrec.height;
+          break;
+        case 'ADAPTIVE':
+        case 'SMART':
+          // width = screenWidth;
+          // try {
+          //   height = await .getAdaptiveBannerHeightForWidth(screenWidth);
+          // } catch {
+          //   height = ADVIEW_SIZE.banner.height;
+          // }
+          // break;
       }
-    }, []);
 
-    useImperativeHandle(ref, () => ({
-      isAdLoaded,
-      loadAd,
-    }));
+      dimensions.current = { width, height };
+      forceUpdate();
+    })();
+  }, [size, screenWidth]);
 
-    return (
-      <View onLayout={onLayout} style={style}>
-        <BannerAdView
-          ref={bannerRef}
-          size={{
-            isAdaptive: props.size === AdViewSize.A ? true : undefined,
-            size: props.size,
-          }}
-          onAdViewImpression={onAdViewImpression}
-          onAdViewClicked={onAdViewClicked}
-          onAdViewFailed={onAdViewFailed}
-          onAdViewLoaded={onAdViewLoaded}
-          isAdLoaded={(ready: NativeSyntheticEvent<boolean>) => {
-            if ((bannerRef.current as any).onCheckIsAdLoaded) {
-              (bannerRef.current as any).onCheckIsAdLoaded(ready.nativeEvent);
-              (bannerRef.current as any).onCheckIsAdLoaded = null;
-            }
-          }}
-          style={size}
-          isAutoloadEnabled={props.isAutoloadEnabled}
-          refreshInterval={props.refreshInterval}
-        />
-      </View>
-    );
+  if (!isInitialized || !dimensions.current.width || !dimensions.current.height) {
+    return <View style={style} {...props} />;
   }
-);
+
+  return (
+    <NativeAdView
+      ref={adViewRef}
+      style={[style, dimensions.current]}
+      adUnitId={adUnitId}
+      adFormat={size}
+      placement={placement}
+      customData={customData}
+      autoRefresh={isAutoloadEnabled}
+      refreshInterval={refreshInterval}
+      extraParameters={extraParameters}
+      localExtraParameters={localExtraParameters}
+      //
+      onAdViewLoaded={(e) => handleAdViewEvent(e, onAdViewLoaded)}
+      onAdViewFailed={(e) => handleAdViewEvent(e, onAdViewFailed)}
+      onAdViewClicked={() => onAdViewClicked?.()}
+      onAdViewExpanded={() => onAdViewExpanded?.()}
+      onAdViewCollapsed={() => onAdViewCollapsed?.()}
+      onAdViewRevenuePaid={(e) => handleAdViewEvent(e, onAdViewRevenuePaid)}
+      onAdViewDisplayed={(e) => handleAdViewEvent(e, onAdViewDisplayed)}
+      {...props}
+    />
+  );
+});
+
+// Preload / destroy helpers
+/*
+export const preloadAdView = async (
+  adUnitId: string,
+  size: string,
+  options: { placement?: string; customData?: string; extraParameters?: object; localExtraParameters?: object } = {}
+) => {
+  return preloadNativeUIComponentAdView(
+    adUnitId,
+    size,
+    options.placement,
+    options.customData,
+    options.extraParameters,
+    options.localExtraParameters
+  );
+};
+
+export const destroyAdView = async (adViewId: number) => {
+  return destroyNativeUIComponentAdView(adViewId);
+};
+
+// EventEmitter wrappers
+export const addAdViewLoadedListener = (listener: (adInfo: AdInfo) => void) => {
+  addEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT, listener);
+};
+
+export const removeAdViewLoadedListener = () => {
+  removeEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT);
+};
+
+export const addAdViewLoadFailedListener = (listener: (errorInfo: AdLoadFailedInfo) => void) => {
+  addEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT, listener);
+};
+
+export const removeAdViewLoadFailedListener = () => {
+  removeEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT);
+};
+
+*/

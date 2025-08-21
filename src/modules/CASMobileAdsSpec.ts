@@ -3,12 +3,13 @@ import type {
   InitConfiguration,
   TargetingOptions,  
   CASSettings,  
-} from '../utils/types';
+} from '../types/Types';
 import { TurboModule, TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
     // Init
     initialize(params: BuildManagerParams): Promise<InitConfiguration>;    
+    isInitialized(): Promise<boolean>
 
     // Ad formats
     isInterstitialAdLoaded(): Promise<boolean>;
@@ -22,9 +23,6 @@ export interface Spec extends TurboModule {
     isAppOpenAdLoaded(): Promise<boolean>;
     loadAppOpenAd(): Promise<void>;
     showAppOpenAd(): Promise<void>;
-
-    loadBanner(size: string, adaptive: boolean): Promise<void>;
-    destroyBanner(): Promise<void>;
 
     // Additional Methods
     getSDKVersion(): Promise<string>;

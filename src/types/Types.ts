@@ -125,21 +125,27 @@ export enum AdViewSize {
   S = 'SMART',
 }
 
+export enum AdViewPosition {
+  TOP_CENTER = 'top_center',
+  BOTTOM_CENTER = 'bottom_center',
+  CENTERED = 'centered',
+  TOP_LEFT = 'top_left',
+  TOP_RIGHT = 'top_right',
+  BOTTOM_LEFT = 'bottom_left',
+  BOTTOM_RIGHT = 'bottom_right',
+}
+
 export type AdViewProps = {
   style?: StyleProp<ViewStyle>;
   size: AdViewSize;  
-  onAdViewLoaded?: () => void;
-  onAdViewFailed?: (e: AdViewFailedEvent) => void;
-  onAdViewClicked?: () => void;
-  onAdViewImpression?: (e: AdViewPresentedEvent) => void;
+  position?: AdViewPosition;
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
-};
-
-export type AdViewFailedEvent = {
-  message: string;
-  code: number;
-};
+  adUnitId: string;
+  adFormat: string;
+  adaptiveBannerEnabled?: boolean;
+  autoRefresh?: boolean;
+} & AdViewEvents;
 
 export type AdImpression = {
   adType: AdType;
@@ -155,11 +161,71 @@ export type AdImpression = {
   creativeIdentifier?: string;
 };
 
-export type AdViewPresentedEvent = {
-  impression: AdImpression;
+export type AdViewEvents = {
+  onAdViewLoaded?: (event: AdInfoEvent) => void;
+  onAdViewFailed?: (event: AdLoadFailedEvent) => void;
+  onAdViewClicked?: () => void;
+  onAdViewRevenuePaid?: (event: { revenue: number; currency: string }) => void;
+  onAdViewExpanded?: () => void;
+  onAdViewCollapsed?: () => void;
+  onAdViewDisplayed?: (event: AdViewPresentedEvent) => void;
 };
 
 export type AdViewRef = {
-  loadAd: () => Promise<void>;
+  loadAd: () => void;
+  startAutoRefresh: () => void;
+  stopAutoRefresh: () => void;
+  destroy: () => void;
   isAdLoaded: () => Promise<boolean>;
 };
+
+export type AdInfoEvent = Readonly<{
+    adUnitId: string;
+    adFormat: string;
+    adViewId?: number;
+    networkName: string;
+    networkPlacement: string;
+    creativeId?: string | null;
+    placement?: string | null;
+    revenue: number;
+    revenuePrecision: string;
+    latencyMillis: number;
+    dspName?: string | null;
+    size: Readonly<{
+        width: number;
+        height: number;
+    }>;
+}>;
+
+export type AdLoadFailedEvent = Readonly<{
+    adUnitId: string;
+    adViewId?: number;
+    code: number;
+    message?: string | null;
+    mediatedNetworkErrorCode: number;
+    mediatedNetworkErrorMessage: string;
+    adLoadFailureInfo?: string | null;
+}>;
+
+export type AdViewPresentedEvent = Readonly<{
+    impression: AdImpression;
+    adUnitId: string;
+    adFormat: string;
+    adViewId?: number;
+    networkName: string;
+    networkPlacement: string;
+    creativeId?: string | null;
+    placement?: string | null;
+    revenue: number;
+    revenuePrecision: string;
+    latencyMillis: number;
+    dspName?: string | null;
+    size: Readonly<{
+        width: number;
+        height: number;
+    }>;
+    code: number;
+    message?: string | null;
+    mediatedNetworkErrorCode: number;
+    mediatedNetworkErrorMessage: string;
+}>;

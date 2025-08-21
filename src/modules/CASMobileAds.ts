@@ -3,9 +3,10 @@ import type {
     InitConfiguration,
     TargetingOptions,
     CASSettings,
-} from '../utils/types';
+} from '../types/Types';
 import CASMobileAdsModule from './CASMobileAdsSpec';
 import { NativeEventEmitter } from 'react-native';
+
 
 const eventEmitter = new NativeEventEmitter(CASMobileAdsModule);
 
@@ -15,6 +16,10 @@ export class CASMobileAds {
         params: BuildManagerParams
     ): Promise<InitConfiguration> {
         return CASMobileAdsModule.buildManager(params);
+    }
+
+    static async isInitialized(): Promise<boolean> {
+        return CASMobileAdsModule.isInitialized();
     }
 
     // Ad Formats    
@@ -48,12 +53,6 @@ export class CASMobileAds {
         return CASMobileAdsModule.showAppOpenAd();
     }
 
-    static loadBanner(size: string, adaptive = false) {
-        return CASMobileAdsModule.loadBanner(size, adaptive);
-    }
-    static destroyBanner() {
-        return CASMobileAdsModule.destroyBanner();
-    }
 
     // Additional Methods
     static async getSDKVersion(): Promise<string> {
