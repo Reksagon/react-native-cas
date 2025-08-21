@@ -54,7 +54,6 @@ android {
 
 dependencies {
   implementation 'com.facebook.react:react-android'
-  implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
 
   if (hermesEnabled.toBoolean()) {
     implementation 'com.facebook.react:hermes-android'
