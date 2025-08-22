@@ -33,14 +33,6 @@ class MediationManagerModule(context: ReactApplicationContext, private val manag
     appOpenAd = CASAppOpen.create(managerWrapper.manager!!)
   }
 
-  @ReactMethod
-  @Suppress("unused")
-  fun setLastPageAdContent(content: ReadableMap) {
-    managerWrapper.manager?.let {
-      it.lastPageAdContent = LastPageAdContent::class.fromReadableMap(content)
-    }
-  }
-
   /*
   Interstitial
    */

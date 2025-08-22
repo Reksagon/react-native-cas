@@ -33,21 +33,6 @@ export enum Audience {
   NotChildren,
 }
 
-export enum CCPAStatus {
-  Undefined = 0,
-  OptOutSale,
-  OptInSale,
-}
-
-export enum LoadingManagerMode {
-  FastestRequests = 0,
-  FastRequests,
-  Optimal,
-  HighPerformance,
-  HighestPerformance,
-  Manual,
-}
-
 export enum ConsentStatus {
   Undefined = 0,
   Accepted,
@@ -59,62 +44,34 @@ export enum MediationManagerEvent {
   AdLoaded = 'adLoaded',
 }
 
-export type Location = {
-  accuracy: number;
-  altitude: number;
-  bearing: number;
-  latitude: number;
-  longitude: number;
-};
-
 export type BuildManagerParams = {
   casId?: string;
-  consentFlow?: ConsentFlowParams;    
-  testMode?: boolean;  
+  consentFlow?: ConsentFlowParams;
+  testMode?: boolean;
   mediationExtra?: MediationExtraParams;
-};
-
-export type TargetingOptions = {
-  age: number;
-  gender: Gender;
-  location?: Location;
-  contentUrl: string;
-  keywords: Array<string>;
 };
 
 export type CASSettings = {
   taggedAudience: Audience;
-  ccpaStatus: CCPAStatus;
-  trialAdFreeInterval: number;
+  age: number;
+  gender: Gender;
+  contentUrl?: string;
+  keywords: Array<string>;
   debugMode: boolean;
-  allowInterstitialAdsWhenVideoCostAreLower: boolean;
-  bannerRefreshInterval: number;
-  interstitialInterval: number;
-  loadingMode: LoadingManagerMode;
   mutedAdSounds: boolean;
-  userConsent: ConsentStatus;
-  deprecated_analyticsCollectionEnabled: boolean;
-  trackLocation?: boolean; // iOS Only
   testDeviceIDs: Array<string>;
+  locationCollectionEnabled?: boolean;
 };
 
 export type DismissConsentFlowEvent = {
   status: number;
-};;
+};
 
 export type InitConfiguration = {
   error?: string;
   countryCode?: string;
   isConsentRequired: boolean;
   consentFlowStatus: number;
-};
-
-export type LastPageAdContent = {
-  headline: string;
-  adText: string;
-  destinationURL: string;
-  imageURL?: string;
-  iconURL?: string;
 };
 
 export enum AdViewSize {
@@ -127,7 +84,7 @@ export enum AdViewSize {
 
 export type AdViewProps = {
   style?: StyleProp<ViewStyle>;
-  size: AdViewSize;  
+  size: AdViewSize;
   onAdViewLoaded?: () => void;
   onAdViewFailed?: (e: AdViewFailedEvent) => void;
   onAdViewClicked?: () => void;

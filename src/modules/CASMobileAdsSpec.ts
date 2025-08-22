@@ -31,11 +31,12 @@ export interface Spec extends TurboModule {
     setConsentFlowEnabled(enabled: boolean): Promise<void>;
     addConsentFlowDismissedEventListener(listener: (status: number) => void): () => Promise<void>;
 
-    getTargetingOptions(): Promise<TargetingOptions>;
-    setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
+   getSettings(): Promise<CASSettings>;
+  setSettings(settings: Partial<CASSettings>): Promise<void>;
 
-    getSettings(): Promise<CASSettings>;
-    setSettings(settings: Partial<CASSettings>): Promise<void>;
+  getTargetingOptions(): Promise<TargetingOptions>;
+  setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
+
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');

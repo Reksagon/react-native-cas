@@ -2,40 +2,43 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Modal, ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-import { InterstitialAd, RewardedAd, AppOpenAd, CASMobileAds } from 'react-native-cas';
-import { useCasContext } from './cas.context';
+
+import {
+  InterstitialAd,
+  RewardedAd,
+  AppOpenAd,
+} from 'react-native-cas';
 
 type BusyKind = null | 'Interstitial' | 'Rewarded' | 'AppOpen';
 
 export const Ads = () => {
-  const { logCasInfo } = useCasContext();
   const [busy, setBusy] = useState<BusyKind>(null);
 
   useEffect(() => {
-    InterstitialAd.addAdLoadedEventListener(() => logCasInfo('Interstitial loaded'));
-    InterstitialAd.addAdLoadFailedEventListener((e) => logCasInfo('Interstitial load failed:', e));
-    InterstitialAd.addAdDisplayedEventListener(() => logCasInfo('Interstitial displayed'));
-    InterstitialAd.addAdFailedToShowEventListener((e) => logCasInfo('Interstitial failed to show:', e));
-    InterstitialAd.addAdClickedEventListener(() => logCasInfo('Interstitial clicked'));
-    InterstitialAd.addAdDismissedEventListener(() => logCasInfo('Interstitial closed'));
-    InterstitialAd.addAdImpressionEventListener((info) => logCasInfo('Interstitial impression:', info));
+    InterstitialAd.addAdLoadedEventListener(() => console.log('Interstitial loaded'));
+    InterstitialAd.addAdLoadFailedEventListener((e) => console.log('Interstitial load failed:', e));
+    InterstitialAd.addAdDisplayedEventListener(() => console.log('Interstitial displayed'));
+    InterstitialAd.addAdFailedToShowEventListener((e) => console.log('Interstitial failed to show:', e));
+    InterstitialAd.addAdClickedEventListener(() => console.log('Interstitial clicked'));
+    InterstitialAd.addAdDismissedEventListener(() => console.log('Interstitial closed'));
+    InterstitialAd.addAdImpressionEventListener((info) => console.log('Interstitial impression:', info));
 
-    RewardedAd.addAdLoadedEventListener(() => logCasInfo('Rewarded loaded'));
-    RewardedAd.addAdLoadFailedEventListener((e) => logCasInfo('Rewarded load failed:', e));
-    RewardedAd.addAdDisplayedEventListener(() => logCasInfo('Rewarded displayed'));
-    RewardedAd.addAdFailedToShowEventListener((e) => logCasInfo('Rewarded failed to show:', e));
-    RewardedAd.addAdClickedEventListener(() => logCasInfo('Rewarded clicked'));
-    RewardedAd.addAdDismissedEventListener(() => logCasInfo('Rewarded closed'));
-    RewardedAd.addAdImpressionEventListener((info) => logCasInfo('Rewarded impression:', info));
+    RewardedAd.addAdLoadedEventListener(() => console.log('Rewarded loaded'));
+    RewardedAd.addAdLoadFailedEventListener((e) => console.log('Rewarded load failed:', e));
+    RewardedAd.addAdDisplayedEventListener(() => console.log('Rewarded displayed'));
+    RewardedAd.addAdFailedToShowEventListener((e) => console.log('Rewarded failed to show:', e));
+    RewardedAd.addAdClickedEventListener(() => console.log('Rewarded clicked'));
+    RewardedAd.addAdDismissedEventListener(() => console.log('Rewarded closed'));
+    RewardedAd.addAdImpressionEventListener((info) => console.log('Rewarded impression:', info));
 
-    AppOpenAd.addAdLoadedEventListener(() => logCasInfo('AppOpen loaded'));
-    AppOpenAd.addAdLoadFailedEventListener((e) => logCasInfo('AppOpen load failed:', e));
-    AppOpenAd.addAdDisplayedEventListener(() => logCasInfo('AppOpen displayed'));
-    AppOpenAd.addAdFailedToShowEventListener((e) => logCasInfo('AppOpen failed to show:', e));
-    AppOpenAd.addAdClickedEventListener(() => logCasInfo('AppOpen clicked'));
-    AppOpenAd.addAdDismissedEventListener(() => logCasInfo('AppOpen closed'));
-    AppOpenAd.addAdImpressionEventListener((info) => logCasInfo('AppOpen impression:', info));
-  }, [logCasInfo]);
+    AppOpenAd.addAdLoadedEventListener(() => console.log('AppOpen loaded'));
+    AppOpenAd.addAdLoadFailedEventListener((e) => console.log('AppOpen load failed:', e));
+    AppOpenAd.addAdDisplayedEventListener(() => console.log('AppOpen displayed'));
+    AppOpenAd.addAdFailedToShowEventListener((e) => console.log('AppOpen failed to show:', e));
+    AppOpenAd.addAdClickedEventListener(() => console.log('AppOpen clicked'));
+    AppOpenAd.addAdDismissedEventListener(() => console.log('AppOpen closed'));
+    AppOpenAd.addAdImpressionEventListener((info) => console.log('AppOpen impression:', info));
+  }, []);
 
   const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -53,36 +56,18 @@ export const Ads = () => {
       try {
         await opts.load();
         for (;;) {
-          const ok = await opts.isLoaded();
-          logCasInfo(kind, 'isLoaded =', ok);
-          if (ok) {
+          if (await opts.isLoaded()) {
             await opts.show();
             break;
           }
           await delay(750);
         }
-      } catch (e) {
-        logCasInfo(`${kind} flow error:`, String((e as any)?.message ?? e));
       } finally {
         setBusy(null);
       }
     },
-    [busy, logCasInfo]
+    [busy]
   );
-
-  const setLastPageContent = useCallback(async () => {
-    try {
-      const params = {
-        headline: 'Headline',
-        adText: 'Ad text',
-        destinationURL: 'https://www.google.com',
-      };
-      await (CASMobileAds as any).setLastPageAdContent?.(params);
-      logCasInfo('Last page content set:', params);
-    } catch (e: any) {
-      logCasInfo('setLastPageAdContent error:', String(e?.message ?? e));
-    }
-  }, [logCasInfo]);
 
   const showInterstitial = useCallback(
     () =>
@@ -118,11 +103,11 @@ export const Ads = () => {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <Button title="Set last page content" onPress={setLastPageContent} disabled={disabled} />
       <Button title="Show interstitial" onPress={showInterstitial} disabled={disabled} />
       <Button title="Show rewarded" onPress={showRewarded} disabled={disabled} />
       <View style={{ height: 16 }} />
       <Button title="Show app opened" onPress={showAppOpenedAd} disabled={disabled} />
+
       <Modal visible={!!busy} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: '#0006', alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" />
