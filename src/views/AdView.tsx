@@ -17,12 +17,23 @@ import { Commands } from '../native/Commands';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 import type {
   AdViewRef,
+  AdViewSize,
   AdViewProps,
   AdInfoEvent,
   AdLoadFailedEvent,
   AdViewPresentedEvent,
 } from '../types/Types';
 import { CASMobileAds } from '../modules/CASMobileAds';
+
+const EVENTS = {
+  ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_CLICKED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_CLICKED_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_EXPANDED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_EXPANDED_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_COLLAPSED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_COLLAPSED_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_REVENUE_PAID_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_REVENUE_PAID_EVENT',
+  ON_NATIVE_UI_COMPONENT_ADVIEW_DISPLAYED_EVENT: 'ON_NATIVE_UI_COMPONENT_ADVIEW_DISPLAYED_EVENT',
+};
 
 // Default sizes
 const ADVIEW_SIZE = {
@@ -31,17 +42,20 @@ const ADVIEW_SIZE = {
   mrec: { width: 300, height: 250 },
 };
 
-// Event constants
-const ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT = ""
-const ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT = ""
-
-
 const handleAdViewEvent = <T extends AdInfoEvent | AdLoadFailedEvent | AdViewPresentedEvent>(
   event: NativeSyntheticEvent<T>,
   callback?: (adInfo: T) => void
 ) => {
   if (!callback) return;
   callback(event.nativeEvent);
+};
+
+export const getAdaptiveBannerHeightForWidth = async (width: number): Promise<number> => {
+  try {
+    return await CASMobileAds.getAdaptiveBannerHeightForWidth(width);
+  } catch {
+    return ADVIEW_SIZE.banner.height;
+  }
 };
 
 export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
@@ -85,10 +99,10 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   };
 
   useImperativeHandle(ref, () => ({
-    loadAd: () => sendCommand('loadAd'),
-    startAutoRefresh: () => sendCommand('startAutoRefresh'),
-    stopAutoRefresh: () => sendCommand('stopAutoRefresh'),
-    destroy: () => sendCommand('destroy'),
+    loadAd: () => Commands.loadAd(adViewRef.current),
+    startAutoRefresh: () => Commands.startAutoRefresh(adViewRef.current),
+    stopAutoRefresh: () => Commands.stopAutoRefresh(adViewRef.current),
+    destroy: () => Commands.destroy(adViewRef.current),
     isAdLoaded: async () => Commands.isAdLoaded(adViewRef.current),
   }));
 
@@ -117,13 +131,13 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
           break;
         case 'ADAPTIVE':
         case 'SMART':
-          // width = screenWidth;
-          // try {
-          //   height = await .getAdaptiveBannerHeightForWidth(screenWidth);
-          // } catch {
-          //   height = ADVIEW_SIZE.banner.height;
-          // }
-          // break;
+          width = screenWidth;
+          try {
+            height = await CASMobileAds.getAdaptiveBannerHeightForWidth(screenWidth);
+          } catch {
+            height = ADVIEW_SIZE.banner.height;
+          }
+          break;
       }
 
       dimensions.current = { width, height };
@@ -161,41 +175,54 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
 });
 
 // Preload / destroy helpers
-/*
-export const preloadAdView = async (
+export const preloadNativeUIComponentAdView = async (
   adUnitId: string,
-  size: string,
-  options: { placement?: string; customData?: string; extraParameters?: object; localExtraParameters?: object } = {}
-) => {
-  return preloadNativeUIComponentAdView(
+  adFormat: string,
+  adViewSize: AdViewSize,
+  options: {
+    placement?: string | null;
+    customData?: string | null;
+    extraParameters?: Record<string, any>;
+    localExtraParameters?: Record<string, any>;
+  } = {}
+): Promise<number> => {
+  const {
+    placement = null,
+    customData = null,
+    extraParameters = {},
+    localExtraParameters = {},
+  } = options;
+
+  return CASMobileAds.preloadNativeUIComponentAdView(
     adUnitId,
-    size,
-    options.placement,
-    options.customData,
-    options.extraParameters,
-    options.localExtraParameters
+    adFormat,
+    adViewSize,
+    placement,
+    customData,
+    extraParameters,
+    localExtraParameters
   );
 };
 
-export const destroyAdView = async (adViewId: number) => {
-  return destroyNativeUIComponentAdView(adViewId);
+export const destroyNativeUIComponentAdView = async (
+  adViewId: number
+): Promise<void> => {
+  if (adViewId === undefined) {
+    return Promise.reject(new Error('adViewId is not provided'));
+  }
+  return CASMobileAds.destroyNativeUIComponentAdView(adViewId);
 };
 
-// EventEmitter wrappers
-export const addAdViewLoadedListener = (listener: (adInfo: AdInfo) => void) => {
-  addEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT, listener);
+export const addAdViewLoadedListener = (listener: (adInfo: any) => void) => {
+  addEventListener(EVENTS.ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT, listener);
 };
-
 export const removeAdViewLoadedListener = () => {
-  removeEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT);
+  removeEventListener(EVENTS.ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOADED_EVENT);
 };
 
-export const addAdViewLoadFailedListener = (listener: (errorInfo: AdLoadFailedInfo) => void) => {
-  addEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT, listener);
+export const addAdViewLoadFailedListener = (listener: (errorInfo: any) => void) => {
+  addEventListener(EVENTS.ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT, listener);
 };
-
 export const removeAdViewLoadFailedListener = () => {
-  removeEventListener(ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT);
+  removeEventListener(EVENTS.ON_NATIVE_UI_COMPONENT_ADVIEW_AD_LOAD_FAILED_EVENT);
 };
-
-*/

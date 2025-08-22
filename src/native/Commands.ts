@@ -1,7 +1,6 @@
 import { UIManager, findNodeHandle } from 'react-native';
 
 export const Commands = {
-
   loadAd: (ref: any) => {
     const reactTag = findNodeHandle(ref);
     if (!reactTag) return;
@@ -9,6 +8,39 @@ export const Commands = {
     UIManager.dispatchViewManagerCommand(
       reactTag,
       UIManager.getViewManagerConfig('AdView').Commands.loadAd,
+      []
+    );
+  },
+
+  destroy: (ref: any) => {
+    const reactTag = findNodeHandle(ref);
+    if (!reactTag) return;
+
+    UIManager.dispatchViewManagerCommand(
+      reactTag,
+      UIManager.getViewManagerConfig('AdView').Commands.destroy,
+      []
+    );
+  },
+
+  startAutoRefresh: (ref: any) => {
+    const reactTag = findNodeHandle(ref);
+    if (!reactTag) return;
+
+    UIManager.dispatchViewManagerCommand(
+      reactTag,
+      UIManager.getViewManagerConfig('AdView').Commands.startAutoRefresh,
+      []
+    );
+  },
+
+  stopAutoRefresh: (ref: any) => {
+    const reactTag = findNodeHandle(ref);
+    if (!reactTag) return;
+
+    UIManager.dispatchViewManagerCommand(
+      reactTag,
+      UIManager.getViewManagerConfig('AdView').Commands.stopAutoRefresh,
       []
     );
   },
