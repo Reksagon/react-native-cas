@@ -1,42 +1,58 @@
 import type {
   BuildManagerParams,
   InitConfiguration,
-  TargetingOptions,  
-  CASSettings,  
-} from '../utils/types';
+  TargetingOptions,
+  CASSettings,
+  AdViewSize,
+} from '../types/Types';
 import { TurboModule, TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
-    initialize(params: BuildManagerParams): Promise<InitConfiguration>;    
+  // Init
+  initialize(params: BuildManagerParams): Promise<InitConfiguration>;
+  isInitialized(): Promise<boolean>;
 
-    isInterstitialAdLoaded(): Promise<boolean>;
-    loadInterstitialAd(): Promise<void>;
-    showInterstitialAd(): Promise<void>;
+  // Preload / Destroy AdViews
+  preloadNativeUIComponentAdView(
+    adUnitId: string,
+    adFormat: string,
+    adViewSize: AdViewSize,
+    placement?: string | null,
+    customData?: string | null,
+    extraParameters?: Record<string, any>,
+    localExtraParameters?: Record<string, any>
+  ): Promise<number>;
 
-    isRewardedAdLoaded(): Promise<boolean>;
-    loadRewardedAd(): Promise<void>;
-    showRewardedAd(): Promise<void>;
+  destroyNativeUIComponentAdView(adViewId: number): Promise<void>;
 
-    isAppOpenAdLoaded(): Promise<boolean>;
-    loadAppOpenAd(): Promise<void>;
-    showAppOpenAd(): Promise<void>;
+  getAdaptiveBannerHeightForWidth(width: number): Promise<number>;
 
-    loadBanner(size: string, adaptive: boolean): Promise<void>;
-    destroyBanner(): Promise<void>;
+  isInterstitialAdLoaded(): Promise<boolean>;
+  loadInterstitialAd(): Promise<void>;
+  showInterstitialAd(): Promise<void>;
 
-    getSDKVersion(): Promise<string>;
-    setTestMode(enabled: boolean): void;
- 
-    showConsentFlow(): Promise<void>;
-    setConsentFlowEnabled(enabled: boolean): Promise<void>;
-    addConsentFlowDismissedEventListener(listener: (status: number) => void): () => Promise<void>;
+  isRewardedAdLoaded(): Promise<boolean>;
+  loadRewardedAd(): Promise<void>;
+  showRewardedAd(): Promise<void>;
 
-   getSettings(): Promise<CASSettings>;
-  setSettings(settings: Partial<CASSettings>): Promise<void>;
+  isAppOpenAdLoaded(): Promise<boolean>;
+  loadAppOpenAd(isLandscape?: boolean): Promise<void>;
+  showAppOpenAd(): Promise<void>;
+
+  getSDKVersion(): Promise<string>;
+  setTestMode(enabled: boolean): void;
+
+  showConsentFlow(): Promise<void>;
+  setConsentFlowEnabled(enabled: boolean): Promise<void>;
+  addConsentFlowDismissedEventListener(
+    listener: (status: number) => void
+  ): () => Promise<void>;
 
   getTargetingOptions(): Promise<TargetingOptions>;
   setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
 
+  getSettings(): Promise<CASSettings>;
+  setSettings(settings: Partial<CASSettings>): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');

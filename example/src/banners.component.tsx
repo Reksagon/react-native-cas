@@ -1,38 +1,45 @@
 import React, { useCallback, useRef } from 'react';
-import { styles } from './styles';
-import { BannerAd, BannerAdSize } from 'react-native-cas';
-import type { BannerAdRef } from 'react-native-cas';
-import { useCasContext } from './cas.context';
 import { Button, View } from 'react-native';
+import { styles } from './styles';
+import { useCasContext } from './cas.context';
+
+import { AdView, AdViewSize } from 'react-native-cas';
+import type { AdViewRef } from 'react-native-cas';
 
 export const Banners = () => {
-  const context = useCasContext();
-  const ref = useRef<BannerAdRef | null>(null);
+  const { logCasInfo } = useCasContext();
+  const ref = useRef<AdViewRef | null>(null);
 
   const nextAd = useCallback(() => {
-    ref.current?.loadNextAd();
+    ref.current?.loadAd();
   }, []);
 
   return (
     <View style={styles.screen}>
-      <Button title={'Next ad'} onPress={nextAd} />
-      <BannerAd
-        size={BannerAdSize.Banner}
-        onAdViewLoaded={() => context.logCasInfo('Banner ad loaded')}
-        onAdViewClicked={() => context.logCasInfo('Banner ad clicked')}
-        onAdViewFailed={(e) =>
-          context.logCasInfo('Banner ad failed', JSON.stringify(e))
-        }
-        onAdViewPresented={(e) => {
-          context.logCasInfo('Banner ad presented', JSON.stringify(e));
-        }}
+      <Button title="Next ad" onPress={nextAd} />
+
+      <AdView
+        size={AdViewSize.B}
+        onAdViewLoaded={() => logCasInfo('Banner (B) loaded')}
+        onAdViewClicked={() => logCasInfo('Banner (B) clicked')}
+        onAdViewFailed={(e) => logCasInfo('Banner (B) failed', e)}
+        onAdViewImpression={(e) => logCasInfo('Banner (B) impression', e)}
       />
-      <BannerAd
+
+      <AdView
         ref={ref}
         isAutoloadEnabled={false}
-        size={BannerAdSize.MediumRectangle}
+        size={AdViewSize.M}
+        onAdViewLoaded={() => logCasInfo('MREC loaded')}
+        onAdViewFailed={(e) => logCasInfo('MREC failed', e)}
       />
-      <BannerAd size={BannerAdSize.Leaderboard} refreshInterval={20} />
+
+      <AdView
+        size={AdViewSize.L}
+        refreshInterval={20}
+        onAdViewLoaded={() => logCasInfo('Leaderboard loaded')}
+        onAdViewFailed={(e) => logCasInfo('Leaderboard failed', e)}
+      />
     </View>
   );
 };
