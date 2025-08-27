@@ -99,22 +99,19 @@ export type AdLoadFailedEvent = Readonly<{
   adLoadFailureInfo?: string | null;
 }>;
 
-export type AdImpression = {
-  adType: AdType;
-  cpm: number;
-  error?: string;
-  identifier: string;
+export type AdContentInfo = {
+  format: String;
+  network: string;  
+  creativeId?: string;
+  revenue: number;  
+  revenuTotal: number;
+  revenuePrecision: string;    
+  sourceUnitId: string;
   impressionDepth: number;
-  lifetimeRevenue: number;
-  network: string;
-  priceAccuracy: number;
-  status: string;
-  versionInfo: string;
-  creativeIdentifier?: string;
 };
 
 export type AdViewPresentedEvent = Readonly<{
-  impression: AdImpression;
+  impression: AdContentInfo;
 }>;
 
 export type AdViewProps = {
