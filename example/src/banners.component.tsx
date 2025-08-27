@@ -1,8 +1,7 @@
-import React, { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { Button, View } from 'react-native';
 import { styles } from './styles';
 import { useCasContext } from './cas.context';
-
 import { AdView, AdViewSize } from 'react-native-cas';
 import type { AdViewRef } from 'react-native-cas';
 
@@ -35,10 +34,10 @@ export const Banners = () => {
       />
 
       <AdView
-        size={AdViewSize.L}
+        size={AdViewSize.A}
         refreshInterval={20}
-        onAdViewLoaded={() => logCasInfo('Leaderboard loaded')}
-        onAdViewFailed={(e) => logCasInfo('Leaderboard failed', e)}
+        onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
+        onAdViewFailed={(e) => logCasInfo('Adaptive failed', e)}
       />
     </View>
   );

@@ -1,4 +1,4 @@
-import React, {
+import {
   forwardRef,
   useRef,
   useImperativeHandle,
@@ -54,7 +54,6 @@ const EVENTS = {
   ON_NATIVE_UI_COMPONENT_ADVIEW_DISPLAYED_EVENT:
     'ON_NATIVE_UI_COMPONENT_ADVIEW_DISPLAYED_EVENT',
 };
-
 
 const pr = PixelRatio.get();
 
@@ -113,6 +112,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   const viewRef = useRef<any>(null);
   const layoutRef = useRef<LayoutRectangle | null>(null);
   const { width: screenWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -133,45 +133,50 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   }, [size, style]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
-    layoutRef.current = e.nativeEvent.layout;
-    if (size === AdViewSize.A) {
-      setMeasured((prev) => ({ ...prev, width: e.nativeEvent.layout.width }));
-    }
-  }, [size]);
+  const layout = { ...e.nativeEvent.layout };
+  layoutRef.current = layout;
+  setContainerWidth(layout.width); 
+
+  if (size === AdViewSize.A || size === AdViewSize.B || size === AdViewSize.S) {
+    setMeasured(prev => ({ ...prev, width: layout.width }));
+  }
+}, [size]);
+
 
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    const recalc = async () => {
-      if (size === AdViewSize.A || size === AdViewSize.S || size === AdViewSize.B) {
-        const width = layoutRef.current?.width ?? screenWidth;
-        const height =
-          size === AdViewSize.M
-            ? BASE[AdViewSize.M].height
-            : await getAdaptiveHeightForWidth(width);
-        if (!cancelled) setMeasured({ width, height });
-      } else {
-        setMeasured(BASE[size]);
-      }
-      forceUpdate();
-    };
+  const recalc = async () => {
+    if (size === AdViewSize.A || size === AdViewSize.S || size === AdViewSize.B) {
+      const width = (containerWidth ?? screenWidth);
+      const height =
+        size === AdViewSize.M
+          ? BASE[AdViewSize.M].height
+          : await getAdaptiveHeightForWidth(width);
+      if (!cancelled) setMeasured({ width, height });
+    } else {
+      setMeasured(BASE[size]);
+    }
+  };
 
-    recalc();
-    return () => { cancelled = true; };
-  }, [size, screenWidth]);
+  recalc();
+  return () => { cancelled = true; };
+}, [size, screenWidth, containerWidth]); 
+
 
   const onLoaded = useCallback(
-    (e: NativeSyntheticEvent<{ width: number; height: number }>) => {
-      if (Platform.OS === 'android') {
-        let w = e.nativeEvent.width / pr;
-        const h = layoutRef.current?.height ?? e.nativeEvent.height / pr;
-        if (Math.floor(w) % 2) w += 1; else w -= 1;
-        setMeasured({ width: w, height: h });
-      }
-      onAdViewLoaded?.();
-    },
-    [onAdViewLoaded]
-  );
+  (e: NativeSyntheticEvent<{ width: number; height: number }>) => {
+    const { width: ew, height: eh } = e.nativeEvent; 
+    if (Platform.OS === 'android') {
+      let w = ew / pr;
+      const h = layoutRef.current?.height ?? eh / pr;
+      if (Math.floor(w) % 2) w += 1; else w -= 1;
+      setMeasured({ width: w, height: h });
+    }
+    onAdViewLoaded?.();
+  },
+  [onAdViewLoaded]
+);
 
   const onFailedCb = useCallback(
     (e: NativeSyntheticEvent<AdLoadFailedEvent>) => onAdViewFailed?.(e.nativeEvent),

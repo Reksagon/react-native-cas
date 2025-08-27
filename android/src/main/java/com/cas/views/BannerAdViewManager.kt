@@ -16,6 +16,8 @@ import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.bridge.Dynamic
+import com.facebook.react.bridge.ReadableType
 
 class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): SimpleViewManager<CASBannerView>(), AdViewListener {
   private val updateSubs = HashMap<CASBannerView, String>()
@@ -53,29 +55,54 @@ class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): 
     }
   }
 
-  @Suppress("unused")
   @ReactProp(name = "size")
-  fun setSize(view: CASBannerView, sizeMap: ReadableMap) {
-    var size = AdSize.BANNER
+  fun setSize(view: CASBannerView, sizeDyn: Dynamic) {
+  var size = AdSize.BANNER
 
-    if (sizeMap.hasKey("isAdaptive")) {
-      sizeMap.getIntOrZero("maxWidthDpi").let {
-        size = if (it == 0) {
+  when (sizeDyn.type) {
+    ReadableType.Map -> {
+      val sizeMap = sizeDyn.asMap()
+      if (sizeMap.hasKey("isAdaptive")) {
+        val maxWidthDpi = sizeMap.getIntOrZero("maxWidthDpi")
+        size = if (maxWidthDpi == 0) {
           AdSize.getAdaptiveBannerInScreen(view.context)
         } else {
-          AdSize.getAdaptiveBanner(view.context, it)
+          AdSize.getAdaptiveBanner(view.context, maxWidthDpi)
         }
-      }
-    } else {
-      when (sizeMap.getStringOrEmpty("size")) {
-        "LEADERBOARD" -> size = AdSize.LEADERBOARD
-        "MEDIUM_RECTANGLE" -> size = AdSize.MEDIUM_RECTANGLE
-        "SMART" -> size = AdSize.getSmartBanner(view.context)
+      } else {
+        when (sizeMap.getStringOrEmpty("size")) {
+          "LEADERBOARD" -> size = AdSize.LEADERBOARD
+          "MEDIUM_RECTANGLE" -> size = AdSize.MEDIUM_RECTANGLE
+          "SMART" -> size = AdSize.getSmartBanner(view.context)
+          else -> size = AdSize.BANNER
+        }
       }
     }
 
-    view.size = size
+    ReadableType.String, ReadableType.Number -> {
+      val v = if (sizeDyn.type == ReadableType.Number) {
+        sizeDyn.asDouble().toInt().toString()
+      } else {
+        sizeDyn.asString()
+      }
+
+      when (v) {
+        "B", "BANNER", "320x50" -> size = AdSize.BANNER
+        "M", "MEDIUM_RECTANGLE", "300x250" -> size = AdSize.MEDIUM_RECTANGLE
+        "L", "LEADERBOARD", "728x90" -> size = AdSize.LEADERBOARD
+        "S", "SMART" -> size = AdSize.getSmartBanner(view.context)
+        "A", "ADAPTIVE" -> size = AdSize.getAdaptiveBannerInScreen(view.context)
+        else -> size = AdSize.BANNER
+      }
+    }
+
+    else -> {
+      size = AdSize.BANNER
+    }
   }
+
+  view.size = size
+}
 
   override fun onDropViewInstance(view: CASBannerView) {
     super.onDropViewInstance(view)
