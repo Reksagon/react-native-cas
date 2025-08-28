@@ -200,8 +200,6 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   );
 
 
-
-
   const isAdLoaded = useCallback(async (): Promise<boolean> => {
     return AdViewCommands.isAdLoaded(viewRef.current);
   }, []);
