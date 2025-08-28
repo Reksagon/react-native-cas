@@ -1,5 +1,34 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
+export enum AdErrorCode {
+  INTERNAL_ERROR = 0,
+  NO_FILL = 1,
+  NO_CONNECTION = 2,
+  REACHED_CAP = 3,
+  ALREADY_DISPLAYED = 4,
+  CONFIGURATION_ERROR = 5,
+  NOT_READY = 6,
+  NOT_PASSED_INTERVAL = 7,
+  NOT_INITIALIZED = 8,
+  NOT_FOREGROUND = 9,
+  TIMEOUT = 10,
+}
+
+export type AdError = {
+  code: AdErrorCode;
+  message: string;
+};
+
+export type AdLoadFailedEvent = Readonly<{
+  adUnitId?: string;
+  adViewId?: number;
+  error: AdError;
+  mediatedNetworkErrorCode?: number;
+  mediatedNetworkErrorMessage?: string;
+  adLoadFailureInfo?: string | null;
+}>;
+
+
 export type ConsentFlowParams = {
   enabled?: boolean;
   privacyPolicy?: string;

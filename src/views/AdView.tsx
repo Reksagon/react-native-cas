@@ -172,19 +172,25 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
       if (Math.floor(w) % 2) w += 1; else w -= 1;
       setMeasured({ width: w, height: h });
     }
-    const payload = { ...e.nativeEvent };  
-    onAdViewLoaded?.(payload);
-  },
+    onAdViewLoaded?.();
   [onAdViewLoaded]
 );
 
 
+
   const onFailedCb = useCallback(
   (e: NativeSyntheticEvent<AdLoadFailedEvent>) => {
-    onAdViewFailed?.(e.nativeEvent);
+    const payload = {
+      ...e.nativeEvent,
+      error: e.nativeEvent.error
+        ? { ...e.nativeEvent.error }
+        : undefined,
+    };
+    onAdViewFailed?.(payload);
   },
   [onAdViewFailed]
 );
+
 
 
   const onClickedCb = useCallback(() => {
