@@ -172,7 +172,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
       if (Math.floor(w) % 2) w += 1; else w -= 1;
       setMeasured({ width: w, height: h });
     }
-    const payload = { ...e.nativeEvent };   // ⬅ копія
+    const payload = { ...e.nativeEvent };  
     onAdViewLoaded?.(payload);
   },
   [onAdViewLoaded]
@@ -181,11 +181,11 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
 
   const onFailedCb = useCallback(
   (e: NativeSyntheticEvent<AdLoadFailedEvent>) => {
-    const payload = { ...e.nativeEvent };   // ⬅ копія
-    onAdViewFailed?.(payload);
+    onAdViewFailed?.(e.nativeEvent);
   },
   [onAdViewFailed]
 );
+
 
   const onClickedCb = useCallback(() => {
   onAdViewClicked?.();
