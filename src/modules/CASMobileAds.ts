@@ -1,7 +1,6 @@
 import type {
   BuildManagerParams,
   InitConfiguration,
-  TargetingOptions,
   CASSettings,
   AdViewSize,
 } from '../types/Types';
@@ -162,17 +161,6 @@ export class CASMobileAds {
     return () => sub.remove();
   }
 
-  static async getTargetingOptions(): Promise<TargetingOptions> {
-    if (hasFn(CASMobileAdsModule, 'getTargetingOptions')) {
-      return (CASMobileAdsModule as any).getTargetingOptions();
-    }
-    return {} as TargetingOptions;
-  }
-  static async setTargetingOptions(options: Partial<TargetingOptions>) {
-    if (hasFn(CASMobileAdsModule, 'setTargetingOptions')) {
-      return (CASMobileAdsModule as any).setTargetingOptions(options);
-    }
-  }
 
   static async getSettings(): Promise<CASSettings> {
     if (hasFn(CASMobileAdsModule, 'getSettings')) {

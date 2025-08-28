@@ -1,7 +1,6 @@
 import type {
   BuildManagerParams,
   InitConfiguration,
-  TargetingOptions,
   CASSettings,
   AdViewSize,
 } from '../types/Types';
@@ -47,9 +46,6 @@ export interface Spec extends TurboModule {
   addConsentFlowDismissedEventListener(
     listener: (status: number) => void
   ): () => Promise<void>;
-
-  getTargetingOptions(): Promise<TargetingOptions>;
-  setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
 
   getSettings(): Promise<CASSettings>;
   setSettings(settings: Partial<CASSettings>): Promise<void>;
