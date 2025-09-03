@@ -19,16 +19,6 @@ export type AdError = {
   message: string;
 };
 
-export type AdLoadFailedEvent = Readonly<{
-  adUnitId?: string;
-  adViewId?: number;
-  error: AdError;
-  mediatedNetworkErrorCode?: number;
-  mediatedNetworkErrorMessage?: string;
-  adLoadFailureInfo?: string | null;
-}>;
-
-
 export type ConsentFlowParams = {
   enabled?: boolean;
   privacyPolicy?: string;
@@ -123,6 +113,7 @@ export type AdLoadFailedEvent = Readonly<{
   adViewId?: number;
   code: number;
   message?: string | null;
+  error?: AdError;
   mediatedNetworkErrorCode?: number;
   mediatedNetworkErrorMessage?: string;
   adLoadFailureInfo?: string | null;

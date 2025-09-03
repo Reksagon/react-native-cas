@@ -8,6 +8,7 @@ import {
   useReducer,
   useEffect,
 } from 'react';
+import type { Ref } from 'react';
 
 import {
   View,
@@ -173,6 +174,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
       setMeasured({ width: w, height: h });
     }
     onAdViewLoaded?.();
+  },
   [onAdViewLoaded]
 );
 
