@@ -33,6 +33,22 @@ export enum Audience {
   NotChildren,
 }
 
+export type TargetingOptions = {
+  age: number;
+  gender: Gender;
+  location?: Location;
+  contentUrl: string;
+  keywords: Array<string>;
+};
+
+export type Location = {
+  accuracy: number;
+  altitude: number;
+  bearing: number;
+  latitude: number;
+  longitude: number;
+};
+
 export type BuildManagerParams = {
   casId?: string;
   consentFlow?: ConsentFlowParams;

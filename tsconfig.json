@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": ".",
-    "paths": {
-      "react-native-cas": ["./src/index"]
-    },
+    "rootDir": ".",    
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "esModuleInterop": true,
@@ -11,8 +8,10 @@
     "jsx": "react-jsx",
     "lib": ["ESNext"],
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
+    "moduleResolution": "node",
+    "noEmit": false,
+    "declaration": true,
+    "declarationDir": "lib/typescript",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
@@ -24,6 +23,15 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
+    "types": ["react", "react-native"],
+    "verbatimModuleSyntax": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "paths": {
+      "react-native": ["node_modules/react-native"],
+      "react": ["node_modules/react"],
+      "react-native-cas": ["./src/index"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "lib", "example"]
 }

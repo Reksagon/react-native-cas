@@ -9,10 +9,10 @@ module.exports = {
       presets: ['module:@react-native/babel-preset'],
     },
     babelrcRoots: [
-    '.',
-    './example/*',
-    './src',            
-    './packages/*'      
-  ],
+      '.',
+      './example/*',
+      './src',            
+      './packages/*'      
+    ],
   ],
 };

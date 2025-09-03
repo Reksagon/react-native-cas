@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "description": "com.cas",
   "main": "./lib/module/index.js",
-  "types": "./lib/typescript/src/index.d.ts",
+  "types": "./lib/typescript/index.d.ts",
   "exports": {
     ".": {
-      "source": "./src/index.tsx",
-      "types": "./lib/typescript/src/index.d.ts",
+      "source": "./src/index.ts",
+      "types": "./lib/typescript/index.d.ts",
       "default": "./lib/module/index.js"
-    },
-    "./package.json": "./package.json"
+    }
   },
   "files": [
     "src",
@@ -80,11 +79,11 @@
     "react-native-builder-bob": "^0.40.8",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3"     
   },
   "peerDependencies": {
-    "react": ">=18",
-    "react-native": ">=0.71"
+    "react": ">=18.2.0",
+    "react-native": ">=0.76.0"
   },
   "workspaces": [
     "example"
@@ -132,26 +131,18 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      [
-        "module",
-        {
-          "esm": true
-        }
-      ],
-      [
-        "typescript",
-        {
-          "project": "tsconfig.build.json"
-        }
-      ]
+      ["module", {"esm": true}],
+      ["typescript", {"project": "tsconfig.build.json"}]
     ]
   },
   "codegenConfig": {
-    "name": "CasSpec",
-    "type": "modules",
-    "jsSrcsDir": "src",
-    "android": {
-      "javaPackageName": "com.cas"
+    "name": "CASMobileAdsSpec",
+    "type": "all",
+    "jsSrcsDir": "./src/modules",
+    "ios": {
+      "libraryName": "CASMobileAds",
+      "podName": "CASMobileAds",
+      "swiftName": "CASMobileAds"
     }
   },
   "create-react-native-library": {
