@@ -19,6 +19,17 @@ export type AdError = {
   message: string;
 };
 
+
+export type AdLoadFailedEvent = Readonly<{
+  adUnitId?: string;
+  adViewId?: number;
+  code?: number;
+  message?: string | null;
+  mediatedNetworkErrorCode?: number;
+  mediatedNetworkErrorMessage?: string;
+  adLoadFailureInfo?: string | null;
+}>;
+
 export type ConsentFlowParams = {
   enabled?: boolean;
   privacyPolicy?: string;
@@ -29,6 +40,20 @@ export type ConsentFlowParams = {
 export type MediationExtraParams = {
   key: string;
   value: string;
+};
+
+export type BuildManagerParams = {
+  casId?: string;
+  consentFlow?: ConsentFlowParams;
+  testMode?: boolean;
+  mediationExtra?: MediationExtraParams;
+};
+
+export type InitConfiguration = {
+  error?: string;
+  countryCode?: string;
+  isConsentRequired: boolean;
+  consentFlowStatus: number;
 };
 
 export enum AdType {
@@ -52,11 +77,11 @@ export enum Audience {
   NotChildren,
 }
 
-export type BuildManagerParams = {
-  casId?: string;
-  consentFlow?: ConsentFlowParams;
-  testMode?: boolean;
-  mediationExtra?: MediationExtraParams;
+export type TargetingOptions = {
+  age: number;
+  gender: Gender;
+  contentUrl?: string;
+  keywords: string[];
 };
 
 export type CASSettings = {
@@ -64,22 +89,16 @@ export type CASSettings = {
   age: number;
   gender: Gender;
   contentUrl?: string;
-  keywords: Array<string>;
+  keywords: string[];
   debugMode: boolean;
   mutedAdSounds: boolean;
-  testDeviceIDs: Array<string>;
+  testDeviceIDs: string[];
   locationCollectionEnabled?: boolean;
+  trialAdFreeInterval?: number;
 };
 
 export type DismissConsentFlowEvent = {
   status: number;
-};
-
-export type InitConfiguration = {
-  error?: string;
-  countryCode?: string;
-  isConsentRequired: boolean;
-  consentFlowStatus: number;
 };
 
 export enum AdViewSize {
@@ -106,17 +125,6 @@ export type AdInfoEvent = Readonly<{
     width: number;
     height: number;
   }>;
-}>;
-
-export type AdLoadFailedEvent = Readonly<{
-  adUnitId?: string;
-  adViewId?: number;
-  code: number;
-  message?: string | null;
-  error?: AdError;
-  mediatedNetworkErrorCode?: number;
-  mediatedNetworkErrorMessage?: string;
-  adLoadFailureInfo?: string | null;
 }>;
 
 export type AdImpression = {

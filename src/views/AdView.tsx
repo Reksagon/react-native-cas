@@ -8,7 +8,6 @@ import {
   useReducer,
   useEffect,
 } from 'react';
-import type { Ref } from 'react';
 
 import {
   View,
@@ -167,9 +166,10 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
 
   const onLoaded = useCallback(
   (e: NativeSyntheticEvent<{ width: number; height: number }>) => {
+    const { width: ew, height: eh } = e.nativeEvent; 
     if (Platform.OS === 'android') {
-      let w = e.nativeEvent.width / pr;
-      const h = layoutRef.current?.height ?? e.nativeEvent.height / pr;
+      let w = ew / pr;
+      const h = layoutRef.current?.height ?? eh / pr;
       if (Math.floor(w) % 2) w += 1; else w -= 1;
       setMeasured({ width: w, height: h });
     }
@@ -178,35 +178,18 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   [onAdViewLoaded]
 );
 
-
-
   const onFailedCb = useCallback(
-  (e: NativeSyntheticEvent<AdLoadFailedEvent>) => {
-    const payload = {
-      ...e.nativeEvent,
-      error: e.nativeEvent.error
-        ? { ...e.nativeEvent.error }
-        : undefined,
-    };
-    onAdViewFailed?.(payload);
-  },
-  [onAdViewFailed]
-);
-
-
-
-  const onClickedCb = useCallback(() => {
-  onAdViewClicked?.();
-  }, [onAdViewClicked]);
-
-  const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<AdViewPresentedEvent>) => {
-      const payload = { ...e.nativeEvent }; 
-      onAdViewImpression?.(payload);
-    },
-    [onAdViewImpression]
+    (e: NativeSyntheticEvent<AdLoadFailedEvent>) => onAdViewFailed?.(e.nativeEvent),
+    [onAdViewFailed]
   );
 
+  const onClickedCb = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
+
+  const onImpressionCb = useCallback(
+    (e: NativeSyntheticEvent<AdViewPresentedEvent>) =>
+      onAdViewImpression?.(e.nativeEvent),
+    [onAdViewImpression]
+  );
 
   const isAdLoaded = useCallback(async (): Promise<boolean> => {
     return AdViewCommands.isAdLoaded(viewRef.current);
