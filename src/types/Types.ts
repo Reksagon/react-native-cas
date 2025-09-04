@@ -1,5 +1,35 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
+export enum AdErrorCode {
+  INTERNAL_ERROR = 0,
+  NO_FILL = 1,
+  NO_CONNECTION = 2,
+  REACHED_CAP = 3,
+  ALREADY_DISPLAYED = 4,
+  CONFIGURATION_ERROR = 5,
+  NOT_READY = 6,
+  NOT_PASSED_INTERVAL = 7,
+  NOT_INITIALIZED = 8,
+  NOT_FOREGROUND = 9,
+  TIMEOUT = 10,
+}
+
+export type AdError = {
+  code: AdErrorCode;
+  message: string;
+};
+
+
+export type AdLoadFailedEvent = Readonly<{
+  adUnitId?: string;
+  adViewId?: number;
+  code?: number;
+  message?: string | null;
+  mediatedNetworkErrorCode?: number;
+  mediatedNetworkErrorMessage?: string;
+  adLoadFailureInfo?: string | null;
+}>;
+
 export type ConsentFlowParams = {
   enabled?: boolean;
   privacyPolicy?: string;
@@ -10,6 +40,20 @@ export type ConsentFlowParams = {
 export type MediationExtraParams = {
   key: string;
   value: string;
+};
+
+export type BuildManagerParams = {
+  casId?: string;
+  consentFlow?: ConsentFlowParams;
+  testMode?: boolean;
+  mediationExtra?: MediationExtraParams;
+};
+
+export type InitConfiguration = {
+  error?: string;
+  countryCode?: string;
+  isConsentRequired: boolean;
+  consentFlowStatus: number;
 };
 
 export enum AdType {
@@ -36,24 +80,8 @@ export enum Audience {
 export type TargetingOptions = {
   age: number;
   gender: Gender;
-  location?: Location;
-  contentUrl: string;
-  keywords: Array<string>;
-};
-
-export type Location = {
-  accuracy: number;
-  altitude: number;
-  bearing: number;
-  latitude: number;
-  longitude: number;
-};
-
-export type BuildManagerParams = {
-  casId?: string;
-  consentFlow?: ConsentFlowParams;
-  testMode?: boolean;
-  mediationExtra?: MediationExtraParams;
+  contentUrl?: string;
+  keywords: string[];
 };
 
 export type CASSettings = {
@@ -61,22 +89,16 @@ export type CASSettings = {
   age: number;
   gender: Gender;
   contentUrl?: string;
-  keywords: Array<string>;
+  keywords: string[];
   debugMode: boolean;
   mutedAdSounds: boolean;
-  testDeviceIDs: Array<string>;
+  testDeviceIDs: string[];
   locationCollectionEnabled?: boolean;
+  trialAdFreeInterval?: number;
 };
 
 export type DismissConsentFlowEvent = {
   status: number;
-};
-
-export type InitConfiguration = {
-  error?: string;
-  countryCode?: string;
-  isConsentRequired: boolean;
-  consentFlowStatus: number;
 };
 
 export enum AdViewSize {
@@ -105,29 +127,22 @@ export type AdInfoEvent = Readonly<{
   }>;
 }>;
 
-export type AdLoadFailedEvent = Readonly<{
-  adUnitId?: string;
-  adViewId?: number;
-  code: number;
-  message?: string | null;
-  mediatedNetworkErrorCode?: number;
-  mediatedNetworkErrorMessage?: string;
-  adLoadFailureInfo?: string | null;
-}>;
-
-export type AdContentInfo = {
-  format: String;
-  network: string;  
-  creativeId?: string;
-  revenue: number;  
-  revenuTotal: number;
-  revenuePrecision: string;    
-  sourceUnitId: string;
+export type AdImpression = {
+  adType: AdType;
+  cpm: number;
+  error?: string;
+  identifier: string;
   impressionDepth: number;
+  lifetimeRevenue: number;
+  network: string;
+  priceAccuracy: number;
+  status: string;
+  versionInfo: string;
+  creativeIdentifier?: string;
 };
 
 export type AdViewPresentedEvent = Readonly<{
-  impression: AdContentInfo;
+  impression: AdImpression;
 }>;
 
 export type AdViewProps = {

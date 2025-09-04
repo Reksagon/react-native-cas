@@ -133,17 +133,21 @@ class BannerAdViewManager(private val managerWrapper: MediationManagerWrapper): 
   }
 
   override fun onAdViewFailed(view: CASBannerView, error: AdError) {
-    val map = WritableNativeMap()
+  val map = WritableNativeMap()
 
-    map.putInt("code", error.code)
-    map.putString("message", error.message)
-
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "onAdViewFailed", map)
-
-    super.onAdViewFailed(view, error)
+  val errorMap = WritableNativeMap().apply {
+    putInt("code", error.code)
+    putString("message", error.message)
   }
+  map.putMap("error", errorMap)
+
+  (view.context as ThemedReactContext)
+    .getJSModule(RCTEventEmitter::class.java)
+    .receiveEvent(view.id, "onAdViewFailed", map)
+
+  super.onAdViewFailed(view, error)
+}
+
 
   override fun onAdViewLoaded(view: CASBannerView) {
     val map = WritableNativeMap()

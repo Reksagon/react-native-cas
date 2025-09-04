@@ -67,7 +67,7 @@ class CASMobileAds(
           .emit("consentFlowDismissed", status)
       }
       .withUIContext(activity)
-      .show()
+      .showIfRequired()
 
     promise.resolve(null)
   }
