@@ -1,4 +1,12 @@
 {
   "extends": "./tsconfig",
-  "exclude": ["example", "lib"]
+  "compilerOptions": {
+    "noEmit": false,                 
+    "declaration": true,
+    "emitDeclarationOnly": true,     
+    "declarationDir": "lib/typescript",
+    "outDir": "lib/typescript"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["example", "lib", "node_modules", "**/__tests__/**"]
 }

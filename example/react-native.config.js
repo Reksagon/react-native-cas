@@ -1,16 +1,13 @@
 const path = require('path');
-const pkg = require('./package.json');
 
 module.exports = {
   dependencies: {
-    [pkg.name]: {
-      root: __dirname,
-      platforms: {
-        // Codegen script incorrectly fails without this
-        // So we explicitly specify the platforms with empty object
-        ios: {},
-        android: {}
-      }
-    }
-  }
+    'react-native-cas': {
+      root: path.resolve(__dirname, '..'),
+    },
+  },
+  project: {
+    ios: {},
+    android: {},
+  },
 };

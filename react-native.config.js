@@ -1,10 +1,8 @@
 module.exports = {
   dependency: {
     platforms: {
-      ios: {
-        podspecPath: './CAS.podspec',
-      },
-      android: {}
+      ios: { podspecPath: './CAS.podspec' },
+      android: {},
     },
   },
 };
