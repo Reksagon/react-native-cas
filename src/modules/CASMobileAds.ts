@@ -6,11 +6,11 @@ import type {
     AdViewSize,
 } from '../types/Types';
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { CASSpec } from './CASMobileAdsSpec';
+import type { CASMobileAdsSpec } from './CASMobileAdsSpec';
 
 const { MediationManagerModule, CASMobileAdsModule } = NativeModules as {
     MediationManagerModule: any;
-    CASMobileAdsModule: CASSpec;
+    CASMobileAdsModule: CASMobileAdsSpec;
 };
 const eventEmitter = new NativeEventEmitter(CASMobileAdsModule);
 

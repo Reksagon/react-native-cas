@@ -7,7 +7,7 @@ import type {
 } from '../types/Types';
 import { TurboModule } from 'react-native';
 
-export interface CASSpec extends TurboModule {
+export interface CASMobileAdsSpec extends TurboModule {
   // Init
   initialize(params: BuildManagerParams): Promise<InitConfiguration>;
   isInitialized(): Promise<boolean>;
@@ -17,8 +17,8 @@ export interface CASSpec extends TurboModule {
     adUnitId: string,
     adFormat: string,
     adViewSize: AdViewSize,
-    placement?: string | null,
-    customData?: string | null,
+    placement: string | null,
+    customData: string | null,
     extraParameters?: Record<string, any>,
     localExtraParameters?: Record<string, any>
   ): Promise<number>;
@@ -27,17 +27,14 @@ export interface CASSpec extends TurboModule {
 
   getAdaptiveBannerHeightForWidth(width: number): Promise<number>;
 
-  // Interstitial
   isInterstitialAdLoaded(): Promise<boolean>;
   loadInterstitialAd(): Promise<void>;
   showInterstitialAd(): Promise<void>;
 
-  // Rewarded
   isRewardedAdLoaded(): Promise<boolean>;
   loadRewardedAd(): Promise<void>;
   showRewardedAd(): Promise<void>;
 
-  // AppOpen
   isAppOpenAdLoaded(): Promise<boolean>;
   loadAppOpenAd(isLandscape?: boolean): Promise<void>;
   showAppOpenAd(): Promise<void>;
@@ -46,8 +43,7 @@ export interface CASSpec extends TurboModule {
   setTestMode(enabled: boolean): void;
 
   showConsentFlow(): Promise<void>;
-  setConsentFlowEnabled(enabled: boolean): void;
-  addConsentFlowDismissedEventListener(listener: (status: number) => void): () => void;
+  setConsentFlowEnabled(enabled: boolean): void;  
 
   getTargetingOptions(): Promise<TargetingOptions>;
   setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
