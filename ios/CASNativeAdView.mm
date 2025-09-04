@@ -1,8 +1,8 @@
+#import "CAS.h"
+#import <CAS/CAS.h>
+#import "CASNativeAdView.h"
 #import <React/RCTUIManagerUtils.h>
 #import <React/RCTImageView.h>
-#import <CASSDK/CASSDK.h>
-#import "CAS.h"
-#import "CASNativeAdView.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
 

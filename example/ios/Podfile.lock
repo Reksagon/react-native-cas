@@ -1,0 +1,16 @@
+PODS:
+  - CAS (0.1.0)
+
+DEPENDENCIES:
+  - CAS (from `/Users/yeo/Gitlab/react-native-cas/example/ios/../../`)
+
+EXTERNAL SOURCES:
+  CAS:
+    :path: "/Users/yeo/Gitlab/react-native-cas/example/ios/../../"
+
+SPEC CHECKSUMS:
+  CAS: 6b6472efdd967a1c68a444a1e9832db91b7fbb54
+
+PODFILE CHECKSUM: 866ae7fc19468e80af8407aba888b44c587f2bb3
+
+COCOAPODS: 1.16.2
