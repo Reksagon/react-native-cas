@@ -102,11 +102,11 @@ export type DismissConsentFlowEvent = {
 };
 
 export enum AdViewSize {
-  B = 'BANNER',
-  L = 'LEADERBOARD',
-  M = 'MEDIUM_RECTANGLE',
-  A = 'ADAPTIVE',
-  S = 'SMART',
+  BANNER = 'B',
+  LEADERBOARD = 'L',
+  MREC = 'M',
+  ADAPTIVE = 'A',
+  SMART = 'S',
 }
 
 export type AdInfoEvent = Readonly<{

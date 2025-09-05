@@ -66,11 +66,11 @@ const isTablet = (() => {
 })();
 
 const BASE = {
-  [AdViewSize.B]: { width: 320, height: 50 }, 
-  [AdViewSize.L]: { width: 728, height: 90 }, 
-  [AdViewSize.M]: { width: 300, height: 250 }, 
-  [AdViewSize.A]: { width: 0, height: 0 }, 
-  [AdViewSize.S]: { width: isTablet ? 728 : 320, height: isTablet ? 90 : 50 }, 
+  [AdViewSize.BANNER]: { width: 320, height: 50 }, 
+  [AdViewSize.LEADERBOARD]: { width: 728, height: 90 }, 
+  [AdViewSize.MREC]: { width: 300, height: 250 }, 
+  [AdViewSize.ADAPTIVE]: { width: 0, height: 0 }, 
+  [AdViewSize.SMART]: { width: isTablet ? 728 : 320, height: isTablet ? 90 : 50 }, 
 } as const;
 
 
@@ -91,7 +91,7 @@ const getAdaptiveHeightForWidth = async (w: number): Promise<number> => {
       if (typeof h === 'number' && h > 0) return h;
     } catch {}
   }
-  return BASE[AdViewSize.B].height;
+  return BASE[AdViewSize.BANNER].height;
 };
 
 
@@ -117,14 +117,14 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const [measured, setMeasured] = useState<{ width: number; height: number }>(() => {
-    if (size === AdViewSize.A) {
-      return { width: Dimensions.get('window').width, height: BASE[AdViewSize.B].height };
+    if (size === AdViewSize.ADAPTIVE) {
+      return { width: Dimensions.get('window').width, height: BASE[AdViewSize.BANNER].height };
     }
     return BASE[size];
   });
 
   const containerStyle = useMemo(() => {
-    if (size === AdViewSize.A) {
+    if (size === AdViewSize.ADAPTIVE) {
       return StyleSheet.compose(style as any, {
         width: Dimensions.get('window').width,
       });
@@ -137,7 +137,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   layoutRef.current = layout;
   setContainerWidth(layout.width); 
 
-  if (size === AdViewSize.A || size === AdViewSize.B || size === AdViewSize.S) {
+  if (size === AdViewSize.ADAPTIVE || size === AdViewSize.BANNER || size === AdViewSize.SMART) {
     setMeasured(prev => ({ ...prev, width: layout.width }));
   }
 }, [size]);
@@ -147,12 +147,9 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   let cancelled = false;
 
   const recalc = async () => {
-    if (size === AdViewSize.A || size === AdViewSize.S || size === AdViewSize.B) {
+    if (size === AdViewSize.ADAPTIVE || size === AdViewSize.SMART || size === AdViewSize.BANNER) {
       const width = (containerWidth ?? screenWidth);
-      const height =
-        size === AdViewSize.M
-          ? BASE[AdViewSize.M].height
-          : await getAdaptiveHeightForWidth(width);
+      const height = await getAdaptiveHeightForWidth(width);
       if (!cancelled) setMeasured({ width, height });
     } else {
       setMeasured(BASE[size]);
