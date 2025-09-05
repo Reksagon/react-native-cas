@@ -126,7 +126,7 @@
     "jsSrcsDir": "./src/modules",
     "ios": {
       "libraryName": "CASMobileAds",
-      "podName": "CAS",
+      "podName": "react-native-cas",
       "swiftName": "CASMobileAds"
     }
   },
