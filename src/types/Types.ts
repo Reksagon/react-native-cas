@@ -150,6 +150,7 @@ export type AdViewProps = {
   size: AdViewSize;
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
+  casId?: string;
   onAdViewLoaded?: () => void;
   onAdViewFailed?: (e: AdLoadFailedEvent) => void;
   onAdViewClicked?: () => void;

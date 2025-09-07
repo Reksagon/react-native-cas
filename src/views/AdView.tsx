@@ -146,7 +146,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   useEffect(() => {
   let cancelled = false;
 
-  const recalc = async () => {
+    const recalc = async () => {
     if (size === AdViewSize.ADAPTIVE || size === AdViewSize.SMART || size === AdViewSize.BANNER) {
       const width = (containerWidth ?? screenWidth);
       const height = await getAdaptiveHeightForWidth(width);

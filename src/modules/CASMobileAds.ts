@@ -1,7 +1,4 @@
-import {
-  NativeModules,
-  NativeEventEmitter,
-} from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import type { CASSpec } from './CASMobileAdsSpec';
 import type {
   BuildManagerParams,
@@ -11,13 +8,11 @@ import type {
   AdViewSize,
 } from '../types/Types';
 
-const { MediationManagerModule, CASMobileAds: CASMobileAdsNative } =
-  NativeModules as unknown as {
-    MediationManagerModule: any;
-    CASMobileAds: CASSpec;
-  };
+const { CASMobileAds: CASMobileAdsNative } = NativeModules as unknown as {
+  CASMobileAds: CASSpec;
+};
 
-const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
+export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 
 function hasFn(obj: any, name: string): boolean {
   return !!obj && typeof obj[name] === 'function';
@@ -78,117 +73,121 @@ export class CASMobileAds {
   }
 
   static isInterstitialAdLoaded(): Promise<boolean> {
-    return hasFn(CASMobileAdsNative, 'isInterstitialAdLoaded')
-      ? CASMobileAdsNative.isInterstitialAdLoaded()
-      : MediationManagerModule.isInterstitialReady();
+    if (hasFn(CASMobileAdsNative, 'isInterstitialAdLoaded')) {
+      return CASMobileAdsNative.isInterstitialAdLoaded();
+    }
+    return Promise.resolve(false);
   }
-
   static loadInterstitialAd(): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'loadInterstitialAd')
-      ? CASMobileAdsNative.loadInterstitialAd()
-      : MediationManagerModule.loadInterstitial();
+    if (hasFn(CASMobileAdsNative, 'loadInterstitialAd')) {
+      return CASMobileAdsNative.loadInterstitialAd();
+    }
+    return Promise.reject(new Error('loadInterstitialAd not implemented'));
   }
-
   static showInterstitialAd(): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'showInterstitialAd')
-      ? CASMobileAdsNative.showInterstitialAd()
-      : MediationManagerModule.showInterstitial('global');
+    if (hasFn(CASMobileAdsNative, 'showInterstitialAd')) {
+      return CASMobileAdsNative.showInterstitialAd();
+    }
+    return Promise.reject(new Error('showInterstitialAd not implemented'));
   }
 
   static isRewardedAdLoaded(): Promise<boolean> {
-    return hasFn(CASMobileAdsNative, 'isRewardedAdLoaded')
-      ? CASMobileAdsNative.isRewardedAdLoaded()
-      : MediationManagerModule.isRewardedAdReady();
+    if (hasFn(CASMobileAdsNative, 'isRewardedAdLoaded')) {
+      return CASMobileAdsNative.isRewardedAdLoaded();
+    }
+    return Promise.resolve(false);
   }
-
   static loadRewardedAd(): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'loadRewardedAd')
-      ? CASMobileAdsNative.loadRewardedAd()
-      : MediationManagerModule.loadRewardedAd();
+    if (hasFn(CASMobileAdsNative, 'loadRewardedAd')) {
+      return CASMobileAdsNative.loadRewardedAd();
+    }
+    return Promise.reject(new Error('loadRewardedAd not implemented'));
   }
-
   static showRewardedAd(): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'showRewardedAd')
-      ? CASMobileAdsNative.showRewardedAd()
-      : MediationManagerModule.showRewardedAd('global');
+    if (hasFn(CASMobileAdsNative, 'showRewardedAd')) {
+      return CASMobileAdsNative.showRewardedAd();
+    }
+    return Promise.reject(new Error('showRewardedAd not implemented'));
   }
 
   static isAppOpenAdLoaded(): Promise<boolean> {
-    return hasFn(CASMobileAdsNative, 'isAppOpenAdLoaded')
-      ? CASMobileAdsNative.isAppOpenAdLoaded()
-      : MediationManagerModule.isAppOpenAdAvailable();
+    if (hasFn(CASMobileAdsNative, 'isAppOpenAdLoaded')) {
+      return CASMobileAdsNative.isAppOpenAdLoaded();
+    }
+    return Promise.resolve(false);
   }
-
   static loadAppOpenAd(isLandscape: boolean = true): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'loadAppOpenAd')
-      ? CASMobileAdsNative.loadAppOpenAd(isLandscape)
-      : MediationManagerModule.loadAppOpenAd(isLandscape);
+    if (hasFn(CASMobileAdsNative, 'loadAppOpenAd')) {
+      return CASMobileAdsNative.loadAppOpenAd(isLandscape);
+    }
+    return Promise.reject(new Error('loadAppOpenAd not implemented'));
   }
-
   static showAppOpenAd(): Promise<void> {
-    return hasFn(CASMobileAdsNative, 'showAppOpenAd')
-      ? CASMobileAdsNative.showAppOpenAd()
-      : MediationManagerModule.showAppOpenAd('global');
+    if (hasFn(CASMobileAdsNative, 'showAppOpenAd')) {
+      return CASMobileAdsNative.showAppOpenAd();
+    }
+    return Promise.reject(new Error('showAppOpenAd not implemented'));
   }
 
-  static async getSDKVersion(): Promise<string> {
-    return hasFn(CASMobileAdsNative, 'getSDKVersion')
-      ? CASMobileAdsNative.getSDKVersion()
-      : 'unknown';
+  static showConsentFlow(): Promise<void> {
+    if (hasFn(CASMobileAdsNative, 'showConsentFlow')) {
+      return CASMobileAdsNative.showConsentFlow();
+    }
+    return Promise.resolve();
+  }
+  static setConsentFlowEnabled(enabled: boolean): void {
+    if (hasFn(CASMobileAdsNative, 'setConsentFlowEnabled')) {
+      CASMobileAdsNative.setConsentFlowEnabled(enabled);
+    }
+  }
+  static addConsentFlowDismissedEventListener(listener: (status: number) => void): () => void {
+    const sub = eventEmitter.addListener('consentFlowDismissed', listener);
+    return () => sub.remove();
   }
 
+  static getSDKVersion(): Promise<string> {
+    if (hasFn(CASMobileAdsNative, 'getSDKVersion')) {
+      return CASMobileAdsNative.getSDKVersion();
+    }
+    return Promise.resolve('unknown');
+  }
   static setTestMode(enabled: boolean) {
     if (hasFn(CASMobileAdsNative, 'setTestMode')) {
       CASMobileAdsNative.setTestMode(enabled);
     }
   }
 
-  static async showConsentFlow() {
-    if (hasFn(CASMobileAdsNative, 'showConsentFlow')) {
-      return CASMobileAdsNative.showConsentFlow();
+  static getTargetingOptions(): Promise<TargetingOptions> {
+    if (hasFn(CASMobileAdsNative, 'getTargetingOptions')) {
+      return CASMobileAdsNative.getTargetingOptions();
     }
+    return Promise.resolve({ age: 0, gender: 0, keywords: [] } as TargetingOptions);
   }
-
-  static setConsentFlowEnabled(enabled: boolean) {
-    if (hasFn(CASMobileAdsNative, 'setConsentFlowEnabled')) {
-      CASMobileAdsNative.setConsentFlowEnabled(enabled);
-    }
-  }
-
-  static addConsentFlowDismissedEventListener(listener: (status: number) => void): () => void {
-    const sub = eventEmitter.addListener('consentFlowDismissed', listener);
-    return () => sub.remove();
-  }
-
-  static async getTargetingOptions(): Promise<TargetingOptions> {
-    return hasFn(CASMobileAdsNative, 'getTargetingOptions')
-      ? CASMobileAdsNative.getTargetingOptions()
-      : ({ age: 0, gender: 0, keywords: [] } as TargetingOptions);
-  }
-
-  static async setTargetingOptions(options: Partial<TargetingOptions>) {
+  static setTargetingOptions(options: Partial<TargetingOptions>) {
     if (hasFn(CASMobileAdsNative, 'setTargetingOptions')) {
       return CASMobileAdsNative.setTargetingOptions(options);
     }
+    return Promise.resolve();
   }
 
-  static async getSettings(): Promise<CASSettings> {
-    return hasFn(CASMobileAdsNative, 'getSettings')
-      ? CASMobileAdsNative.getSettings()
-      : ({
-          taggedAudience: 0,
-          age: 0,
-          gender: 0,
-          keywords: [],
-          debugMode: false,
-          mutedAdSounds: false,
-          testDeviceIDs: [],
-        } as CASSettings);
+  static getSettings(): Promise<CASSettings> {
+    if (hasFn(CASMobileAdsNative, 'getSettings')) {
+      return CASMobileAdsNative.getSettings();
+    }
+    return Promise.resolve({
+      taggedAudience: 0,
+      age: 0,
+      gender: 0,
+      keywords: [],
+      debugMode: false,
+      mutedAdSounds: false,
+      testDeviceIDs: [],
+    } as CASSettings);
   }
-
-  static async setSettings(settings: Partial<CASSettings>) {
+  static setSettings(settings: Partial<CASSettings>) {
     if (hasFn(CASMobileAdsNative, 'setSettings')) {
       return CASMobileAdsNative.setSettings(settings);
     }
+    return Promise.resolve();
   }
 }
