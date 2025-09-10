@@ -13,9 +13,7 @@
     "strict": true,
     "target": "ESNext",
     "types": ["react"],
-    "paths": {
-      "react-native": ["node_modules/react-native"],
-      "react": ["node_modules/react"],
+    "paths": {           
       "react-native-cas": ["./src/index"]
     }
   },
