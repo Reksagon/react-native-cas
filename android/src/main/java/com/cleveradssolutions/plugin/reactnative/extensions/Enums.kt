@@ -1,4 +1,4 @@
-package com.cas.extensions
+package com.cleveradssolutions.plugin.reactnative.extensions
 
 inline fun <reified T : Enum<T>> Int.toEnum(): T? {
   val values = enumValues<T>()
@@ -6,3 +6,4 @@ inline fun <reified T : Enum<T>> Int.toEnum(): T? {
 }
 
 inline fun <reified T : Enum<T>> T.toInt(): Int = this.ordinal
+

@@ -1,41 +1,46 @@
 import { CASMobileAds } from '../modules/CASMobileAds';
 import type { FullscreenAdType } from '../types/FullscreenAdType';
+import type { AdError, AdErrorCode } from '../types/Types';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
-const EVENTS = {
-  LOADED: 'onRewardedLoaded',
-  LOAD_FAILED: 'onRewardedLoadFailed',
-  CLICKED: 'onRewardedClicked',
-  DISPLAYED: 'onRewardedDisplayed',
-  FAILED_TO_SHOW: 'onRewardedFailedToShow',
-  HIDDEN: 'onRewardedHidden',
-  COMPLETED: 'onRewardedCompleted',
-  IMPRESSION: 'onRewardedImpression',
-};
+type AnyEvent = { type?: string; [k: string]: any };
+const NAME = 'rewarded';
+const isMe = (t: AnyEvent) => t?.type === NAME;
+const toAdError = (e: AnyEvent): AdError => ({
+  code: Number(e?.code ?? 0) as AdErrorCode,
+  message: String(e?.message ?? ''),
+});
 
 export const RewardedAd: FullscreenAdType = {
   isAdLoaded: CASMobileAds.isRewardedAdLoaded,
   loadAd: CASMobileAds.loadRewardedAd,
   showAd: CASMobileAds.showRewardedAd,
 
-  addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
-  removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
+  addAdLoadedEventListener: (l) =>
+    addEventListener('adLoaded', (e: AnyEvent) => isMe(e) && l()),
+  removeAdLoadedEventListener: () => removeEventListener('adLoaded'),
 
-  addAdLoadFailedEventListener: (l) => addEventListener(EVENTS.LOAD_FAILED, l),
-  removeAdLoadFailedEventListener: () => removeEventListener(EVENTS.LOAD_FAILED),
+  addAdLoadFailedEventListener: (l) =>
+    addEventListener('adFailedToLoad', (e: AnyEvent) => isMe(e) && l(toAdError(e))),
+  removeAdLoadFailedEventListener: () => removeEventListener('adFailedToLoad'),
 
-  addAdClickedEventListener: (l) => addEventListener(EVENTS.CLICKED, l),
-  removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
+  addAdClickedEventListener: (l) =>
+    addEventListener('onClicked', (e: AnyEvent) => isMe(e) && l()),
+  removeAdClickedEventListener: () => removeEventListener('onClicked'),
 
-  addAdDisplayedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
-  removeAdDisplayedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
+  addAdDisplayedEventListener: (l) =>
+    addEventListener('onShown', (e: AnyEvent) => isMe(e) && l()),
+  removeAdDisplayedEventListener: () => removeEventListener('onShown'),
 
-  addAdFailedToShowEventListener: (l) => addEventListener(EVENTS.FAILED_TO_SHOW, l),
-  removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),
+  addAdFailedToShowEventListener: (l) =>
+    addEventListener('onShowFailed', (e: AnyEvent) => isMe(e) && l(toAdError(e))),
+  removeAdFailedToShowEventListener: () => removeEventListener('onShowFailed'),
 
-  addAdDismissedEventListener: (l) => addEventListener(EVENTS.HIDDEN, l),
-  removeAdDismissedEventListener: () => removeEventListener(EVENTS.HIDDEN),
+  addAdDismissedEventListener: (l) =>
+    addEventListener('onClosed', (e: AnyEvent) => isMe(e) && l()),
+  removeAdDismissedEventListener: () => removeEventListener('onClosed'),
 
-  addAdImpressionEventListener: (l) => addEventListener(EVENTS.IMPRESSION, l),
-  removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
+  addAdImpressionEventListener: (l) =>
+    addEventListener('onRewarded', (e: AnyEvent) => isMe(e) && l(e)),
+  removeAdImpressionEventListener: () => removeEventListener('onRewarded'),
 };

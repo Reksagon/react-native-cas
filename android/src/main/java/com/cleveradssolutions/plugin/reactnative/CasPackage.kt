@@ -1,24 +1,18 @@
-package com.cas
+package com.cleveradssolutions.plugin.reactnative
 
-import com.cas.views.*
-import com.cas.extensions.MediationManagerWrapper
+import com.cleveradssolutions.plugin.reactnative.views.BannerAdViewManager
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-
 class CasPackage : ReactPackage {
-  private val managerWrapper = MediationManagerWrapper()
 
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return listOf(
-      CASMobileAds(reactContext, managerWrapper),
-      MediationManagerModule(reactContext, managerWrapper)
-    )
+    return listOf(CASMobileAds(reactContext))
   }
 
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-    return listOf(BannerAdViewManager(managerWrapper))
+    return listOf(BannerAdViewManager())
   }
 }

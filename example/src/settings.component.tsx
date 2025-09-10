@@ -21,7 +21,11 @@ export const Settings = () => {
     try {
       await CASMobileAds.setSettings({
         taggedAudience: Audience.Children,
-        debugMode: true
+        debugMode: true,
+        age: 12,
+        keywords: ['kids','toys'],
+        contentUrl: 'https://cas.ai',
+        trialAdFreeInterval: 120,
       });
       await getSettings();
     } catch (e: any) {

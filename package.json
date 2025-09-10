@@ -129,6 +129,9 @@
       "libraryName": "CAS",
       "podName": "react-native-cas",
       "swiftName": "CASMobileAds"
+    },
+    "android": {
+      "javaPackageName": "com.cleveradssolutions.plugin.reactnative"
     }
   },
   "create-react-native-library": {

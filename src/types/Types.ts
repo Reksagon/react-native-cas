@@ -19,29 +19,16 @@ export type AdError = {
   message: string;
 };
 
-
-export type AdLoadFailedEvent = Readonly<{
-  adUnitId?: string;
-  adViewId?: number;
-  code?: number;
-  message?: string | null;
-  mediatedNetworkErrorCode?: number;
-  mediatedNetworkErrorMessage?: string;
-  adLoadFailureInfo?: string | null;
-}>;
-
 export type ConsentFlowParams = {
   enabled?: boolean;
   privacyPolicy?: string;
   requestGDPR?: boolean;
   requestATT?: boolean;
 };
-
 export type MediationExtraParams = {
   key: string;
   value: string;
 };
-
 export type BuildManagerParams = {
   casId?: string;
   consentFlow?: ConsentFlowParams;
@@ -56,33 +43,16 @@ export type InitConfiguration = {
   consentFlowStatus: number;
 };
 
-export enum AdType {
-  Banner = 0,
-  Interstitial,
-  Rewarded,
-  AppOpen,
-  Native,
-  None,
-}
-
 export enum Gender {
   Unknown = 0,
   Male,
   Female,
 }
-
 export enum Audience {
   Undefined = 0,
   Children,
   NotChildren,
 }
-
-export type TargetingOptions = {
-  age: number;
-  gender: Gender;
-  contentUrl?: string;
-  keywords: string[];
-};
 
 export type CASSettings = {
   taggedAudience: Audience;
@@ -97,10 +67,6 @@ export type CASSettings = {
   trialAdFreeInterval?: number;
 };
 
-export type DismissConsentFlowEvent = {
-  status: number;
-};
-
 export enum AdViewSize {
   BANNER = 'B',
   LEADERBOARD = 'L',
@@ -109,40 +75,31 @@ export enum AdViewSize {
   SMART = 'S',
 }
 
-export type AdInfoEvent = Readonly<{
-  adUnitId?: string;
-  adFormat?: string;
-  adViewId?: number;
-  networkName?: string;
-  networkPlacement?: string;
-  creativeId?: string | null;
-  placement?: string | null;
-  revenue?: number;
-  revenuePrecision?: string;
-  latencyMillis?: number;
-  dspName?: string | null;
-  size?: Readonly<{
-    width: number;
-    height: number;
-  }>;
+export type AdViewFailedEvent = Readonly<{
+  error: AdError;
 }>;
 
-export type AdImpression = {
-  adType: AdType;
-  cpm: number;
-  error?: string;
-  identifier: string;
+export enum AdType {
+  Banner = 0,
+  Interstitial,
+  Rewarded,
+  AppOpen,
+  None,
+}
+
+export type AdContentInfo = {
+  format: string;           
+  revenue: number;
+  revenuePrecision: string;  
+  sourceUnitId: string;
+  sourceName: string;
+  creativeId?: string;
+  revenueTotal: number;
   impressionDepth: number;
-  lifetimeRevenue: number;
-  network: string;
-  priceAccuracy: number;
-  status: string;
-  versionInfo: string;
-  creativeIdentifier?: string;
 };
 
-export type AdViewPresentedEvent = Readonly<{
-  impression: AdImpression;
+export type AdViewImpressionEvent = Readonly<{
+  impression: AdContentInfo;
 }>;
 
 export type AdViewProps = {
@@ -150,10 +107,12 @@ export type AdViewProps = {
   size: AdViewSize;
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
+  casId?: string;
+
   onAdViewLoaded?: () => void;
-  onAdViewFailed?: (e: AdLoadFailedEvent) => void;
+  onAdViewFailed?: (e: AdError) => void;
   onAdViewClicked?: () => void;
-  onAdViewImpression?: (e: AdViewPresentedEvent) => void;
+  onAdViewImpression?: (e: AdViewImpressionEvent) => void;
 };
 
 export type AdViewRef = {

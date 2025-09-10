@@ -93,7 +93,7 @@ export const Ads = () => {
     () =>
       showWithLoader('AppOpen', {
         isLoaded: AppOpenAd.isAdLoaded,
-        load: () => AppOpenAd.loadAd(true as any),
+        load: () => AppOpenAd.loadAd(),
         show: () => AppOpenAd.showAd(),
       }),
     [showWithLoader]

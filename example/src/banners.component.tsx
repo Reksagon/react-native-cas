@@ -18,7 +18,7 @@ export const Banners = () => {
       <Button title="Next ad" onPress={nextAd} />
 
       <AdView
-        size={AdViewSize.banner}
+        size={AdViewSize.BANNER}
         onAdViewLoaded={() => logCasInfo('Banner (B) loaded')}
         onAdViewClicked={() => logCasInfo('Banner (B) clicked')}
         onAdViewFailed={(e) => { logCasInfo('Banner (B) failed', `${e.error.code}: ${e.error.message}`);}}
@@ -27,17 +27,18 @@ export const Banners = () => {
 
       <AdView
         ref={ref}
-        isAutoloadEnabled={false}
-        size={AdViewSize.mrec}
+        size={AdViewSize.MREC}
         onAdViewLoaded={() => logCasInfo('MREC loaded')}
-        onAdViewFailed={(e) => { logCasInfo('MREC failed', `${e.error.code}: ${e.error.message}`);}}
+        onAdViewFailed={(e) => logCasInfo('MREC failed', `${e.error.code}: ${e.error.message}`)}
+        onAdViewImpression={(e) => logCasInfo('MREC impression', e)}  
       />
 
       <AdView
-        size={AdViewSize.adaptive}
+        size={AdViewSize.ADAPTIVE}
         refreshInterval={20}
         onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
         onAdViewFailed={(e) => { logCasInfo('Adaptive failed', `${e.error.code}: ${e.error.message}`);}}
+        onAdViewImpression={(e) => logCasInfo('Adaptive impression', e)}
       />
     </View>
   );
