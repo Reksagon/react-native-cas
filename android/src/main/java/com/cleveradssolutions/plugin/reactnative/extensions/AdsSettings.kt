@@ -4,31 +4,43 @@ import com.cleversolutions.ads.AdsSettings
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.bridge.ReadableMap as RNReadableMap
 
-fun AdsSettings.toReadableMap(): ReadableMap {
+fun AdsSettings.toReadableMap(): RNReadableMap {
   val map = WritableNativeMap()
+
   map.putInt("taggedAudience", this.taggedAudience)
-  map.putInt("userConsent", this.userConsent)
-  map.putInt("ccpaStatus", this.ccpaStatus)
   map.putBoolean("debugMode", this.debugMode)
   map.putBoolean("mutedAdSounds", this.mutedAdSounds)
-  map.putInt("loadingMode", this.loadingMode)
-  map.putInt("trialAdFreeInterval", this.trialAdFreeInterval)
 
-  val array = WritableNativeArray()
-  this.testDeviceIDs.forEach { array.pushString(it) }
-  map.putArray("testDeviceIDs", array)
+  try {
+    val f = this::class.java.getDeclaredField("trackLocation")
+    f.isAccessible = true
+    val enabled = (f.get(this) as? Boolean) == true
+    map.putBoolean("locationCollectionEnabled", enabled)
+  } catch (_: Throwable) {}
+
+  val tdi = WritableNativeArray()
+  (this.testDeviceIDs ?: emptySet()).forEach { tdi.pushString(it) }
+  map.putArray("testDeviceIDs", tdi)
 
   return map
 }
 
 fun AdsSettings.fromReadableMap(map: ReadableMap) {
   map.has("taggedAudience") { this.taggedAudience = map.getInt("taggedAudience") }
-  map.has("userConsent") { this.userConsent = map.getInt("userConsent") }
-  map.has("ccpaStatus") { this.ccpaStatus = map.getInt("ccpaStatus") }
   map.has("debugMode") { this.debugMode = map.getBoolean("debugMode") }
   map.has("mutedAdSounds") { this.mutedAdSounds = map.getBoolean("mutedAdSounds") }
-  map.has("loadingMode") { this.loadingMode = map.getInt("loadingMode") }
-  map.has("trialAdFreeInterval") { this.trialAdFreeInterval = map.getInt("trialAdFreeInterval") }
-  map.has("testDeviceIDs") { this.testDeviceIDs = map.getArray("testDeviceIDs")?.toStringSet() ?: emptySet() }
+
+  map.has("locationCollectionEnabled") {
+    try {
+      val f = this::class.java.getDeclaredField("trackLocation")
+      f.isAccessible = true
+      f.setBoolean(this, map.getBoolean("locationCollectionEnabled"))
+    } catch (_: Throwable) {}
+  }
+
+  map.has("testDeviceIDs") {
+    this.testDeviceIDs = map.getArray("testDeviceIDs")?.toStringSet() ?: emptySet()
+  }
 }

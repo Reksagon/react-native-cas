@@ -4,24 +4,17 @@ import android.app.Activity
 import android.content.Context
 import com.cleveradssolutions.plugin.reactnative.extensions.fromReadableMap
 import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
-import com.cleveradssolutions.sdk.AdContentInfo
-import com.cleveradssolutions.sdk.AdFormat
 import com.cleversolutions.ads.AdError
 import com.cleversolutions.ads.ConsentFlow
 import com.cleversolutions.ads.android.CAS
+import com.cleveradssolutions.sdk.AdContentInfo
+import com.cleveradssolutions.sdk.AdFormat
 import com.cleveradssolutions.sdk.screen.CASAppOpen
 import com.cleveradssolutions.sdk.screen.CASInterstitial
 import com.cleveradssolutions.sdk.screen.CASRewarded
 import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 import com.cleveradssolutions.sdk.screen.ScreenAdContentCallback
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
-import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
-import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJavaModule(ctx) {
@@ -32,6 +25,8 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   private var interstitial: CASInterstitial? = null
   private var rewarded: CASRewarded? = null
   private var appOpen: CASAppOpen? = null
+
+  private var consentFlowEnabled = true
 
   private fun appContext(): Context = ctx.applicationContext
 
@@ -66,9 +61,11 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
           it.countryCode?.let { cc -> resp.putString("countryCode", cc) }
           resp.putBoolean("isConsentRequired", it.isConsentRequired)
           resp.putInt("consentFlowStatus", 0)
+
           interstitial = CASInterstitial(appContext(), id)
           rewarded = CASRewarded(appContext(), id)
           appOpen = CASAppOpen(appContext(), id)
+
           promise.resolve(resp)
         }
 
@@ -91,6 +88,10 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod
   fun showConsentFlow(promise: Promise) {
     val activity = currentActivityOrReject(promise) ?: return
+    if (!consentFlowEnabled) {
+      promise.resolve(null)
+      return
+    }
     ConsentFlow()
       .withDismissListener { status ->
         emit("consentFlowDismissed", WritableNativeMap().apply { putInt("status", status) })
@@ -101,47 +102,93 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   }
 
   @ReactMethod
+  fun setConsentFlowEnabled(enabled: Boolean) {
+    consentFlowEnabled = enabled
+  }
+
+  @ReactMethod
   fun getSDKVersion(promise: Promise) {
     promise.resolve(CAS.getSDKVersion())
   }
 
   @ReactMethod
   fun getSettings(promise: Promise) {
-    promise.resolve(CAS.settings.toReadableMap())
-  }
+    try {
+      val s = CAS.settings
+      val t = CAS.getTargetingOptions()
 
-  @ReactMethod
-  fun setSettings(settings: ReadableMap, promise: Promise) {
-    CAS.settings.fromReadableMap(settings)
-    promise.resolve(null)
-  }
+      val out = WritableNativeMap().apply {
+        putInt("taggedAudience", s.taggedAudience)
+        putBoolean("debugMode", s.debugMode)
+        putBoolean("mutedAdSounds", s.mutedAdSounds)
 
-  @ReactMethod
-  fun getTargetingOptions(promise: Promise) {
-    val to = CAS.getTargetingOptions()
-    val out = WritableNativeMap().apply {
-      putInt("age", to.age)
-      putInt("gender", to.gender)
-      to.contentUrl?.let { putString("contentUrl", it) }
-      val arr = Arguments.createArray()
-      (to.keywords ?: emptySet()).forEach { arr.pushString(it) }
-      putArray("keywords", arr)
+        val testIds = Arguments.createArray()
+        (s.testDeviceIDs ?: emptySet()).forEach { testIds.pushString(it) }
+        putArray("testDeviceIDs", testIds)
+
+        putInt("trialAdFreeInterval", s.trialAdFreeInterval)
+
+        putInt("age", t.age)
+        putInt("gender", t.gender)
+        t.contentUrl?.let { putString("contentUrl", it) }
+
+        val kw = Arguments.createArray()
+        (t.keywords ?: emptySet()).forEach { kw.pushString(it) }
+        putArray("keywords", kw)
+      }
+
+      promise.resolve(out)
+    } catch (e: Exception) {
+      promise.reject(e)
     }
-    promise.resolve(out)
   }
 
+
   @ReactMethod
-  fun setTargetingOptions(options: ReadableMap, promise: Promise) {
-    val to = CAS.getTargetingOptions()
-    if (options.hasKey("age") && !options.isNull("age")) to.age = options.getInt("age")
-    if (options.hasKey("gender") && !options.isNull("gender")) to.gender = options.getInt("gender")
-    if (options.hasKey("contentUrl") && !options.isNull("contentUrl")) to.contentUrl = options.getString("contentUrl")
-    if (options.hasKey("keywords") && !options.isNull("keywords")) {
-      val list = options.getArray("keywords")?.toArrayList()?.filterIsInstance<String>() ?: emptyList()
-      to.keywords = list.toSet()
+  fun setSettings(map: ReadableMap, promise: Promise) {
+    try {
+      CAS.settings.apply {
+        if (map.hasKey("taggedAudience") && !map.isNull("taggedAudience"))
+          taggedAudience = map.getInt("taggedAudience")
+
+        if (map.hasKey("debugMode") && !map.isNull("debugMode"))
+          debugMode = map.getBoolean("debugMode")
+
+        if (map.hasKey("mutedAdSounds") && !map.isNull("mutedAdSounds"))
+          mutedAdSounds = map.getBoolean("mutedAdSounds")
+
+        if (map.hasKey("testDeviceIDs") && !map.isNull("testDeviceIDs")) {
+          val arr = map.getArray("testDeviceIDs")?.toArrayList()?.filterIsInstance<String>() ?: emptyList()
+          testDeviceIDs = arr.toSet()
+        }
+
+        if (map.hasKey("trialAdFreeInterval") && !map.isNull("trialAdFreeInterval"))
+          trialAdFreeInterval = map.getInt("trialAdFreeInterval")
+      }
+
+      CAS.getTargetingOptions().apply {
+        if (map.hasKey("age") && !map.isNull("age"))
+          age = map.getInt("age")
+
+        if (map.hasKey("gender") && !map.isNull("gender"))
+          gender = map.getInt("gender")
+
+        if (map.hasKey("contentUrl") && !map.isNull("contentUrl"))
+          contentUrl = map.getString("contentUrl")
+
+        if (map.hasKey("keywords") && !map.isNull("keywords")) {
+          val list = map.getArray("keywords")?.toArrayList()?.filterIsInstance<String>() ?: emptyList()
+          keywords = list.toSet()
+        }
+      }
+
+      promise.resolve(null)
+    } catch (e: Exception) {
+      promise.reject(e)
     }
-    promise.resolve(null)
   }
+
+
 
   @ReactMethod
   fun isInterstitialAdLoaded(promise: Promise) {
@@ -151,57 +198,54 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod
   fun loadInterstitialAd(promise: Promise) {
     val id = requireCasId(promise) ?: return
-    val interstitialAd = interstitial ?: CASInterstitial(appContext(), id).also { interstitial = it }
-    interstitialAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdLoaded(ad: AdContentInfo) {
-        interstitialAd.contentCallback = null
-        promise.resolve(null)
+    val ad = interstitial ?: CASInterstitial(appContext(), id).also { interstitial = it }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdLoaded(adInfo: AdContentInfo) {
+        ad.contentCallback = null
         emit("adLoaded", WritableNativeMap().apply { putString("type", "interstitial") })
+        promise.resolve(null)
       }
       override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-        interstitialAd.contentCallback = null
-        promise.reject(Exception("Interstitial load failed: ${error.message}"))
+        ad.contentCallback = null
         emit("adFailedToLoad", WritableNativeMap().apply {
           putString("type", "interstitial")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception("Interstitial load failed: ${error.message}"))
       }
     }
-    interstitialAd.load(appContext())
+    ad.load(appContext())
   }
 
   @ReactMethod
   fun showInterstitialAd(promise: Promise) {
     val activity = currentActivityOrReject(promise) ?: return
     val id = requireCasId(promise) ?: return
-    val interstitialAd = interstitial ?: CASInterstitial(appContext(), id).also { interstitial = it }
-    if (!interstitialAd.isLoaded) {
+    val ad = interstitial ?: CASInterstitial(appContext(), id).also { interstitial = it }
+    if (!ad.isLoaded) {
       promise.reject(IllegalStateException("Interstitial not loaded"))
       return
     }
-    interstitialAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdShowed(ad: AdContentInfo) {
-        emit("onShown", WritableNativeMap().apply { putString("type", "interstitial") })
-      }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdShowed(adInfo: AdContentInfo) { emit("onShown", WritableNativeMap().apply { putString("type", "interstitial") }) }
       override fun onAdFailedToShow(format: AdFormat, error: AdError) {
-        promise.reject(Exception(error.message))
         emit("onShowFailed", WritableNativeMap().apply {
           putString("type", "interstitial")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception(error.message))
       }
-      override fun onAdClicked(ad: AdContentInfo) {
-        emit("onClicked", WritableNativeMap().apply { putString("type", "interstitial") })
-      }
-      override fun onAdDismissed(ad: AdContentInfo) {
-        promise.resolve(null)
+      override fun onAdClicked(adInfo: AdContentInfo) { emit("onClicked", WritableNativeMap().apply { putString("type", "interstitial") }) }
+      override fun onAdDismissed(adInfo: AdContentInfo) {
         emit("onClosed", WritableNativeMap().apply { putString("type", "interstitial") })
+        promise.resolve(null)
       }
     }
-    interstitialAd.show(activity)
+    ad.show(activity)
   }
+
 
   @ReactMethod
   fun isRewardedAdLoaded(promise: Promise) {
@@ -211,66 +255,52 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod
   fun loadRewardedAd(promise: Promise) {
     val id = requireCasId(promise) ?: return
-    val rewardedAd = rewarded ?: CASRewarded(appContext(), id).also { rewarded = it }
-    rewardedAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdLoaded(ad: AdContentInfo) {
-        rewardedAd.contentCallback = null
-        promise.resolve(null)
+    val ad = rewarded ?: CASRewarded(appContext(), id).also { rewarded = it }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdLoaded(adInfo: AdContentInfo) {
+        ad.contentCallback = null
         emit("adLoaded", WritableNativeMap().apply { putString("type", "rewarded") })
+        promise.resolve(null)
       }
       override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-        rewardedAd.contentCallback = null
-        promise.reject(Exception("Rewarded load failed: ${error.message}"))
+        ad.contentCallback = null
         emit("adFailedToLoad", WritableNativeMap().apply {
           putString("type", "rewarded")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception("Rewarded load failed: ${error.message}"))
       }
     }
-    rewardedAd.load(appContext())
+    ad.load(appContext())
   }
 
   @ReactMethod
   fun showRewardedAd(promise: Promise) {
     val activity = currentActivityOrReject(promise) ?: return
     val id = requireCasId(promise) ?: return
-    val rewardedAd = rewarded ?: CASRewarded(appContext(), id).also { rewarded = it }
-
-    if (!rewardedAd.isLoaded) {
+    val ad = rewarded ?: CASRewarded(appContext(), id).also { rewarded = it }
+    if (!ad.isLoaded) {
       promise.reject(IllegalStateException("Rewarded not loaded"))
       return
     }
-
-    rewardedAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdShowed(ad: AdContentInfo) {
-        emit("onShown", WritableNativeMap().apply { putString("type", "rewarded") })
-      }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdShowed(adInfo: AdContentInfo) { emit("onShown", WritableNativeMap().apply { putString("type", "rewarded") }) }
       override fun onAdFailedToShow(format: AdFormat, error: AdError) {
-        promise.reject(Exception(error.message))
         emit("onShowFailed", WritableNativeMap().apply {
           putString("type", "rewarded")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception(error.message))
       }
-      override fun onAdClicked(ad: AdContentInfo) {
-        emit("onClicked", WritableNativeMap().apply { putString("type", "rewarded") })
-      }
-      override fun onAdDismissed(ad: AdContentInfo) {
-        promise.resolve(null)
+      override fun onAdClicked(adInfo: AdContentInfo) { emit("onClicked", WritableNativeMap().apply { putString("type", "rewarded") }) }
+      override fun onAdDismissed(adInfo: AdContentInfo) {
         emit("onClosed", WritableNativeMap().apply { putString("type", "rewarded") })
+        promise.resolve(null)
       }
     }
-
-    rewardedAd.show(
-      activity,
-      object : OnRewardEarnedListener {
-        override fun onUserEarnedReward(ad: AdContentInfo) {
-          emit("onRewarded", WritableNativeMap().apply { putString("type", "rewarded") })
-        }
-      }
-    )
+    ad.show(activity, OnRewardEarnedListener { emit("onRewarded", WritableNativeMap().apply { putString("type", "rewarded") }) })
   }
 
 
@@ -282,56 +312,52 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod
   fun loadAppOpenAd(promise: Promise) {
     val id = requireCasId(promise) ?: return
-    val appOpenAd = appOpen ?: CASAppOpen(appContext(), id).also { appOpen = it }
-    appOpenAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdLoaded(ad: AdContentInfo) {
-        appOpenAd.contentCallback = null
-        promise.resolve(null)
+    val ad = appOpen ?: CASAppOpen(appContext(), id).also { appOpen = it }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdLoaded(adInfo: AdContentInfo) {
+        ad.contentCallback = null
         emit("adLoaded", WritableNativeMap().apply { putString("type", "appopen") })
+        promise.resolve(null)
       }
       override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-        appOpenAd.contentCallback = null
-        promise.reject(Exception("AppOpen load failed: ${error.message}"))
+        ad.contentCallback = null
         emit("adFailedToLoad", WritableNativeMap().apply {
           putString("type", "appopen")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception("AppOpen load failed: ${error.message}"))
       }
     }
-    appOpenAd.load(appContext())
+    ad.load(appContext())
   }
 
   @ReactMethod
   fun showAppOpenAd(promise: Promise) {
     val activity = currentActivityOrReject(promise) ?: return
     val id = requireCasId(promise) ?: return
-    val appOpenAd = appOpen ?: CASAppOpen(appContext(), id).also { appOpen = it }
-    if (!appOpenAd.isLoaded) {
+    val ad = appOpen ?: CASAppOpen(appContext(), id).also { appOpen = it }
+    if (!ad.isLoaded) {
       promise.reject(IllegalStateException("AppOpen not loaded"))
       return
     }
-    appOpenAd.contentCallback = object : ScreenAdContentCallback() {
-      override fun onAdShowed(ad: AdContentInfo) {
-        emit("onShown", WritableNativeMap().apply { putString("type", "appopen") })
-      }
+    ad.contentCallback = object : ScreenAdContentCallback() {
+      override fun onAdShowed(adInfo: AdContentInfo) { emit("onShown", WritableNativeMap().apply { putString("type", "appopen") }) }
       override fun onAdFailedToShow(format: AdFormat, error: AdError) {
-        promise.reject(Exception(error.message))
         emit("onShowFailed", WritableNativeMap().apply {
           putString("type", "appopen")
-          putString("code", error.code.toString())
+          putInt("code", error.code)
           putString("message", error.message)
         })
+        promise.reject(Exception(error.message))
       }
-      override fun onAdClicked(ad: AdContentInfo) {
-        emit("onClicked", WritableNativeMap().apply { putString("type", "appopen") })
-      }
-      override fun onAdDismissed(ad: AdContentInfo) {
-        promise.resolve(null)
+      override fun onAdClicked(adInfo: AdContentInfo) { emit("onClicked", WritableNativeMap().apply { putString("type", "appopen") }) }
+      override fun onAdDismissed(adInfo: AdContentInfo) {
         emit("onClosed", WritableNativeMap().apply { putString("type", "appopen") })
+        promise.resolve(null)
       }
     }
-    appOpenAd.show(activity)
+    ad.show(activity)
   }
 
   @ReactMethod fun addListener(eventName: String?) {}

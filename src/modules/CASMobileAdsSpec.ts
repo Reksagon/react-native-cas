@@ -1,9 +1,7 @@
 import type {
   BuildManagerParams,
   InitConfiguration,
-  TargetingOptions,
   CASSettings,
-  AdViewSize,
 } from '../types/Types';
 import type { TurboModule } from 'react-native';
 
@@ -12,19 +10,7 @@ export interface CASSpec extends TurboModule {
   initialize(params: BuildManagerParams): Promise<InitConfiguration>;
   isInitialized(): Promise<boolean>;
 
-  // Preload / Destroy AdViews
-  preloadNativeUIComponentAdView(
-    adUnitId: string,
-    adFormat: string,
-    adViewSize: AdViewSize,
-    placement?: string | null,
-    customData?: string | null,
-    extraParameters?: Record<string, any>,
-    localExtraParameters?: Record<string, any>
-  ): Promise<number>;
-
-  destroyNativeUIComponentAdView(adViewId: number): Promise<void>;
-
+  // Adaptive banner helper
   getAdaptiveBannerHeightForWidth(width: number): Promise<number>;
 
   // Interstitial
@@ -39,7 +25,7 @@ export interface CASSpec extends TurboModule {
 
   // AppOpen
   isAppOpenAdLoaded(): Promise<boolean>;
-  loadAppOpenAd(isLandscape?: boolean): Promise<void>;
+  loadAppOpenAd(): Promise<void>;
   showAppOpenAd(): Promise<void>;
 
   // Misc
@@ -50,10 +36,9 @@ export interface CASSpec extends TurboModule {
   showConsentFlow(): Promise<void>;
   setConsentFlowEnabled(enabled: boolean): void;
 
-  // Targeting / Settings
-  getTargetingOptions(): Promise<TargetingOptions>;
-  setTargetingOptions(options: Partial<TargetingOptions>): Promise<void>;
-
+  // Settings
   getSettings(): Promise<CASSettings>;
   setSettings(settings: Partial<CASSettings>): Promise<void>;
 }
+
+export default null as any;
