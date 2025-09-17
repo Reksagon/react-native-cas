@@ -1,15 +1,4 @@
 {
   "extends": "./tsconfig",
-  "compilerOptions": {
-    "noEmit": false,                 
-    "declaration": true,
-    "emitDeclarationOnly": true,     
-    "declarationDir": "lib/typescript",
-    "outDir": "lib/typescript",
-    "types": ["react", "react-native"],
-    "skipLibCheck": true,
-    "jsx": "react-jsx"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["example", "lib", "node_modules", "**/__tests__/**"]
+  "exclude": ["example"]
 }
