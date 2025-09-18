@@ -23,10 +23,10 @@ import {
 import { AdViewComponent } from '../native/AdViewComponent';
 import { AdViewCommands } from '../native/Commands';
 import type {
+  AdError,
   AdViewRef,
   AdViewProps,
   AdViewImpressionEvent,
-  AdViewFailedEvent,
 } from '../types/Types';
 import { AdViewSize } from '../types/Types';
 import { CASMobileAds } from '../modules/CASMobileAds';
@@ -55,7 +55,7 @@ const getAdaptiveHeightForWidth = async (w: number): Promise<number> => {
     try {
       const h = await api(w);
       if (typeof h === 'number' && h > 0) return h;
-    } catch {}
+    } catch { }
   }
   return BASE[AdViewSize.BANNER].height;
 };
@@ -125,28 +125,28 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   }, [size, screenWidth, containerWidth]);
 
   const onLoaded = useCallback(
-    (e: NativeSyntheticEvent<{ width: number; height: number }>) => {
-      const { width: ew, height: eh } = e.nativeEvent;
+    (e: NativeSyntheticEvent<any>) => {
+      const { width: ew, height: eh } = e.nativeEvent as { width: number; height: number };
       if (Platform.OS === 'android') {
         let w = ew / pr;
         const h = layoutRef.current?.height ?? eh / pr;
         if (Math.floor(w) % 2) w += 1; else w -= 1;
         setMeasured({ width: w, height: h });
       }
-      onAdViewLoaded?.();
+      onAdViewLoaded?.(e);
     },
     [onAdViewLoaded]
   );
 
   const onFailedCb = useCallback(
-    (e: NativeSyntheticEvent<AdViewFailedEvent>) => onAdViewFailed?.(e.nativeEvent.error),
+    (e: NativeSyntheticEvent<{ error: AdError }>) => onAdViewFailed?.(e),
     [onAdViewFailed]
   );
 
   const onClickedCb = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
 
   const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<AdViewImpressionEvent>) => onAdViewImpression?.(e.nativeEvent),
+    (e: NativeSyntheticEvent<AdViewImpressionEvent>) => onAdViewImpression?.(e),
     [onAdViewImpression]
   );
 

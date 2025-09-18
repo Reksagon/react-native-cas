@@ -1,4 +1,4 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle, NativeSyntheticEvent } from 'react-native';
 
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
@@ -109,10 +109,11 @@ export type AdViewProps = {
   refreshInterval?: number;
   casId?: string;
 
-  onAdViewLoaded?: () => void;
-  onAdViewFailed?: (e: AdError) => void;
+  onAdViewLoaded?: (e: NativeSyntheticEvent<any>) => void;
+  onAdViewFailed?: (e: NativeSyntheticEvent<{ error: AdError }>) => void;
   onAdViewClicked?: () => void;
-  onAdViewImpression?: (e: AdViewImpressionEvent) => void;
+  onAdViewImpression?: (e: NativeSyntheticEvent<{ impression: AdContentInfo }>) => void;
+  isAdLoaded?: (ready: NativeSyntheticEvent<boolean>) => void;
 };
 
 export type AdViewRef = {

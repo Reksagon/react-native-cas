@@ -3,15 +3,29 @@ import { Button, View } from 'react-native';
 import { styles } from './styles';
 import { useCasContext } from './cas.context';
 import { AdView, AdViewSize } from 'react-native-cas';
-import type { AdViewRef } from 'react-native-cas';
+import type { AdViewRef, AdContentInfo } from 'react-native-cas';
+
+export const formatImpression = (i?: AdContentInfo) => {
+  if (!i) return '(no impression payload)';
+  return [
+    `fmt=${i.format ?? '-'}`,
+    `rev=${i.revenue ?? 0}${i.revenuePrecision ? `(${i.revenuePrecision})` : ''}`,
+    `total=${i.revenueTotal ?? 0}`,
+    `depth=${i.impressionDepth ?? 0}`,
+    `src=${i.sourceName ?? '-'}`,
+    `unit=${i.sourceUnitId ?? '-'}`,
+    i.creativeId ? `creative=${i.creativeId}` : null,
+  ].filter(Boolean).join(' ');
+};
+
+const getErr = (adInfo: any) => (adInfo?.nativeEvent ?? adInfo)?.error;
+const getImp = (adInfo: any) => (adInfo?.nativeEvent ?? adInfo)?.impression;
 
 export const Banners = () => {
   const { logCasInfo } = useCasContext();
   const ref = useRef<AdViewRef | null>(null);
 
-  const nextAd = useCallback(() => {
-    ref.current?.loadAd();
-  }, []);
+  const nextAd = useCallback(() => ref.current?.loadAd(), []);
 
   return (
     <View style={styles.screen}>
@@ -21,24 +35,39 @@ export const Banners = () => {
         size={AdViewSize.BANNER}
         onAdViewLoaded={() => logCasInfo('Banner (B) loaded')}
         onAdViewClicked={() => logCasInfo('Banner (B) clicked')}
-        onAdViewFailed={(e) => { logCasInfo('Banner (B) failed', `${e.error.code}: ${e.error.message}`);}}
-        onAdViewImpression={(e) => logCasInfo('Banner (B) impression', e)}
+        onAdViewFailed={(adInfo) => {
+          const err = getErr(adInfo);
+          logCasInfo('Banner (B) failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
+        }}
+        onAdViewImpression={(adInfo) =>
+          logCasInfo('Banner (B) impression', formatImpression(getImp(adInfo)))
+        }
       />
 
       <AdView
         ref={ref}
         size={AdViewSize.MREC}
         onAdViewLoaded={() => logCasInfo('MREC loaded')}
-        onAdViewFailed={(e) => logCasInfo('MREC failed', `${e.error.code}: ${e.error.message}`)}
-        onAdViewImpression={(e) => logCasInfo('MREC impression', e)}  
+        onAdViewFailed={(adInfo) => {
+          const err = getErr(adInfo);
+          logCasInfo('MREC failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
+        }}
+        onAdViewImpression={(adInfo) =>
+          logCasInfo('MREC impression', formatImpression(getImp(adInfo)))
+        }
       />
 
       <AdView
         size={AdViewSize.ADAPTIVE}
         refreshInterval={20}
         onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
-        onAdViewFailed={(e) => { logCasInfo('Adaptive failed', `${e.error.code}: ${e.error.message}`);}}
-        onAdViewImpression={(e) => logCasInfo('Adaptive impression', e)}
+        onAdViewFailed={(adInfo) => {
+          const err = getErr(adInfo);
+          logCasInfo('Adaptive failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
+        }}
+        onAdViewImpression={(adInfo) =>
+          logCasInfo('Adaptive impression', formatImpression(getImp(adInfo)))
+        }
       />
     </View>
   );
