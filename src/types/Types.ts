@@ -1,5 +1,6 @@
 import type { StyleProp, ViewStyle, NativeSyntheticEvent } from 'react-native';
 
+// TODO: https://github.com/cleveradssolutions/CAS-Android/wiki/Ad-errors
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
   NO_FILL = 1,
@@ -19,21 +20,13 @@ export type AdError = {
   message: string;
 };
 
-export type ConsentFlowParams = {
-  enabled?: boolean;
-  privacyPolicy?: string;
-  requestGDPR?: boolean;
-  requestATT?: boolean;
-};
 export type MediationExtraParams = {
   key: string;
   value: string;
 };
 export type BuildManagerParams = {
-  casId?: string;
-  consentFlow?: ConsentFlowParams;
-  testMode?: boolean;
-  mediationExtra?: MediationExtraParams;
+  casId: string;
+  testMode: boolean;
 };
 
 export type InitConfiguration = {

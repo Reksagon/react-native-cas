@@ -16,6 +16,7 @@ export const AppOpenAd: FullscreenAdType = {
   isAdLoaded: CASMobileAds.isAppOpenAdLoaded,
   loadAd: () => CASMobileAds.loadAppOpenAd(),
   showAd: CASMobileAds.showAppOpenAd,
+  isAutoshowEnabled
 
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),

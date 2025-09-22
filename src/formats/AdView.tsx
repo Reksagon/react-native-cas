@@ -33,6 +33,7 @@ import { CASMobileAds } from '../modules/CASMobileAds';
 
 const pr = PixelRatio.get();
 
+// remove
 const isTablet = (() => {
   const d = pr;
   const w = Dimensions.get('window').width * d;
@@ -49,6 +50,7 @@ const BASE = {
   [AdViewSize.SMART]: { width: isTablet ? 728 : 320, height: isTablet ? 90 : 50 },
 } as const;
 
+// remove?
 const getAdaptiveHeightForWidth = async (w: number): Promise<number> => {
   const api = (CASMobileAds as any)?.getAdaptiveBannerHeightForWidth;
   if (typeof api === 'function') {

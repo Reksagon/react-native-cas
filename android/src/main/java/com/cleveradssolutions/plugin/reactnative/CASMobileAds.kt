@@ -26,12 +26,14 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   private var rewarded: CASRewarded? = null
   private var appOpen: CASAppOpen? = null
 
+private var mediationExtras = HashMap<String, String>()
   private var consentFlowEnabled = true
 
   private fun appContext(): Context = ctx.applicationContext
 
   private fun currentActivityOrReject(p: Promise): Activity? {
     val a = ctx.currentActivity
+    TODO("Прибрати reject")
     if (a == null) p.reject(IllegalStateException("No current Activity"))
     return a
   }
@@ -47,16 +49,18 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   }
 
   @ReactMethod
-  fun initialize(params: ReadableMap, promise: Promise) {
+  fun initialize(casId:String, testMode:Boolean, promise: Promise) {
     try {
       val activity = currentActivityOrReject(promise) ?: return
-      val resp = WritableNativeMap()
-      val id = params.getString("casId") ?: activity.packageName
+      
+      val id = params.getString("casId")!!
       casId = id
 
       val builder = CAS.buildManager()
         .withCasId(id)
+        .withConsentFlow(ConsentFlow(consentFlowEnabled))
         .withCompletionListener {
+          val resp = WritableNativeMap()
           it.error?.let { err -> resp.putString("error", err) }
           it.countryCode?.let { cc -> resp.putString("countryCode", cc) }
           resp.putBoolean("isConsentRequired", it.isConsentRequired)
@@ -73,31 +77,32 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
         builder.withTestAdMode(true)
       }
 
-      params.getMap("mediationExtra")?.let {
-        val k = it.getString("key")
-        val v = it.getString("value")
+      mediationExtras.forEach {
+        val k = it.key
+        val v = it.value
         if (!k.isNullOrEmpty() && !v.isNullOrEmpty()) builder.withMediationExtras(k, v)
       }
 
-      builder.build(activity.applicationContext)
+      builder.build(activity)
     } catch (e: Exception) {
       promise.reject(e)
     }
   }
 
+   @ReactMethod
+  fun setMediationExtras(key:String, value:String, promise: Promise) {
+    mediationExtras[key] = value
+  }
+
   @ReactMethod
   fun showConsentFlow(promise: Promise) {
-    val activity = currentActivityOrReject(promise) ?: return
-    if (!consentFlowEnabled) {
-      promise.resolve(null)
-      return
+    CASHandler.main{
+      ConsentFlow()
+        .withDismissListener { status ->
+          emit("consentFlowDismissed", WritableNativeMap().apply { putInt("status", status) })
+        }
+        .showIfRequired()
     }
-    ConsentFlow()
-      .withDismissListener { status ->
-        emit("consentFlowDismissed", WritableNativeMap().apply { putInt("status", status) })
-      }
-      .withUIContext(activity)
-      .showIfRequired()
     promise.resolve(null)
   }
 
@@ -114,6 +119,7 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   @ReactMethod
   fun getSettings(promise: Promise) {
     try {
+      TODO()
       val s = CAS.settings
       val t = CAS.getTargetingOptions()
 
@@ -199,6 +205,10 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
   fun loadInterstitialAd(promise: Promise) {
     val id = requireCasId(promise) ?: return
     val ad = interstitial ?: CASInterstitial(appContext(), id).also { interstitial = it }
+   TODO()
+   ad.iaAutoloadEnabled 
+
+
     ad.contentCallback = object : ScreenAdContentCallback() {
       override fun onAdLoaded(adInfo: AdContentInfo) {
         ad.contentCallback = null
@@ -227,7 +237,10 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
       promise.reject(IllegalStateException("Interstitial not loaded"))
       return
     }
-    ad.contentCallback = object : ScreenAdContentCallback() {
+    val contentCallback = TODO()
+    
+    
+    object : ScreenAdContentCallback() {
       override fun onAdShowed(adInfo: AdContentInfo) { emit("onShown", WritableNativeMap().apply { putString("type", "interstitial") }) }
       override fun onAdFailedToShow(format: AdFormat, error: AdError) {
         emit("onShowFailed", WritableNativeMap().apply {
@@ -243,7 +256,9 @@ class CASMobileAds(private val ctx: ReactApplicationContext) : ReactContextBaseJ
         promise.resolve(null)
       }
     }
-    ad.show(activity)
+    ad.contentCallback = contentCallback
+    ad.onImpressionListener = contentCallback
+    ad.show(ctx.currentActivity)
   }
 
 

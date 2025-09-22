@@ -8,7 +8,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 export interface CASSpec extends TurboModule {
   // Init
-  initialize(params: BuildManagerParams): Promise<InitConfiguration>;
+  initialize(casId: string, testMode:boolean): Promise<InitConfiguration>;
   isInitialized(): Promise<boolean>;
 
   // Adaptive banner helper

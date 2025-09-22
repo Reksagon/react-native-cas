@@ -18,6 +18,10 @@ export const RewardedAd: FullscreenAdType = {
   loadAd: CASMobileAds.loadRewardedAd,
   showAd: CASMobileAds.showRewardedAd,
 
+  addAdUserEarnRewardEventListener: (l) => addEventListener(EVENTS.LOADED, l),
+  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
+
+
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
 

@@ -4,6 +4,8 @@ export type FullscreenAdType = {
   isAdLoaded(): Promise<boolean>;
   loadAd(options?: any): Promise<void>;
   showAd(): Promise<void>;
+  isAutoloadEnabled:Boolean
+  destroy()
 
   addAdLoadedEventListener(listener: () => void): void;
   removeAdLoadedEventListener(): void;
@@ -14,8 +16,8 @@ export type FullscreenAdType = {
   addAdClickedEventListener(listener: () => void): void;
   removeAdClickedEventListener(): void;
 
-  addAdDisplayedEventListener(listener: () => void): void;
-  removeAdDisplayedEventListener(): void;
+  addAdShowedEventListener(listener: () => void): void;
+  removeAdShowedEventListener(): void;
 
   addAdFailedToShowEventListener(listener: (error: AdError) => void): void;
   removeAdFailedToShowEventListener(): void;

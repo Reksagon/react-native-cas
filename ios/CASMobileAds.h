@@ -8,10 +8,5 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 
-#import <CleverAdsSolutions/CASTypeFlags.h>
-#import <CleverAdsSolutions/CASInternalUtils.h>
-#import <CleverAdsSolutions/CleverAdsSolutions.h>
-#import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
-
-@interface CASMobileAds : RCTEventEmitter <RCTBridgeModule, CASScreenContentDelegate, CASImpressionDelegate>
+@interface CASMobileAds : RCTEventEmitter <RCTBridgeModule>
 @end

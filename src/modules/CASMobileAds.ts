@@ -20,9 +20,15 @@ const BANNER_FALLBACK_HEIGHT = 50;
 
 export class CASMobileAds {
   //Init
-  static async initialize(params: BuildManagerParams): Promise<InitConfiguration> {
+
+  static async setMediationExtras(key:string, value:string){
+    // TODO
+  }
+
+  static async initialize(casId: string, testMode: boolean): Promise<InitConfiguration> {
+    // TODO: Remove hasFn
     if (hasFn(CASMobileAdsNative, 'initialize')) {
-      return CASMobileAdsNative.initialize(params);
+      return CASMobileAdsNative.initialize(casId, testMode);
     }
     throw new Error('CASMobileAds native module: initialize not implemented');
   }
