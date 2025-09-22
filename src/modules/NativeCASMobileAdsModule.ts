@@ -2,13 +2,26 @@ import type {
   BuildManagerParams,
   InitConfiguration,
   CASSettings,
+  Audience,
+  Gender,
 } from '../types/Types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
-export interface CASSpec extends TurboModule {
+export interface Spec extends TurboModule {
+
+  /**
+   * Returns all supported event constants and SDK error codes.
+   */
+  readonly getConstants: () => {
+
+  };
+
   // Init
-  initialize(params: BuildManagerParams): Promise<InitConfiguration>;
+  initialize(params: {
+  casId?: string;
+  testMode?: boolean;
+}): Promise<InitConfiguration>;
   isInitialized(): Promise<boolean>;
 
   // Adaptive banner helper
@@ -31,7 +44,6 @@ export interface CASSpec extends TurboModule {
 
   // Misc
   getSDKVersion(): Promise<string>;
-  setTestMode(enabled: boolean): void;
 
   // Consent flow
   showConsentFlow(): Promise<void>;
@@ -39,8 +51,19 @@ export interface CASSpec extends TurboModule {
 
   // Settings
   getSettings(): Promise<CASSettings>;
-  setSettings(settings: Partial<CASSettings>): Promise<void>;
+  setSettings(settings: {
+    taggedAudience: number;
+    age: number;
+    gender: number;
+    contentUrl?: string;
+    keywords: string[];
+    debugMode: boolean;
+    mutedAdSounds: boolean;
+    testDeviceIDs: string[];
+    locationCollectionEnabled?: boolean;
+    trialAdFreeInterval?: number;
+  }): Promise<void>;
 }
 
 // export default null as any;
-export default TurboModuleRegistry.getEnforcing<CASSpec>('CASMobileAds');
+export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');

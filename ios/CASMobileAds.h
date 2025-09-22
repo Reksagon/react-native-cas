@@ -13,5 +13,7 @@
 #import <CleverAdsSolutions/CleverAdsSolutions.h>
 #import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
 
-@interface CASMobileAds : RCTEventEmitter <RCTBridgeModule, CASScreenContentDelegate, CASImpressionDelegate>
+#import <RNCASMobileAdsSpec/RNCASMobileAdsSpec.h>
+
+@interface CASMobileAds : RCTEventEmitter <NativeCASMobileAdsModuleSpec, CASScreenContentDelegate, CASImpressionDelegate>
 @end

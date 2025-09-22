@@ -47,6 +47,25 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - Init
 
+- (instancetype)init{
+  self = [super init];
+  
+  return self;
+}
+
+
+// `init` requires main queue b/c of UI code
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
+// Invoke all exported methods from main queue
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
+}
+
 RCT_EXPORT_METHOD(initialize:(NSDictionary *)params
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

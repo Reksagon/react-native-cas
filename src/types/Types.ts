@@ -31,9 +31,7 @@ export type MediationExtraParams = {
 };
 export type BuildManagerParams = {
   casId?: string;
-  consentFlow?: ConsentFlowParams;
   testMode?: boolean;
-  mediationExtra?: MediationExtraParams;
 };
 
 export type InitConfiguration = {

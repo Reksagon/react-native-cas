@@ -121,14 +121,9 @@
     ]
   },
   "codegenConfig": {
-    "name": "CASMobileAds",
+    "name": "RNCASMobileAdsSpec",
     "type": "all",
     "jsSrcsDir": "./src/modules",
-    "ios": {
-      "libraryName": "CAS",
-      "podName": "react-native-cas",
-      "swiftName": "CASMobileAds"
-    },
     "android": {
       "javaPackageName": "com.cleveradssolutions.plugin.reactnative"
     }
