@@ -1,9 +1,9 @@
-ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+# ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve("react-native/scripts/react_native_pods.rb", {paths: [process.argv[1]]})', __dir__]).strip
 
-platform :ios, '16.0'
+platform :ios, min_ios_version_supported
 
 source 'https://github.com/CocoaPods/Specs.git'
 source 'https://github.com/cleveradssolutions/CAS-Specs.git'
@@ -11,11 +11,14 @@ source 'https://github.com/cleveradssolutions/CAS-Specs.git'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
-use_frameworks! :linkage => linkage.to_sym if linkage
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
 
 target 'CasExample' do
   project 'CasExample.xcodeproj'
-  pod 'react-native-cas', :path => '../..'
+  pod 'react-native-cas', :path => '../..'    
 
   config = use_native_modules!
 

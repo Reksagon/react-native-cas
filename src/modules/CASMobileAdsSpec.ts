@@ -4,6 +4,7 @@ import type {
   CASSettings,
 } from '../types/Types';
 import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
 
 export interface CASSpec extends TurboModule {
   // Init
@@ -41,4 +42,5 @@ export interface CASSpec extends TurboModule {
   setSettings(settings: Partial<CASSettings>): Promise<void>;
 }
 
-export default null as any;
+// export default null as any;
+export default TurboModuleRegistry.getEnforcing<CASSpec>('CASMobileAds');

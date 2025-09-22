@@ -23,6 +23,8 @@
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  // TODO: remove PORT and other properties from scheme
+  // return [NSURL URLWithString:@"http://IP:8081/index.bundle?platform=ios"]; 
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
