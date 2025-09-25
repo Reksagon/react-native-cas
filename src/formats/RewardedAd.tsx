@@ -3,19 +3,26 @@ import type { FullscreenAdType } from '../types/FullscreenAdType';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const EVENTS = {
-  LOADED: 'onAppOpenLoaded',
-  LOAD_FAILED: 'onAppOpenLoadFailed',
-  CLICKED: 'onAppOpenClicked',
-  DISPLAYED: 'onAppOpenDisplayed',
-  FAILED_TO_SHOW: 'onAppOpenFailedToShow',
-  HIDDEN: 'onAppOpenHidden',
-  IMPRESSION: 'onAppOpenImpression',
+  LOADED: 'onRewardedLoaded',
+  LOAD_FAILED: 'onRewardedLoadFailed',
+  CLICKED: 'onRewardedClicked',
+  DISPLAYED: 'onRewardedDisplayed',
+  FAILED_TO_SHOW: 'onRewardedFailedToShow',
+  HIDDEN: 'onRewardedHidden',
+  REWARDED: 'onRewardedCompleted',
+  IMPRESSION: 'onRewardedImpression',
 };
 
-export const AppOpenAd: FullscreenAdType = {
-  isAdLoaded: CASMobileAds.isAppOpenAdLoaded,
-  loadAd: () => CASMobileAds.loadAppOpenAd(),
-  showAd: CASMobileAds.showAppOpenAd,
+export const RewardedAd: FullscreenAdType = {
+  isAdLoaded: CASMobileAds.isRewardedAdLoaded,
+  loadAd: CASMobileAds.loadRewardedAd,
+  showAd: CASMobileAds.showRewardedAd,
+
+  setAutoloadEnabled: CASMobileAds.setRewardedAutoloadEnabled,
+  destroy: CASMobileAds.destroyRewarded,
+
+  addAdUserEarnRewardEventListener: (l) => addEventListener(EVENTS.REWARDED, l),
+  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(EVENTS.REWARDED),
 
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
@@ -26,8 +33,8 @@ export const AppOpenAd: FullscreenAdType = {
   addAdClickedEventListener: (l) => addEventListener(EVENTS.CLICKED, l),
   removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
 
-  addAdDisplayedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
-  removeAdDisplayedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
+  addAdShowedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
+  removeAdShowedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
 
   addAdFailedToShowEventListener: (l) => addEventListener(EVENTS.FAILED_TO_SHOW, l),
   removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),
@@ -37,4 +44,4 @@ export const AppOpenAd: FullscreenAdType = {
 
   addAdImpressionEventListener: (l) => addEventListener(EVENTS.IMPRESSION, l),
   removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
-};
+} as unknown as FullscreenAdType;

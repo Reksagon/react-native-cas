@@ -5,6 +5,13 @@ export type FullscreenAdType = {
   loadAd(options?: any): Promise<void>;
   showAd(): Promise<void>;
 
+  setAutoloadEnabled(enabled: boolean): Promise<void>;
+  setAutoshowEnabled?(enabled: boolean): Promise<void>; 
+  setMinInterval?(seconds: number): Promise<void>;
+  restartInterval?(): Promise<void>;
+
+  destroy(): Promise<void>;
+
   addAdLoadedEventListener(listener: () => void): void;
   removeAdLoadedEventListener(): void;
 
@@ -14,8 +21,8 @@ export type FullscreenAdType = {
   addAdClickedEventListener(listener: () => void): void;
   removeAdClickedEventListener(): void;
 
-  addAdDisplayedEventListener(listener: () => void): void;
-  removeAdDisplayedEventListener(): void;
+  addAdShowedEventListener(listener: () => void): void;
+  removeAdShowedEventListener(): void;
 
   addAdFailedToShowEventListener(listener: (error: AdError) => void): void;
   removeAdFailedToShowEventListener(): void;
@@ -25,4 +32,5 @@ export type FullscreenAdType = {
 
   addAdImpressionEventListener(listener: (info: AdContentInfo) => void): void;
   removeAdImpressionEventListener(): void;
+  
 };

@@ -2,16 +2,17 @@ import type { StyleProp, ViewStyle, NativeSyntheticEvent } from 'react-native';
 
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
-  NO_FILL = 1,
-  NO_CONNECTION = 2,
-  REACHED_CAP = 3,
-  ALREADY_DISPLAYED = 4,
-  CONFIGURATION_ERROR = 5,
-  NOT_READY = 6,
-  NOT_PASSED_INTERVAL = 7,
-  NOT_INITIALIZED = 8,
-  NOT_FOREGROUND = 9,
-  TIMEOUT = 10,
+  NOT_READY = 1,
+  REJECTED = 2,
+  NO_FILL = 3,
+  REACHED_CAP = 6,
+  NOT_INITIALIZED = 7,
+  TIMEOUT = 8,
+  NO_CONNECTION = 9,
+  CONFIGURATION_ERROR = 10,
+  NOT_PASSED_INTERVAL = 11,
+  ALREADY_DISPLAYED = 12,
+  NOT_FOREGROUND = 13,
 }
 
 export type AdError = {

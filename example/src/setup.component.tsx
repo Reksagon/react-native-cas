@@ -15,10 +15,7 @@ export const Setup = () => {
       const unsub = CASMobileAds.addConsentFlowDismissedEventListener((status) => {
         logCasInfo('consentFlowDismissed:', status);
       });
-      const init = await CASMobileAds.initialize({
-        casId: '1058803540',
-        testMode: true,
-      });
+      const init = await CASMobileAds.initialize('1058803540', true);
       logCasInfo('initialize:', init);
       const v = await CASMobileAds.getSDKVersion();
       logCasInfo('sdkVersion:', v);

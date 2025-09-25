@@ -2,43 +2,71 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Modal, ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-
-import {
-  InterstitialAd,
-  RewardedAd,
-  AppOpenAd,
-} from 'react-native-cas';
+import { useCasContext } from './cas.context';
+import { InterstitialAd, RewardedAd, AppOpenAd } from 'react-native-cas';
 
 type BusyKind = null | 'Interstitial' | 'Rewarded' | 'AppOpen';
 
+
+const pickError = (e: any): { code?: number; message?: string } | undefined => {
+  const p = (e && e.nativeEvent) ? e.nativeEvent : e;
+  if (!p) return undefined;
+  if (p.error) return p.error;                         
+  if ('code' in p || 'message' in p) return p;         
+  if ('errorCode' in p || 'errorMessage' in p)          
+    return { code: p.errorCode, message: p.errorMessage };
+  return undefined;
+};
+
+
 export const Ads = () => {
+  const { logCasInfo } = useCasContext();
   const [busy, setBusy] = useState<BusyKind>(null);
 
   useEffect(() => {
-    InterstitialAd.addAdLoadedEventListener(() => console.log('Interstitial loaded'));
-    InterstitialAd.addAdLoadFailedEventListener((e) => console.log('Interstitial load failed:', e));
-    InterstitialAd.addAdDisplayedEventListener(() => console.log('Interstitial displayed'));
-    InterstitialAd.addAdFailedToShowEventListener((e) => console.log('Interstitial failed to show:', e));
-    InterstitialAd.addAdClickedEventListener(() => console.log('Interstitial clicked'));
-    InterstitialAd.addAdDismissedEventListener(() => console.log('Interstitial closed'));
-    InterstitialAd.addAdImpressionEventListener((info) => console.log('Interstitial impression:', info));
+    // Interstitial
+    InterstitialAd.addAdLoadedEventListener(() => logCasInfo('Interstitial loaded'));
+    InterstitialAd.addAdLoadFailedEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('Interstitial failed to load', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    InterstitialAd.addAdShowedEventListener(() => logCasInfo('Interstitial showed'));
+    InterstitialAd.addAdFailedToShowEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('Interstitial failed to show', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    InterstitialAd.addAdClickedEventListener(() => logCasInfo('Interstitial clicked'));
+    InterstitialAd.addAdDismissedEventListener(() => logCasInfo('Interstitial closed'));
 
-    RewardedAd.addAdLoadedEventListener(() => console.log('Rewarded loaded'));
-    RewardedAd.addAdLoadFailedEventListener((e) => console.log('Rewarded load failed:', e));
-    RewardedAd.addAdDisplayedEventListener(() => console.log('Rewarded displayed'));
-    RewardedAd.addAdFailedToShowEventListener((e) => console.log('Rewarded failed to show:', e));
-    RewardedAd.addAdClickedEventListener(() => console.log('Rewarded clicked'));
-    RewardedAd.addAdDismissedEventListener(() => console.log('Rewarded closed'));
-    RewardedAd.addAdImpressionEventListener((info) => console.log('Rewarded impression:', info));
+    // Rewarded
+    RewardedAd.addAdLoadedEventListener(() => logCasInfo('Rewarded loaded'));
+    RewardedAd.addAdLoadFailedEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('Rewarded failed to load', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    RewardedAd.addAdShowedEventListener(() => logCasInfo('Rewarded showed'));
+    RewardedAd.addAdFailedToShowEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('Rewarded failed to show', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    RewardedAd.addAdClickedEventListener(() => logCasInfo('Rewarded clicked'));
+    RewardedAd.addAdDismissedEventListener(() => logCasInfo('Rewarded closed'));
+    RewardedAd.addAdUserEarnRewardEventListener(() => logCasInfo('Rewarded completed'));
 
-    AppOpenAd.addAdLoadedEventListener(() => console.log('AppOpen loaded'));
-    AppOpenAd.addAdLoadFailedEventListener((e) => console.log('AppOpen load failed:', e));
-    AppOpenAd.addAdDisplayedEventListener(() => console.log('AppOpen displayed'));
-    AppOpenAd.addAdFailedToShowEventListener((e) => console.log('AppOpen failed to show:', e));
-    AppOpenAd.addAdClickedEventListener(() => console.log('AppOpen clicked'));
-    AppOpenAd.addAdDismissedEventListener(() => console.log('AppOpen closed'));
-    AppOpenAd.addAdImpressionEventListener((info) => console.log('AppOpen impression:', info));
-  }, []);
+    // AppOpen
+    AppOpenAd.addAdLoadedEventListener(() => logCasInfo('AppOpen loaded'));
+    AppOpenAd.addAdLoadFailedEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('AppOpen failed to load', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    AppOpenAd.addAdShowedEventListener(() => logCasInfo('AppOpen showed'));
+    AppOpenAd.addAdFailedToShowEventListener((e) => {
+      const err = pickError(e);
+      logCasInfo('AppOpen failed to show', err ? `${err.code}: ${err.message}` : '(no error payload)');
+    });
+    AppOpenAd.addAdClickedEventListener(() => logCasInfo('AppOpen clicked'));
+    AppOpenAd.addAdDismissedEventListener(() => logCasInfo('AppOpen closed'));
+  }, [logCasInfo]);
 
   const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -70,32 +98,29 @@ export const Ads = () => {
   );
 
   const showInterstitial = useCallback(
-    () =>
-      showWithLoader('Interstitial', {
-        isLoaded: InterstitialAd.isAdLoaded,
-        load: () => InterstitialAd.loadAd(),
-        show: () => InterstitialAd.showAd(),
-      }),
+    () => showWithLoader('Interstitial', {
+      isLoaded: InterstitialAd.isAdLoaded,
+      load: () => InterstitialAd.loadAd(),
+      show: () => InterstitialAd.showAd(),
+    }),
     [showWithLoader]
   );
 
   const showRewarded = useCallback(
-    () =>
-      showWithLoader('Rewarded', {
-        isLoaded: RewardedAd.isAdLoaded,
-        load: () => RewardedAd.loadAd(),
-        show: () => RewardedAd.showAd(),
-      }),
+    () => showWithLoader('Rewarded', {
+      isLoaded: RewardedAd.isAdLoaded,
+      load: () => RewardedAd.loadAd(),
+      show: () => RewardedAd.showAd(),
+    }),
     [showWithLoader]
   );
 
   const showAppOpenedAd = useCallback(
-    () =>
-      showWithLoader('AppOpen', {
-        isLoaded: AppOpenAd.isAdLoaded,
-        load: () => AppOpenAd.loadAd(),
-        show: () => AppOpenAd.showAd(),
-      }),
+    () => showWithLoader('AppOpen', {
+      isLoaded: AppOpenAd.isAdLoaded,
+      load: () => AppOpenAd.loadAd(),
+      show: () => AppOpenAd.showAd(),
+    }),
     [showWithLoader]
   );
 

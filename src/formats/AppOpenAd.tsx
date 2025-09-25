@@ -3,19 +3,23 @@ import type { FullscreenAdType } from '../types/FullscreenAdType';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const EVENTS = {
-  LOADED: 'onInterstitialLoaded',
-  LOAD_FAILED: 'onInterstitialLoadFailed',
-  CLICKED: 'onInterstitialClicked',
-  DISPLAYED: 'onInterstitialDisplayed',
-  FAILED_TO_SHOW: 'onInterstitialFailedToShow',
-  HIDDEN: 'onInterstitialHidden',
-  IMPRESSION: 'onInterstitialImpression',
+  LOADED: 'onAppOpenLoaded',
+  LOAD_FAILED: 'onAppOpenLoadFailed',
+  CLICKED: 'onAppOpenClicked',
+  DISPLAYED: 'onAppOpenDisplayed',
+  FAILED_TO_SHOW: 'onAppOpenFailedToShow',
+  HIDDEN: 'onAppOpenHidden',
+  IMPRESSION: 'onAppOpenImpression',
 };
 
-export const InterstitialAd: FullscreenAdType = {
-  isAdLoaded: CASMobileAds.isInterstitialAdLoaded,
-  loadAd: CASMobileAds.loadInterstitialAd,
-  showAd: CASMobileAds.showInterstitialAd,
+export const AppOpenAd: FullscreenAdType = {
+  isAdLoaded: CASMobileAds.isAppOpenAdLoaded,
+  loadAd: () => CASMobileAds.loadAppOpenAd(),
+  showAd: CASMobileAds.showAppOpenAd,
+
+  setAutoloadEnabled: CASMobileAds.setAppOpenAutoloadEnabled,
+  setAutoshowEnabled: CASMobileAds.setAppOpenAutoshowEnabled,
+  destroy: CASMobileAds.destroyAppOpen,
 
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
@@ -26,8 +30,8 @@ export const InterstitialAd: FullscreenAdType = {
   addAdClickedEventListener: (l) => addEventListener(EVENTS.CLICKED, l),
   removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
 
-  addAdDisplayedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
-  removeAdDisplayedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
+  addAdShowedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
+  removeAdShowedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
 
   addAdFailedToShowEventListener: (l) => addEventListener(EVENTS.FAILED_TO_SHOW, l),
   removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),

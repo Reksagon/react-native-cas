@@ -3,20 +3,25 @@ import type { FullscreenAdType } from '../types/FullscreenAdType';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const EVENTS = {
-  LOADED: 'onRewardedLoaded',
-  LOAD_FAILED: 'onRewardedLoadFailed',
-  CLICKED: 'onRewardedClicked',
-  DISPLAYED: 'onRewardedDisplayed',
-  FAILED_TO_SHOW: 'onRewardedFailedToShow',
-  HIDDEN: 'onRewardedHidden',
-  COMPLETED: 'onRewardedCompleted',
-  IMPRESSION: 'onRewardedImpression',
+  LOADED: 'onInterstitialLoaded',
+  LOAD_FAILED: 'onInterstitialLoadFailed',
+  CLICKED: 'onInterstitialClicked',
+  DISPLAYED: 'onInterstitialDisplayed',
+  FAILED_TO_SHOW: 'onInterstitialFailedToShow',
+  HIDDEN: 'onInterstitialHidden',
+  IMPRESSION: 'onInterstitialImpression',
 };
 
-export const RewardedAd: FullscreenAdType = {
-  isAdLoaded: CASMobileAds.isRewardedAdLoaded,
-  loadAd: CASMobileAds.loadRewardedAd,
-  showAd: CASMobileAds.showRewardedAd,
+export const InterstitialAd: FullscreenAdType = {
+  isAdLoaded: CASMobileAds.isInterstitialAdLoaded,
+  loadAd: CASMobileAds.loadInterstitialAd,
+  showAd: CASMobileAds.showInterstitialAd,
+
+  setAutoloadEnabled: CASMobileAds.setInterstitialAutoloadEnabled,
+  setAutoshowEnabled: CASMobileAds.setInterstitialAutoshowEnabled,
+  setMinInterval: CASMobileAds.setInterstitialMinInterval,
+  restartInterval: CASMobileAds.restartInterstitialInterval,
+  destroy: CASMobileAds.destroyInterstitial,
 
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
@@ -27,8 +32,8 @@ export const RewardedAd: FullscreenAdType = {
   addAdClickedEventListener: (l) => addEventListener(EVENTS.CLICKED, l),
   removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
 
-  addAdDisplayedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
-  removeAdDisplayedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
+  addAdShowedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
+  removeAdShowedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
 
   addAdFailedToShowEventListener: (l) => addEventListener(EVENTS.FAILED_TO_SHOW, l),
   removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),
