@@ -2,8 +2,8 @@ import { useCallback, useRef } from 'react';
 import { Button, View } from 'react-native';
 import { styles } from './styles';
 import { useCasContext } from './cas.context';
-import { AdView, AdViewSize } from 'react-native-cas';
-import type { AdViewRef, AdContentInfo } from 'react-native-cas';
+import { AdView, AdViewSize, type AdViewRef, type AdContentInfo } from 'react-native-cas';
+
 
 export const formatImpression = (i?: AdContentInfo) => {
   if (!i) return '(no impression payload)';

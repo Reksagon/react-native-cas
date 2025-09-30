@@ -1,69 +1,29 @@
-import { NativeEventEmitter } from 'react-native';
-import { eventEmitter } from './modules/CASMobileAds'; 
+import { NativeEventEmitter, NativeModules, EmitterSubscription } from 'react-native';
 
-type FullType = 'interstitial' | 'rewarded' | 'appopen';
-const TITLE: Record<FullType, string> = {
-  interstitial: 'Interstitial',
-  rewarded: 'Rewarded',
-  appopen: 'AppOpen',
+const emitter = new NativeEventEmitter(NativeModules.CASMobileAds);
+
+const registry = new Map<string, Set<EmitterSubscription>>();
+
+export type Unsub = () => void;
+
+export const addEventListener = (name: string, cb: (p?: any) => void): Unsub => {
+  const sub = emitter.addListener(name, cb);
+  if (!registry.has(name)) registry.set(name, new Set());
+  registry.get(name)!.add(sub);
+
+  return () => {
+    sub.remove();
+    const set = registry.get(name);
+    if (set) {
+      set.delete(sub);
+      if (set.size === 0) registry.delete(name);
+    }
+  };
 };
 
-type CB = (arg?: any) => void;
-const bus = new Map<string, Set<CB>>();
-
-export const addEventListener = (name: string, cb: CB) => {
-  if (!bus.has(name)) bus.set(name, new Set());
-  bus.get(name)!.add(cb);
-};
-export const removeEventListener = (name: string) => bus.get(name)?.clear();
-
-const emit = (name: string, payload?: any) => {
-  const set = bus.get(name);
+export const removeEventListener = (name: string): void => {
+  const set = registry.get(name);
   if (!set) return;
-  set.forEach((cb) => cb(payload));
+  for (const sub of set) sub.remove();
+  registry.delete(name);
 };
-
-const normError = (p: any) =>
-  p?.error ? p.error :
-  { code: p?.errorCode ?? p?.code, message: p?.errorMessage ?? p?.message };
-
-let wired = false;
-const wire = () => {
-  if (wired) return; wired = true;
-
-  (eventEmitter as NativeEventEmitter).addListener('adLoaded', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}Loaded`);
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('adFailedToLoad', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}LoadFailed`, normError(p));
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('onShown', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}Displayed`);  
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('onShowFailed', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}FailedToShow`, normError(p));
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('onClicked', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}Clicked`);
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('onClosed', (p: any) => {
-    const t = TITLE[p?.type as FullType]; if (!t) return;
-    emit(`on${t}Hidden`);
-  });
-
-  (eventEmitter as NativeEventEmitter).addListener('onRewarded', (_p: any) => {
-    emit('onRewardedCompleted');
-  });
-};
-
-wire();

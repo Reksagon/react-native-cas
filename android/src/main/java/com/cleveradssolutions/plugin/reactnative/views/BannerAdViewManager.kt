@@ -1,8 +1,6 @@
 package com.cleveradssolutions.plugin.reactnative.views
 
 import android.view.ViewGroup
-import com.cleveradssolutions.plugin.reactnative.extensions.getIntOrZero
-import com.cleveradssolutions.plugin.reactnative.extensions.getStringOrEmpty
 import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
 import com.cleversolutions.ads.AdError
 import com.cleversolutions.ads.AdSize
@@ -116,9 +114,8 @@ class BannerAdViewManager :
   override fun getCommandsMap(): MutableMap<String, Int> = mutableMapOf(
     "isAdLoaded" to 0,
     "loadAd" to 1,
-    "startAutoRefresh" to 2,
-    "stopAutoRefresh" to 3,
-    "destroy" to 4
+    "setRefreshInterval" to 2,
+    "destroy" to 3
   )
 
   override fun receiveCommand(root: CASBannerView, commandId: String?, args: ReadableArray?) {
@@ -130,11 +127,12 @@ class BannerAdViewManager :
           .receiveEvent(root.id, "isAdLoaded", map)
       }
       "loadAd" -> root.load()
-      "startAutoRefresh" -> if (root.refreshInterval == 0) root.refreshInterval = 30
-      "stopAutoRefresh" -> root.disableAdRefresh()
-      "destroy" -> {
-        root.destroy()
+      "setRefreshInterval" -> {
+        val interval = args?.getInt(0) ?: 0
+        if (interval == 0) root.disableAdRefresh() else root.refreshInterval = interval
       }
+      "destroy" -> root.destroy()
     }
   }
+
 }

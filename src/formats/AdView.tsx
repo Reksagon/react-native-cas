@@ -20,16 +20,15 @@ import {
   StyleSheet,
 } from 'react-native';
 
-import { AdViewComponent } from '../native/AdViewComponent';
-import { AdViewCommands } from '../native/Commands';
-import type {
-  AdError,
-  AdViewRef,
-  AdViewProps,
-  AdViewImpressionEvent,
-} from '../types/Types';
-import { AdViewSize } from '../types/Types';
-import { CASMobileAds } from '../modules/CASMobileAds';
+import {
+  AdViewComponent,
+  AdViewCommands,
+  AdViewSize,
+  type AdViewProps,
+  type AdViewRef,
+  type AdViewImpressionEvent,
+} from '../native/AdViewComponent';
+import type { AdError } from '../types/Types';
 
 const pr = PixelRatio.get();
 
@@ -41,13 +40,6 @@ const BASE = {
   [AdViewSize.SMART]: { width: 320, height: 50 }, 
 } as const;
 
-const getAdaptiveHeightForWidth = async (width: number): Promise<number> => {
-  try {
-    const height = await CASMobileAds.getAdaptiveBannerHeightForWidth(width);
-    if (typeof height === 'number' && height > 0) return height;
-  } catch {}
-  return BASE[AdViewSize.BANNER].height;
-};
 
 export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   {
@@ -70,21 +62,18 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
 
   useReducer((x) => x + 1, 0);
 
-  const [measured, setMeasured] = useState<{ width: number; height: number }>(() => {
-    if (size === AdViewSize.ADAPTIVE) {
-      return { width: Dimensions.get('window').width, height: BASE[AdViewSize.BANNER].height };
-    }
-    return BASE[size];
-  });
+  const [measured, setMeasured] = useState(() => (
+  size === AdViewSize.ADAPTIVE
+    ? { width: Dimensions.get('window').width, height: BASE[AdViewSize.BANNER].height }
+    : BASE[size]));
 
   const containerStyle = useMemo(() => {
-    if (size === AdViewSize.ADAPTIVE) {
-      return StyleSheet.compose(style as any, {
-        width: Dimensions.get('window').width,
-      });
-    }
-    return StyleSheet.compose(style as any, BASE[size]);
-  }, [size, style]);
+  if (size === AdViewSize.ADAPTIVE) {
+    return StyleSheet.compose(style as any, { width: containerWidth ?? screenWidth });
+  }
+  return StyleSheet.compose(style as any, BASE[size]);
+}, [size, style, containerWidth, screenWidth]);
+
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const layout = { ...e.nativeEvent.layout };
@@ -97,21 +86,14 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   }, [size]);
 
   useEffect(() => {
-    let cancelled = false;
+  if (size === AdViewSize.ADAPTIVE || size === AdViewSize.SMART || size === AdViewSize.BANNER) {
+    const width = containerWidth ?? screenWidth;
+    setMeasured((prev) => ({ ...prev, width }));
+  } else {
+    setMeasured(BASE[size]);
+  }
+}, [size, screenWidth, containerWidth]);
 
-    const recalc = async () => {
-      if (size === AdViewSize.ADAPTIVE || size === AdViewSize.SMART || size === AdViewSize.BANNER) {
-        const width = containerWidth ?? screenWidth;
-        const height = await getAdaptiveHeightForWidth(width);
-        if (!cancelled) setMeasured({ width, height });
-      } else {
-        setMeasured(BASE[size]);
-      }
-    };
-
-    recalc();
-    return () => { cancelled = true; };
-  }, [size, screenWidth, containerWidth]);
 
   const onLoaded = useCallback(
     (e: NativeSyntheticEvent<any>) => {

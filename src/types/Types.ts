@@ -1,5 +1,3 @@
-import type { StyleProp, ViewStyle, NativeSyntheticEvent } from 'react-native';
-
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
   NOT_READY = 1,
@@ -44,6 +42,15 @@ export type InitConfiguration = {
   consentFlowStatus: number;
 };
 
+export type InitOptions = {
+  audience?: Audience;
+  showConsentFormIfRequired?: boolean;
+  forceTestAds?: boolean;
+  testDeviceIds?: string[];
+  trialAdFreeInterval?: number;
+};
+
+
 export enum Gender {
   Unknown = 0,
   Male,
@@ -68,26 +75,6 @@ export type CASSettings = {
   trialAdFreeInterval?: number;
 };
 
-export enum AdViewSize {
-  BANNER = 'B',
-  LEADERBOARD = 'L',
-  MREC = 'M',
-  ADAPTIVE = 'A',
-  SMART = 'S',
-}
-
-export type AdViewFailedEvent = Readonly<{
-  error: AdError;
-}>;
-
-export enum AdType {
-  Banner = 0,
-  Interstitial,
-  Rewarded,
-  AppOpen,
-  None,
-}
-
 export type AdContentInfo = {
   format: string;           
   revenue: number;
@@ -99,25 +86,4 @@ export type AdContentInfo = {
   impressionDepth: number;
 };
 
-export type AdViewImpressionEvent = Readonly<{
-  impression: AdContentInfo;
-}>;
 
-export type AdViewProps = {
-  style?: StyleProp<ViewStyle>;
-  size: AdViewSize;
-  isAutoloadEnabled?: boolean;
-  refreshInterval?: number;
-  casId?: string;
-
-  onAdViewLoaded?: (e: NativeSyntheticEvent<any>) => void;
-  onAdViewFailed?: (e: NativeSyntheticEvent<{ error: AdError }>) => void;
-  onAdViewClicked?: () => void;
-  onAdViewImpression?: (e: NativeSyntheticEvent<{ impression: AdContentInfo }>) => void;
-  isAdLoaded?: (ready: NativeSyntheticEvent<boolean>) => void;
-};
-
-export type AdViewRef = {
-  loadAd: () => Promise<void>;
-  isAdLoaded: () => Promise<boolean>;
-};

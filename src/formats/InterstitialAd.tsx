@@ -1,8 +1,8 @@
 import { CASMobileAds } from '../modules/CASMobileAds';
-import type { FullscreenAdType } from '../types/FullscreenAdType';
-import { addEventListener, removeEventListener } from '../EventEmitter';
+import type { InterstitialAdType } from '../types/FullscreenAdType';
+import { addEventListener } from '../EventEmitter';
 
-const EVENTS = {
+const E = {
   LOADED: 'onInterstitialLoaded',
   LOAD_FAILED: 'onInterstitialLoadFailed',
   CLICKED: 'onInterstitialClicked',
@@ -12,7 +12,7 @@ const EVENTS = {
   IMPRESSION: 'onInterstitialImpression',
 };
 
-export const InterstitialAd: FullscreenAdType = {
+export const InterstitialAd: InterstitialAdType = {
   isAdLoaded: CASMobileAds.isInterstitialAdLoaded,
   loadAd: CASMobileAds.loadInterstitialAd,
   showAd: CASMobileAds.showInterstitialAd,
@@ -23,24 +23,24 @@ export const InterstitialAd: FullscreenAdType = {
   restartInterval: CASMobileAds.restartInterstitialInterval,
   destroy: CASMobileAds.destroyInterstitial,
 
-  addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
-  removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
+  addAdLoadedEventListener: (l) => addEventListener(E.LOADED, l),
+  removeAdLoadedEventListener: () => {},
 
-  addAdLoadFailedEventListener: (l) => addEventListener(EVENTS.LOAD_FAILED, l),
-  removeAdLoadFailedEventListener: () => removeEventListener(EVENTS.LOAD_FAILED),
+  addAdLoadFailedEventListener: (l) => addEventListener(E.LOAD_FAILED, l),
+  removeAdLoadFailedEventListener: () => {},
 
-  addAdClickedEventListener: (l) => addEventListener(EVENTS.CLICKED, l),
-  removeAdClickedEventListener: () => removeEventListener(EVENTS.CLICKED),
+  addAdClickedEventListener: (l) => addEventListener(E.CLICKED, l),
+  removeAdClickedEventListener: () => {},
 
-  addAdShowedEventListener: (l) => addEventListener(EVENTS.DISPLAYED, l),
-  removeAdShowedEventListener: () => removeEventListener(EVENTS.DISPLAYED),
+  addAdShowedEventListener: (l) => addEventListener(E.DISPLAYED, l),
+  removeAdShowedEventListener: () => {},
 
-  addAdFailedToShowEventListener: (l) => addEventListener(EVENTS.FAILED_TO_SHOW, l),
-  removeAdFailedToShowEventListener: () => removeEventListener(EVENTS.FAILED_TO_SHOW),
+  addAdFailedToShowEventListener: (l) => addEventListener(E.FAILED_TO_SHOW, l),
+  removeAdFailedToShowEventListener: () => {},
 
-  addAdDismissedEventListener: (l) => addEventListener(EVENTS.HIDDEN, l),
-  removeAdDismissedEventListener: () => removeEventListener(EVENTS.HIDDEN),
+  addAdDismissedEventListener: (l) => addEventListener(E.HIDDEN, l),
+  removeAdDismissedEventListener: () => {},
 
-  addAdImpressionEventListener: (l) => addEventListener(EVENTS.IMPRESSION, l),
-  removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
+  addAdImpressionEventListener: (l) => addEventListener(E.IMPRESSION, l),
+  removeAdImpressionEventListener: () => {},
 };

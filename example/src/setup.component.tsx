@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-import { CASMobileAds } from 'react-native-cas';
+import { CASMobileAds, Audience } from 'react-native-cas';
 import { useCasContext } from './cas.context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -15,7 +15,11 @@ export const Setup = () => {
       const unsub = CASMobileAds.addConsentFlowDismissedEventListener((status) => {
         logCasInfo('consentFlowDismissed:', status);
       });
-      const init = await CASMobileAds.initialize('1058803540', true);
+      const init = await CASMobileAds.initialize('1058803540', {
+        forceTestAds: true,
+        audience: Audience.Children,            
+        showConsentFormIfRequired: true,       
+        trialAdFreeInterval: 120   });
       logCasInfo('initialize:', init);
       const v = await CASMobileAds.getSDKVersion();
       logCasInfo('sdkVersion:', v);

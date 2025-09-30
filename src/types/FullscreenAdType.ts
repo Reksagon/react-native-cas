@@ -1,36 +1,47 @@
 import type { AdError, AdContentInfo } from './Types';
 
-export type FullscreenAdType = {
+export type FullscreenAdBase = {
   isAdLoaded(): Promise<boolean>;
   loadAd(options?: any): Promise<void>;
   showAd(): Promise<void>;
-
-  setAutoloadEnabled(enabled: boolean): Promise<void>;
-  setAutoshowEnabled?(enabled: boolean): Promise<void>; 
-  setMinInterval?(seconds: number): Promise<void>;
-  restartInterval?(): Promise<void>;
-
   destroy(): Promise<void>;
 
-  addAdLoadedEventListener(listener: () => void): void;
+  addAdLoadedEventListener(l: () => void): void;
   removeAdLoadedEventListener(): void;
 
-  addAdLoadFailedEventListener(listener: (error: AdError) => void): void;
+  addAdLoadFailedEventListener(l: (e: AdError) => void): void;
   removeAdLoadFailedEventListener(): void;
 
-  addAdClickedEventListener(listener: () => void): void;
+  addAdClickedEventListener(l: () => void): void;
   removeAdClickedEventListener(): void;
 
-  addAdShowedEventListener(listener: () => void): void;
+  addAdShowedEventListener(l: () => void): void;
   removeAdShowedEventListener(): void;
 
-  addAdFailedToShowEventListener(listener: (error: AdError) => void): void;
+  addAdFailedToShowEventListener(l: (e: AdError) => void): void;
   removeAdFailedToShowEventListener(): void;
 
-  addAdDismissedEventListener(listener: () => void): void;
+  addAdDismissedEventListener(l: () => void): void;
   removeAdDismissedEventListener(): void;
 
-  addAdImpressionEventListener(listener: (info: AdContentInfo) => void): void;
+  addAdImpressionEventListener(l: (i: AdContentInfo) => void): void;
   removeAdImpressionEventListener(): void;
-  
+};
+
+export type InterstitialAdType = FullscreenAdBase & {
+  setAutoloadEnabled(enabled: boolean): Promise<void>;
+  setAutoshowEnabled(enabled: boolean): Promise<void>;
+  setMinInterval(seconds: number): Promise<void>;
+  restartInterval(): Promise<void>;
+};
+
+export type RewardedAdType = FullscreenAdBase & {
+  setAutoloadEnabled(enabled: boolean): Promise<void>;
+  addAdUserEarnRewardEventListener(l: () => void): void;
+  removeAdUserEarnRewardLoadedEventListener(): void;
+};
+
+export type AppOpenAdType = FullscreenAdBase & {
+  setAutoloadEnabled(enabled: boolean): Promise<void>;
+  setAutoshowEnabled(enabled: boolean): Promise<void>;
 };

@@ -1,51 +1,74 @@
 package com.cleveradssolutions.plugin.reactnative
 
+import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
 import com.cleveradssolutions.sdk.AdContentInfo
 import com.cleveradssolutions.sdk.AdFormat
+import com.cleveradssolutions.sdk.OnAdImpressionListener
 import com.cleveradssolutions.sdk.screen.ScreenAdContentCallback
 import com.cleversolutions.ads.AdError
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 
 class ScreenContentCallback(
-  private val adType: String,
-  private val emit: (String, WritableNativeMap) -> Unit,
-  private val onLoadResolved: ((success: Boolean, error: AdError?) -> Unit)? = null,
-  private val onShowResolved: ((success: Boolean, error: AdError?) -> Unit)? = null
-) : ScreenAdContentCallback() {
+  private val reactContext: ReactApplicationContext,
+  private val adType: String
+) : ScreenAdContentCallback(), OnAdImpressionListener {
 
-  override fun onAdLoaded(adInfo: AdContentInfo) {
-    emit("adLoaded", WritableNativeMap().apply { putString("type", adType) })
-    onLoadResolved?.invoke(true, null)
+  private fun title(): String = when (adType) {
+    "interstitial" -> "Interstitial"
+    "rewarded" -> "Rewarded"
+    "appopen" -> "AppOpen"
+    else -> "Ad"
+  }
+
+  private fun emit(event: String, map: WritableNativeMap = WritableNativeMap()) {
+    reactContext
+      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      .emit(event, map)
+  }
+
+  override fun onAdImpression(ad: AdContentInfo) {
+    val map = WritableNativeMap().apply {
+      putMap("impression", ad.toReadableMap())
+    }
+    emit("on${title()}Impression", map)
+  }
+
+  val rewardListener = OnRewardEarnedListener {
+    emit("onRewardedCompleted", WritableNativeMap())
+  }
+
+  override fun onAdLoaded(ad: AdContentInfo) {
+    emit("on${title()}Loaded", WritableNativeMap())
   }
 
   override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-    emit("adFailedToLoad", WritableNativeMap().apply {
-      putString("type", adType)
+    val map = WritableNativeMap().apply {
       putInt("errorCode", error.code)
       putString("errorMessage", error.message)
-    })
-    onLoadResolved?.invoke(false, error)
+    }
+    emit("on${title()}LoadFailed", map)
   }
 
-  override fun onAdShowed(adInfo: AdContentInfo) {
-    emit("onShown", WritableNativeMap().apply { putString("type", adType) })
+  override fun onAdShowed(ad: AdContentInfo) {
+    emit("on${title()}Displayed", WritableNativeMap())
   }
 
   override fun onAdFailedToShow(format: AdFormat, error: AdError) {
-    emit("onShowFailed", WritableNativeMap().apply {
-      putString("type", adType)
+    val map = WritableNativeMap().apply {
       putInt("errorCode", error.code)
       putString("errorMessage", error.message)
-    })
-    onShowResolved?.invoke(false, error)
+    }
+    emit("on${title()}FailedToShow", map)
   }
 
-  override fun onAdClicked(adInfo: AdContentInfo) {
-    emit("onClicked", WritableNativeMap().apply { putString("type", adType) })
+  override fun onAdClicked(ad: AdContentInfo) {
+    emit("on${title()}Clicked", WritableNativeMap())
   }
 
-  override fun onAdDismissed(adInfo: AdContentInfo) {
-    emit("onClosed", WritableNativeMap().apply { putString("type", adType) })
-    onShowResolved?.invoke(true, null)
+  override fun onAdDismissed(ad: AdContentInfo) {
+    emit("on${title()}Hidden", WritableNativeMap())
   }
 }

@@ -1,12 +1,13 @@
 package com.cleveradssolutions.plugin.reactnative.extensions
 
 import com.cleveradssolutions.sdk.AdContentInfo
+import com.cleveradssolutions.sdk.AdRevenuePrecision
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 
-private fun accuracyToLabel(a: Int): String = when (a) {
-  2 -> "bid"
-  1 -> "floor"
+private fun precisionToLabel(p: Int): String = when (p) {
+  AdRevenuePrecision.PRECISE -> "bid"
+  AdRevenuePrecision.FLOOR -> "floor"
   else -> "unknown"
 }
 
@@ -14,7 +15,7 @@ fun AdContentInfo.toReadableMap(): ReadableMap {
   val map = WritableNativeMap()
   map.putString("format", this.format.label)
   map.putDouble("revenue", this.revenue)
-  map.putString("revenuePrecision", accuracyToLabel(this.revenuePrecision))
+  map.putString("revenuePrecision", precisionToLabel(this.revenuePrecision))
   map.putString("sourceUnitId", this.sourceUnitId)
   map.putString("sourceName", this.sourceName)
   this.creativeId?.let { map.putString("creativeId", it) }
