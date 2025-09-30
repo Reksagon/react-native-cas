@@ -19,10 +19,7 @@ export const RewardedAd: FullscreenAdType = {
   showAd: CASMobileAds.showRewardedAd,
 
   setAutoloadEnabled: CASMobileAds.setRewardedAutoloadEnabled,
-  destroy: CASMobileAds.destroyRewarded,
-
-  addAdUserEarnRewardEventListener: (l) => addEventListener(EVENTS.REWARDED, l),
-  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(EVENTS.REWARDED),
+  destroy: CASMobileAds.destroyRewarded,  
 
   addAdLoadedEventListener: (l) => addEventListener(EVENTS.LOADED, l),
   removeAdLoadedEventListener: () => removeEventListener(EVENTS.LOADED),
@@ -44,4 +41,5 @@ export const RewardedAd: FullscreenAdType = {
 
   addAdImpressionEventListener: (l) => addEventListener(EVENTS.IMPRESSION, l),
   removeAdImpressionEventListener: () => removeEventListener(EVENTS.IMPRESSION),
-} as unknown as FullscreenAdType;
+
+};

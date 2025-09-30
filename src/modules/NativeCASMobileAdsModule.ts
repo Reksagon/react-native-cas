@@ -1,16 +1,48 @@
+import type { TurboModule } from "react-native";
+import { TurboModuleRegistry } from "react-native";
 import type { InitConfiguration, CASSettings } from '../types/Types';
-import type { TurboModule } from 'react-native';
-import { TurboModuleRegistry } from 'react-native';
 
-export interface CASSpec extends TurboModule {
-  //Init
-  initialize(casId: string, testMode: boolean): Promise<InitConfiguration>;
+export interface Spec extends TurboModule {
+  // Init
+  initialize(casId: string, withConsentFlow: boolean, testMode: boolean): Promise<InitConfiguration>;
   isInitialized(): Promise<boolean>;
 
-  //Mediation extras
+  // Extras / Misc / Settings  
+  getSDKVersion(): Promise<string>;
+  setTestMode(enabled: boolean): void;
+
+  getSettings(): Promise<{
+    taggedAudience: number;
+    age: number;
+    gender: number;
+    contentUrl?: string;
+    keywords: string[];
+    debugMode: boolean;
+    mutedAdSounds: boolean;
+    testDeviceIDs: string[];
+    locationCollectionEnabled?: boolean;
+    trialAdFreeInterval?: number;
+  }>;
+
+  setSettings(settings: {
+    taggedAudience?: number;
+    age?: number;
+    gender?: number;
+    contentUrl?: string;
+    keywords?: string[];
+    debugMode?: boolean;
+    mutedAdSounds?: boolean;
+    testDeviceIDs?: string[];
+    locationCollectionEnabled?: boolean;
+    trialAdFreeInterval?: number;
+  }): Promise<void>;
+
+  showConsentFlow(): Promise<void>;
+  setConsentFlowEnabled(enabled: boolean): void;
+
   setMediationExtras(key: string, value: string): Promise<void>;
 
-  //Adaptive banner helper
+  //Adaptive Banner
   getAdaptiveBannerHeightForWidth(width: number): Promise<number>;
 
   //Interstitial
@@ -37,18 +69,6 @@ export interface CASSpec extends TurboModule {
   setAppOpenAutoloadEnabled(enabled: boolean): Promise<void>;
   setAppOpenAutoshowEnabled(enabled: boolean): Promise<void>;
   destroyAppOpen(): Promise<void>;
-
-  //Misc
-  getSDKVersion(): Promise<string>;
-  setTestMode(enabled: boolean): void;
-
-  //Consent flow
-  showConsentFlow(): Promise<void>;
-  setConsentFlowEnabled(enabled: boolean): void;
-
-  //Settings
-  getSettings(): Promise<CASSettings>;
-  setSettings(settings: Partial<CASSettings>): Promise<void>;
 }
 
-export default TurboModuleRegistry.getEnforcing<CASSpec>('CASMobileAds');
+export default TurboModuleRegistry.getEnforcing<Spec>("CASMobileAds");
