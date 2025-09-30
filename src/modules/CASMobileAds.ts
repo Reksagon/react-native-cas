@@ -1,6 +1,5 @@
 import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import { CASMobileAdsEvent } from '../types/Types';
 import type { InitConfiguration, CASSettings } from '../types/Types';
 
 export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
@@ -52,7 +51,7 @@ export class CASMobileAds {
 
   }
   static addConsentFlowDismissedEventListener(listener: (status: number) => void) {
-    const sub = eventEmitter.addListener(CASMobileAdsEvent.ConsentFlowDismissed, listener);
+    const sub = eventEmitter.addListener("consentFlowDismissed", listener);
     return () => sub.remove();
   }
 

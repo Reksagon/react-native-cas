@@ -1,6 +1,6 @@
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
-import type { InitConfiguration, CASSettings } from '../types/Types';
+import type { InitConfiguration } from '../types/Types';
 
 export interface Spec extends TurboModule {
   // Init
