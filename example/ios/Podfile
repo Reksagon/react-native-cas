@@ -1,16 +1,36 @@
 ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
-platform :ios, '13.4'
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve("react-native/scripts/react_native_pods.rb", {paths: [process.argv[1]]})', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/cleveradssolutions/CAS-Specs.git'
+
+prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
-if linkage
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'CasExample' do  
-  pod 'react-native-cas', :path => File.join(__dir__, '../../')
+target 'example' do  
+  pod 'react-native-cas', :path => '../..'    
 
-  post_install do |installer|    
+  config = use_native_modules!
+
+  use_react_native!(
+    path: config[:reactNativePath],
+    app_path: "#{Pod::Config.instance.installation_root}/..",
+    fabric_enabled: ENV['RCT_NEW_ARCH_ENABLED'] == '1',
+    hermes_enabled: false    
+  )
+
+  post_install do |installer|
+    react_native_post_install(installer, config[:reactNativePath], mac_catalyst_enabled: false)
+    
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'

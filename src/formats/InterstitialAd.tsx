@@ -1,6 +1,6 @@
 import { CASMobileAds } from '../modules/CASMobileAds';
 import type { InterstitialAdType } from '../types/FullscreenAdType';
-import { addEventListener } from '../EventEmitter';
+import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const E = {
   LOADED: 'onInterstitialLoaded',
@@ -24,23 +24,23 @@ export const InterstitialAd: InterstitialAdType = {
   destroy: CASMobileAds.destroyInterstitial,
 
   addAdLoadedEventListener: (l) => addEventListener(E.LOADED, l),
-  removeAdLoadedEventListener: () => {},
+  removeAdLoadedEventListener: () => removeEventListener(E.LOADED),
 
   addAdLoadFailedEventListener: (l) => addEventListener(E.LOAD_FAILED, l),
-  removeAdLoadFailedEventListener: () => {},
+  removeAdLoadFailedEventListener: () => removeEventListener(E.LOAD_FAILED),
 
   addAdClickedEventListener: (l) => addEventListener(E.CLICKED, l),
-  removeAdClickedEventListener: () => {},
+  removeAdClickedEventListener: () => removeEventListener(E.CLICKED),
 
   addAdShowedEventListener: (l) => addEventListener(E.DISPLAYED, l),
-  removeAdShowedEventListener: () => {},
+  removeAdShowedEventListener: () => removeEventListener(E.DISPLAYED),
 
   addAdFailedToShowEventListener: (l) => addEventListener(E.FAILED_TO_SHOW, l),
-  removeAdFailedToShowEventListener: () => {},
+  removeAdFailedToShowEventListener: () => removeEventListener(E.FAILED_TO_SHOW),
 
   addAdDismissedEventListener: (l) => addEventListener(E.HIDDEN, l),
-  removeAdDismissedEventListener: () => {},
+  removeAdDismissedEventListener: () => removeEventListener(E.HIDDEN),
 
   addAdImpressionEventListener: (l) => addEventListener(E.IMPRESSION, l),
-  removeAdImpressionEventListener: () => {},
+  removeAdImpressionEventListener: () => removeEventListener(E.IMPRESSION),
 };

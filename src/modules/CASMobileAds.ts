@@ -1,10 +1,6 @@
+import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { CASSpec } from './CASMobileAdsSpec';
 import type { InitializationStatus, InitializationParams, Audience, Gender } from '../types/Types';
-
-const { CASMobileAds: CASMobileAdsNative } = NativeModules as unknown as {
-  CASMobileAds: CASSpec;
-};
 
 export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 

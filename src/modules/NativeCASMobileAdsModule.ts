@@ -2,7 +2,7 @@ import type { InitializationStatus, InitializationParams, Gender } from '../type
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
-export interface CASSpec extends TurboModule {
+export interface Spec extends TurboModule {
   initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
 
@@ -41,4 +41,4 @@ export interface CASSpec extends TurboModule {
   showConsentFlow(): Promise<void>;
 }
 
-export default TurboModuleRegistry.getEnforcing<CASSpec>('CASMobileAds');
+export default TurboModuleRegistry.getEnforcing<Spec>("CASMobileAds");

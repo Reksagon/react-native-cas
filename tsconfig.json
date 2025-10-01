@@ -1,24 +1,17 @@
 {
   "compilerOptions": {
-    "rootDir": ".",
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "jsx": "react-jsx",
-    "lib": ["ESNext"],
+    "target": "ES2019",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "declaration": true,
-    "declarationDir": "lib/typescript",
-    "skipLibCheck": true,
+    "lib": ["ESNext", "DOM"],
+    "declaration": true,    
+    "outDir": "lib/typescript",
     "strict": true,
-    "target": "ESNext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "jsx": "react",
     "types": ["react"],
-    "paths": {
-      "react-native": ["node_modules/react-native"],
-      "react": ["node_modules/react"],
-      "react-native-cas": ["./src/index"]
-    }
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "lib", "example"]
+  "include": ["src"]
 }

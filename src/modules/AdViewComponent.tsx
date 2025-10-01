@@ -2,12 +2,10 @@ import {
   requireNativeComponent,
   UIManager,
   findNodeHandle,
-  ViewProps,
-  HostComponent,
+  type NativeSyntheticEvent,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
-import type { Double, DirectEventHandler, WithDefault } from 'react-native/Libraries/Types/CodegenTypes';
-import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 import type { AdError, AdContentInfo } from '../types/Types';
 
@@ -23,49 +21,30 @@ export type AdViewFailedEvent = Readonly<{
   error: AdError;
 }>;
 
-export type AdViewEvent = Readonly<{
-  contentInfo: AdContentInfo;
+export type AdViewImpressionEvent = Readonly<{
+  impression: AdContentInfo;
 }>;
 
-export interface NativeProps extends ViewProps {
+export type AdViewProps = {
+  style?: StyleProp<ViewStyle>;
   size: AdViewSize;
-  casId?: string;
   isAutoloadEnabled?: boolean;
   refreshInterval?: number;
-  /** Whether to automatically load the ad on mount. Defaults to `true`. */
-  loadOnMount?: WithDefault<boolean, true>;
+  casId?: string;
 
-  onAdViewLoaded?: DirectEventHandler<AdViewEvent>;
-  onAdViewFailed?: DirectEventHandler<AdViewFailedEvent>;
-  onAdViewClicked?: DirectEventHandler<AdViewEvent>;
-  onAdViewImpression?: DirectEventHandler<AdViewEvent>;
+  onAdViewLoaded?: (e: NativeSyntheticEvent<{ width: number; height: number }>) => void;
+  onAdViewFailed?: (e: NativeSyntheticEvent<{ error: AdError }>) => void;
+  onAdViewClicked?: () => void;
+  onAdViewImpression?: (e: NativeSyntheticEvent<{ impression: AdContentInfo }>) => void;
+  isAdLoaded?: (ready: NativeSyntheticEvent<boolean>) => void;
 };
 
-type CASMobileAdsViewNativeComponentType = HostComponent<NativeProps>;
+export type AdViewRef = {
+  loadAd: () => Promise<void>;
+  isAdLoaded: () => Promise<boolean>;
+};
 
-/**
- * Native commands callable from JS for managing AdView.
- */
-interface NativeCommands {
-    /**
-     * Manually starts loading a new ad when `loadOnMount` is `false`.
-     *
-     * @param viewRef - Reference to the native ad view component.
-     */
-    loadAd(viewRef: React.ElementRef<CASMobileAdsViewNativeComponentType>): void;
-}
-
-/**
- * JS interface to ad view commands for {@link AppLovinMAXAdView}.
- */
-export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-    supportedCommands: ['loadAd'],
-});
-
-/**
- * Native view component for displaying a banner or MREC ad.
- */
-export default codegenNativeComponent<NativeProps>('CASAdView') as HostComponent<NativeProps>;
+export const AdViewComponent = requireNativeComponent<AdViewProps>('AdView');
 
 export const AdViewCommands = {
   loadAd: (ref: any) => {
