@@ -4,11 +4,10 @@
 #import <CleverAdsSolutions/CleverAdsSolutions.h>
 #import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
 
-#ifdef RCT_NEW_ARCH_ENABLED
-
 using namespace facebook::react;
 
 @implementation CASMobileAds {
+  NSString* casIdendifier;
   BOOL hasListeners;
   CASInterstitial *interstitial;
   CASRewarded *rewarded;
@@ -42,6 +41,9 @@ typedef NS_ENUM(NSInteger, CASMobileAdsEvent) {
   onRewardedImpression,
   consentFlowDismissed
 };
+
+#define konAppOpenLoaded @"onAppOpenLoaded"
+#define konAppOpenLoadFailed @"onAppOpenLoadFailed"
 
 static NSString * _Nonnull CASMobileAdsEventToString(CASMobileAdsEvent event) {
   switch (event) {
@@ -116,31 +118,35 @@ RCT_EXPORT_MODULE();
            resolve:(RCTPromiseResolveBlock)resolve
             reject:(RCTPromiseRejectBlock)reject
 {
+  casIdendifier = casId;
   @try {
     CASManagerBuilder *builder = [CAS buildManager];
     [builder withTestAdMode:testMode];
-    
-    manager = [builder createWithCasId:casId];
-    [CAS setManager:manager];
     
     if (withConsentFlow) {
       consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
       [builder withConsentFlow: consentFlow];
     }
+    [builder withCompletionHandler:^(CASInitialConfig * _Nonnull config) {
+      NSLog(@"CASMobileAds initialized (Fabric/TurboModule)");
+      
+      NSDictionary *result = @{
+        @"error":config.error,
+        @"countryCode": config.countryCode,
+        @"isConsentRequired": @(config.isConsentRequired),
+        @"consentFlowStatus": @(config.consentFlowStatus)
+      };
+      
+      resolve(config);
+    }];
+    
+    manager = [builder createWithCasId:casId];
+    [CAS setManager:manager];
     
     interstitial = [[CASInterstitial alloc] initWithCasID:casId];
     rewarded = [[CASRewarded alloc] initWithCasID:casId];
     appOpen = [[CASAppOpen alloc] initWithCasID:casId];
     
-    NSLog(@"CASMobileAds initialized (Fabric/TurboModule)");
-    
-    NSDictionary *config = @{
-      @"countryCode": @("country"),
-      @"isConsentRequired": @("consentRequired"),
-      @"consentFlowStatus": @("consentStatus")
-    };
-    
-    resolve(config);
     
   } @catch (NSException *e) {
     resolve(@{ @"error": e.reason ?: @"Unknown error", @"isConsentRequired": @NO, @"consentFlowStatus": @0 });
@@ -172,6 +178,7 @@ RCT_EXPORT_MODULE();
                                 resolve:(RCTPromiseResolveBlock)resolve
                                  reject:(RCTPromiseRejectBlock)reject
 {
+#warning ("REMOVE")
   @try {
     CGFloat containerWidth = (CGFloat)width;
     CASSize *adaptiveSize = [CASSize getAdaptiveBannerForMaxWidth:containerWidth];
@@ -195,6 +202,7 @@ RCT_EXPORT_MODULE();
                    resolve:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject
 {
+#warning ("REMOVE")
   @try {
     if (manager) {
       // FIXME: ()
@@ -218,6 +226,7 @@ RCT_EXPORT_MODULE();
 
 - (void)setTestMode:(BOOL)enabled
 {
+#warning ("REMOVE")
   // FIXME: ()
   // [CAS setTestAdMode:enabled];
 }
@@ -227,6 +236,7 @@ RCT_EXPORT_MODULE();
 - (void)getSettings:(RCTPromiseResolveBlock)resolve
              reject:(RCTPromiseRejectBlock)reject
 {
+#warning ("REMOVE")
   if (!CAS.manager || !CAS.settings) {
     resolve(@{});
     return;
@@ -253,6 +263,7 @@ RCT_EXPORT_MODULE();
             resolve:(RCTPromiseResolveBlock)resolve
              reject:(RCTPromiseRejectBlock)reject
 {
+#warning ("REMOVE")
   if (!CAS.manager || !CAS.settings) {
     resolve(nil);
     return;
@@ -304,6 +315,7 @@ RCT_EXPORT_MODULE();
 
 - (void)setConsentFlowEnabled:(BOOL)enabled
 {
+#warning ("REMOVE")
   if (!manager) return;
   consentFlow.isEnabled = enabled;
 }
@@ -340,8 +352,9 @@ RCT_EXPORT_MODULE();
                     reject:(RCTPromiseRejectBlock)reject
 {
   @try {
-    if (!interstitial.isAdLoaded) {
+    if (!interstitial) {
       reject(@"not_loaded", @"Interstitial not loaded", nil);
+      [self adDidFailToLoad:<#(id<CASScreenContent>)#> error:<#(CASError *)#>]
       return;
     }
     
@@ -389,6 +402,7 @@ RCT_EXPORT_MODULE();
   resolve(nil);
 }
 
+
 - (void)restartInterstitialInterval:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject
 {
   if (!interstitial) {
@@ -405,6 +419,9 @@ RCT_EXPORT_MODULE();
   if (interstitial) {
     [interstitial destroy];
     interstitial = nil;
+    if(casIdendifier){
+      interstitial = [[CASInterstitial alloc] initWithCasID:casIdendifier];
+    }
   }
   resolve(nil);
 }
@@ -450,8 +467,8 @@ RCT_EXPORT_MODULE();
     
     [rewarded presentFromViewController: nil userDidEarnRewardHandler:^(CASContentInfo * _Nonnull info) {
       if (self->hasListeners) [self sendEventWithName: CASMobileAdsEventToString(onRewardedCompleted) body:@{}];
-      resolve(@{@"success": @YES});
     }];
+    resolve(@{@"success": @YES});
     
   } @catch (NSException *e) {
     reject(@"rewarded_show_error", e.reason, nil);
@@ -498,10 +515,15 @@ RCT_EXPORT_MODULE();
 {
   @try {
     if (!appOpen) {
-      appOpen.delegate = self;
-      appOpen.impressionDelegate = self;
+      [self sendEventWithName:konAppOpenLoadFailed body:@{
+        @"errorCode": @(CASError.notInitialized.code),
+        @"errorMessage": CASError.notInitialized.description}];
+      resolve(@{@"success": @YES});
+      return;
     }
     
+    appOpen.delegate = self;
+    appOpen.impressionDelegate = self;
     [appOpen loadAd];
     resolve(@{@"success": @YES});
     
@@ -513,18 +535,14 @@ RCT_EXPORT_MODULE();
 - (void)showAppOpenAd:(RCTPromiseResolveBlock)resolve
                reject:(RCTPromiseRejectBlock)reject
 {
-  @try {
-    if (!appOpen.isAdLoaded) {
-      reject(@"appOpen_show_error", @"App Open not loaded", nil);
-      return;
-    }
-    
+  if (!appOpen) {
+    [self sendEventWithName:konAppOpenShowFailed body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
+  }else{
     [appOpen presentFromViewController: nil];
-    resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"appOpen_show_error", e.reason, nil);
   }
+  resolve(@{@"success": @YES});
 }
 
 - (void)setAppOpenAutoloadEnabled:(BOOL)enabled
@@ -554,6 +572,7 @@ RCT_EXPORT_MODULE();
   if (appOpen) {
     [appOpen destroy];
     appOpen = nil;
+    
   }
   resolve(nil);
 }
@@ -581,8 +600,12 @@ RCT_EXPORT_MODULE();
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = CASMobileAdsEventToString(onInterstitialLoadFailed);
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = CASMobileAdsEventToString(onAppOpenLoadFailed);
   
-  [self sendEventWithName:event body:@{@"error": error.description}];
+  [self sendEventWithName:event body:@{
+    @"errorCode": @(error.code),
+    @"errorMessage": error.description}];
 }
+
+-(void) adIntersitialDid
 
 - (void)adDidPresent:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
@@ -662,4 +685,3 @@ RCT_EXPORT_MODULE();
 
 @end
 
-#endif

@@ -225,6 +225,7 @@ class CASMobileAds(private val reactContext: ReactApplicationContext) : ReactCon
       onLoadResolved = { _, _ -> promise.resolve(null) }
     )
     ad.load(applicationContext())
+    promise.resolve(null);
   }
 
   @ReactMethod
