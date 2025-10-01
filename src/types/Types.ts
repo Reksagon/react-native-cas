@@ -24,56 +24,34 @@ export type ConsentFlowParams = {
   requestGDPR?: boolean;
   requestATT?: boolean;
 };
-export type MediationExtraParams = {
-  key: string;
-  value: string;
-};
-export type BuildManagerParams = {
-  casId?: string;
-  consentFlow?: ConsentFlowParams;
-  testMode?: boolean;
-  mediationExtra?: MediationExtraParams;
-};
 
-export type InitConfiguration = {
+export type InitializationStatus = {
   error?: string;
   countryCode?: string;
   isConsentRequired: boolean;
   consentFlowStatus: number;
 };
 
-export type InitOptions = {
-  audience?: Audience;
+export type InitializationParams = {
+  targetAudience?: Audience;
   showConsentFormIfRequired?: boolean;
   forceTestAds?: boolean;
   testDeviceIds?: string[];
   trialAdFreeInterval?: number;
+  mediationExtras?: Record<string, string>;
 };
-
 
 export enum Gender {
   Unknown = 0,
   Male,
   Female,
 }
+
 export enum Audience {
   Undefined = 0,
   Children,
   NotChildren,
 }
-
-export type CASSettings = {
-  taggedAudience: Audience;
-  age: number;
-  gender: Gender;
-  contentUrl?: string;
-  keywords: string[];
-  debugMode: boolean;
-  mutedAdSounds: boolean;
-  testDeviceIDs: string[];
-  locationCollectionEnabled?: boolean;
-  trialAdFreeInterval?: number;
-};
 
 export type AdContentInfo = {
   format: string;           

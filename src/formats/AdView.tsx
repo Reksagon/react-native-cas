@@ -26,8 +26,8 @@ import {
   AdViewSize,
   type AdViewProps,
   type AdViewRef,
-  type AdViewImpressionEvent,
-} from '../native/AdViewComponent';
+  type AdViewEvent,
+} from '../modules/AdViewComponent';
 import type { AdError } from '../types/Types';
 
 const pr = PixelRatio.get();
@@ -117,7 +117,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
   const onClickedCb = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
 
   const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<AdViewImpressionEvent>) => onAdViewImpression?.(e),
+    (e: NativeSyntheticEvent<AdViewEvent>) => onAdViewImpression?.(e),
     [onAdViewImpression]
   );
 

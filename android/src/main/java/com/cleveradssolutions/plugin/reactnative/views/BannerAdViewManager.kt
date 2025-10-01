@@ -19,7 +19,7 @@ class BannerAdViewManager :
   SimpleViewManager<CASBannerView>(),
   com.cleversolutions.ads.AdViewListener {
 
-  override fun getName() = "AdView"
+  override fun getName() = "CASAdView"
 
   override fun createViewInstance(reactContext: ThemedReactContext): CASBannerView {
     val view = CASBannerView(reactContext)

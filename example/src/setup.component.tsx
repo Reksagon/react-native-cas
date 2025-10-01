@@ -17,9 +17,9 @@ export const Setup = () => {
       });
       const init = await CASMobileAds.initialize('1058803540', {
         forceTestAds: true,
-        audience: Audience.Children,            
+        audience: Audience.NotChildren,            
         showConsentFormIfRequired: true,       
-        trialAdFreeInterval: 120   });
+        trialAdFreeInterval: 0   });
       logCasInfo('initialize:', init);
       const v = await CASMobileAds.getSDKVersion();
       logCasInfo('sdkVersion:', v);

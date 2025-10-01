@@ -27,8 +27,6 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
   private var rewardedCallback: ScreenContentCallback? = null
   private var appOpenCallback: ScreenContentCallback? = null
 
-  private val mediationExtras: HashMap<String, String> = HashMap()
-
   private fun applicationContext(): Context = reactContext.applicationContext
   private fun currentActivityOrNull(): Activity? = reactContext.currentActivity
 
@@ -36,6 +34,16 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
     val map = WritableNativeMap().apply {
       putInt("errorCode", code)
       putString("errorMessage", message ?: "")
+    }
+    reactContext
+      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      .emit(finalEvent, map)
+  }
+
+  private fun emitError(finalEvent: String, error: AdError) {
+    val map = WritableNativeMap().apply {
+      putInt("errorCode", error.code)
+      putString("errorMessage", error.message)
     }
     reactContext
       .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -93,6 +101,10 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
         CAS.settings.testDeviceIDs = ids
       }
 
+  TODO("Add Mediation extras parameters")
+
+   val mediationExtras: HashMap<String, String> = HashMap()
+
       val builder = CAS.buildManager()
         .withCasId(casId)
         .withConsentFlow(ConsentFlow(showConsent))
@@ -128,6 +140,7 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
 
   @ReactMethod
   fun setMediationExtras(key: String, value: String, promise: Promise) {
+    TODO("Remove")
     mediationExtras[key] = value
     promise.resolve(null)
   }
@@ -153,6 +166,7 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
 
   @ReactMethod
   fun getSettings(promise: Promise) {
+    TODO("Remove")
     try {
       val casSettings = CAS.settings
       val targetingOptions = CAS.getTargetingOptions()
@@ -194,6 +208,7 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
 
   @ReactMethod
   fun setSettings(map: ReadableMap, promise: Promise) {
+    TODO("Remove")
     try {
       CAS.settings.apply {
         if (map.hasKey("taggedAudience") && !map.isNull("taggedAudience"))
@@ -228,14 +243,14 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
   }
   @ReactMethod fun loadInterstitialAd(promise: Promise) {
     val ad = interstitialAd ?: run {
-      emitError("onInterstitialLoadFailed", AdErrorCode.NOT_INITIALIZED, "CAS not initialized")
+      emitError("onInterstitialLoadFailed", AdError.NOT_INITIALIZED)
       promise.resolve(null); return
     }
     ad.load(applicationContext()); promise.resolve(null)
   }
   @ReactMethod fun showInterstitialAd(promise: Promise) {
     val ad = interstitialAd ?: run {
-      emitError("onInterstitialFailedToShow", AdErrorCode.NOT_INITIALIZED, "CAS not initialized")
+      emitError("onInterstitialFailedToShow", AdError.NOT_INITIALIZED)
       promise.resolve(null); return
     }
     ad.show(currentActivityOrNull()); promise.resolve(null)
@@ -246,17 +261,17 @@ class CASMobileAds(private val reactContext: ReactApplicationContext)
   }
   @ReactMethod fun loadRewardedAd(promise: Promise) {
     val ad = rewardedAd ?: run {
-      emitError("onRewardedLoadFailed", AdErrorCode.NOT_INITIALIZED, "CAS not initialized")
+      emitError("onRewardedLoadFailed", AdError.NOT_INITIALIZED)
       promise.resolve(null); return
     }
     ad.load(applicationContext()); promise.resolve(null)
   }
   @ReactMethod fun showRewardedAd(promise: Promise) {
     val ad = rewardedAd ?: run {
-      emitError("onRewardedFailedToShow", AdErrorCode.NOT_INITIALIZED, "CAS not initialized")
+      emitError("onRewardedFailedToShow", AdError.NOT_INITIALIZED)
       promise.resolve(null); return
     }
-    rewardedCallback?.rewardListener?.let { listener ->
+    rewardedCallback?.let { listener ->
       ad.show(currentActivityOrNull(), listener)
     }
     promise.resolve(null)

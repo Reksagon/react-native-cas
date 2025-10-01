@@ -6,6 +6,8 @@ export type FullscreenAdBase = {
   showAd(): Promise<void>;
   destroy(): Promise<void>;
 
+  setAutoloadEnabled(enabled: boolean): Promise<void>;
+
   addAdLoadedEventListener(l: () => void): void;
   removeAdLoadedEventListener(): void;
 
@@ -29,19 +31,16 @@ export type FullscreenAdBase = {
 };
 
 export type InterstitialAdType = FullscreenAdBase & {
-  setAutoloadEnabled(enabled: boolean): Promise<void>;
   setAutoshowEnabled(enabled: boolean): Promise<void>;
   setMinInterval(seconds: number): Promise<void>;
   restartInterval(): Promise<void>;
 };
 
 export type RewardedAdType = FullscreenAdBase & {
-  setAutoloadEnabled(enabled: boolean): Promise<void>;
   addAdUserEarnRewardEventListener(l: () => void): void;
   removeAdUserEarnRewardLoadedEventListener(): void;
 };
 
 export type AppOpenAdType = FullscreenAdBase & {
-  setAutoloadEnabled(enabled: boolean): Promise<void>;
   setAutoshowEnabled(enabled: boolean): Promise<void>;
 };

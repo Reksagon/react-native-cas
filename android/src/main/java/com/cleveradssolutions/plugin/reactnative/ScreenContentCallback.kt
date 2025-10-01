@@ -14,7 +14,7 @@ import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 class ScreenContentCallback(
   private val reactContext: ReactApplicationContext,
   private val adType: String
-) : ScreenAdContentCallback(), OnAdImpressionListener {
+) : ScreenAdContentCallback(), OnAdImpressionListener, OnRewardEarnedListener {
 
   private fun title(): String = when (adType) {
     "interstitial" -> "Interstitial"
@@ -36,7 +36,7 @@ class ScreenContentCallback(
     emit("on${title()}Impression", map)
   }
 
-  val rewardListener = OnRewardEarnedListener {
+  override fun onUserEarnedReward(ad: AdContentInfo){
     emit("onRewardedCompleted", WritableNativeMap())
   }
 

@@ -1,12 +1,19 @@
-import type { InitConfiguration, CASSettings, InitOptions } from '../types/Types';
+import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 export interface CASSpec extends TurboModule {
-  initialize(casId: string, options: InitOptions | null): Promise<InitConfiguration>;
+  initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
 
-  setMediationExtras(key: string, value: string): Promise<void>;
+  setUserAge(age: number): Promise<void>;
+  setUserGender(gender: Gender): Promise<void>;
+  setAppContentUrl(contentUrl?: string): Promise<void>;
+  setAppKeywords(keywords: string[]): Promise<void>;
+  setDebugLoggingEnabled(enabled: boolean): Promise<void>;
+  setAdSoundsMuted(muted: boolean): Promise<void>;
+  setLocationCollectionEnabled(enabled: boolean): Promise<void>;
+  setTrialAdFreeInterval(interval: number): Promise<void>;
 
   isInterstitialAdLoaded(): Promise<boolean>;
   loadInterstitialAd(): Promise<void>;
@@ -31,11 +38,7 @@ export interface CASSpec extends TurboModule {
   destroyAppOpen(): Promise<void>;
 
   getSDKVersion(): Promise<string>;
-  setTestMode(enabled: boolean): void;
   showConsentFlow(): Promise<void>;
-  setConsentFlowEnabled(enabled: boolean): void;
-  getSettings(): Promise<CASSettings>;
-  setSettings(settings: Partial<CASSettings>): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<CASSpec>('CASMobileAds');

@@ -9,5 +9,5 @@ export {
   type AdViewProps,
   type AdViewRef,
   type AdViewImpressionEvent,
-} from './native/AdViewComponent';
+} from './modules/AdViewComponent';
 
