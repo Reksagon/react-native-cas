@@ -1,6 +1,6 @@
 import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { InitializationStatus, InitializationParams, Audience, Gender } from '../types/Types';
+import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
 
 export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 
@@ -60,23 +60,39 @@ export class CASMobileAds {
   * @param mediationExtras
   * Mediation extra parameters.
   */
+  // static initialize(casId: string, options: InitializationParams = {}): Promise<InitializationStatus> {
+  //   if (typeof casId !== 'string') {
+  //     return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
+  //   }
+  //   const payload: any = {};
+  //   if (options.targetAudience != null) payload.audience = options.targetAudience;
+  //   if (options.showConsentFormIfRequired !== undefined)
+  //     payload.showConsentFormIfRequired = options.showConsentFormIfRequired; 
+  //   if (options.forceTestAds !== undefined)
+  //     payload.forceTestAds = options.forceTestAds; 
+
+  //   if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
+  //   if (options.trialAdFreeInterval != null) payload.trialAdFreeInterval = options.trialAdFreeInterval;
+  //   if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
+
+  //   return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
+  // }
   static initialize(casId: string, options: InitializationParams = {}): Promise<InitializationStatus> {
     if (typeof casId !== 'string') {
       return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
     }
+
     const payload: any = {};
     if (options.targetAudience != null) payload.audience = options.targetAudience;
-    if (options.showConsentFormIfRequired !== undefined)
-      payload.showConsentFormIfRequired = options.showConsentFormIfRequired; 
-    if (options.forceTestAds !== undefined)
-      payload.forceTestAds = options.forceTestAds; 
-
+    if (options.showConsentFormIfRequired !== undefined) payload.showConsentFormIfRequired = options.showConsentFormIfRequired;
+    if (options.forceTestAds !== undefined) payload.forceTestAds = options.forceTestAds;
     if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
     if (options.trialAdFreeInterval != null) payload.trialAdFreeInterval = options.trialAdFreeInterval;
     if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
 
     return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
   }
+
 
   /**
    * Is SDK initialized.
@@ -87,37 +103,37 @@ export class CASMobileAds {
 
   static showConsentFlow() { return CASMobileAdsNative.showConsentFlow(); }
   static addConsentFlowDismissedEventListener(listener: (status: number) => void) {
-  const sub = eventEmitter.addListener('consentFlowDismissed', (e: any) => {
-    listener(typeof e?.status === 'number' ? e.status : -1);
-  });
-  return () => sub.remove();
-}
+    const sub = eventEmitter.addListener('consentFlowDismissed', (e: any) => {
+      listener(typeof e?.status === 'number' ? e.status : -1);
+    });
+    return () => sub.remove();
+  }
 
   static getSDKVersion() { return CASMobileAdsNative.getSDKVersion(); }
 
-  static setDebugLoggingEnabled(enabled: boolean): Promise<void>{
-     return CASMobileAdsNative.setDebugLoggingEnabled(enabled);
+  static setDebugLoggingEnabled(enabled: boolean): Promise<void> {
+    return CASMobileAdsNative.setDebugLoggingEnabled(enabled);
   }
-  static setAdSoundsMuted(muted: boolean): Promise<void>{
-     return CASMobileAdsNative.setAdSoundsMuted(muted);
+  static setAdSoundsMuted(muted: boolean): Promise<void> {
+    return CASMobileAdsNative.setAdSoundsMuted(muted);
   }
-  static setUserAge(age: number): Promise<void>{
-     return CASMobileAdsNative.setUserAge(age);
+  static setUserAge(age: number): Promise<void> {
+    return CASMobileAdsNative.setUserAge(age);
   }
-  static setUserGender(gender: Gender): Promise<void>{ 
+  static setUserGender(gender: number): Promise<void> {
     return CASMobileAdsNative.setUserGender(gender);
   }
-  static setAppContentUrl(contentUrl?: string): Promise<void>{
-     return CASMobileAdsNative.setAppContentUrl(contentUrl);
+  static setAppContentUrl(contentUrl?: string): Promise<void> {
+    return CASMobileAdsNative.setAppContentUrl(contentUrl);
   }
-  static setAppKeywords(keywords: string[]): Promise<void>{
-     return CASMobileAdsNative.setAppKeywords(keywords);
+  static setAppKeywords(keywords: string[]): Promise<void> {
+    return CASMobileAdsNative.setAppKeywords(keywords);
   }
-  static setLocationCollectionEnabled(enabled: boolean): Promise<void>{
-     return CASMobileAdsNative.setLocationCollectionEnabled(enabled);
+  static setLocationCollectionEnabled(enabled: boolean): Promise<void> {
+    return CASMobileAdsNative.setLocationCollectionEnabled(enabled);
   }
-  static setTrialAdFreeInterval(interval: number): Promise<void>{
-     return CASMobileAdsNative.setTrialAdFreeInterval(interval);
+  static setTrialAdFreeInterval(interval: number): Promise<void> {
+    return CASMobileAdsNative.setTrialAdFreeInterval(interval);
   }
 
   static isInterstitialAdLoaded() { return CASMobileAdsNative.isInterstitialAdLoaded(); }

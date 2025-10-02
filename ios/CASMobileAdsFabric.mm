@@ -16,62 +16,30 @@ using namespace facebook::react;
   CASMediationManager *manager;
 }
 
-typedef NS_ENUM(NSInteger, CASMobileAdsEvent) {
-  onAppOpenLoaded,
-  onAppOpenLoadFailed,
-  onAppOpenDisplayed,
-  onAppOpenFailedToShow,
-  onAppOpenHidden,
-  onAppOpenClicked,
-  onAppOpenImpression,
-  onInterstitialLoaded,
-  onInterstitialLoadFailed,
-  onInterstitialClicked,
-  onInterstitialDisplayed,
-  onInterstitialFailedToShow,
-  onInterstitialHidden,
-  onInterstitialImpression,
-  onRewardedLoaded,
-  onRewardedLoadFailed,
-  onRewardedClicked,
-  onRewardedDisplayed,
-  onRewardedFailedToShow,
-  onRewardedHidden,
-  onRewardedCompleted,
-  onRewardedImpression,
-  consentFlowDismissed
-};
-
 #define konAppOpenLoaded @"onAppOpenLoaded"
 #define konAppOpenLoadFailed @"onAppOpenLoadFailed"
+#define konAppOpenDisplayed @"onAppOpenDisplayed"
+#define konAppOpenFailedToShow @"onAppOpenFailedToShow"
+#define konAppOpenHidden @"onAppOpenHidden"
+#define konAppOpenClicked @"onAppOpenClicked"
+#define konAppOpenImpression @"onAppOpenImpression"
+#define konInterstitialLoaded @"onInterstitialLoaded"
+#define konInterstitialLoadFailed @"onInterstitialLoadFailed"
+#define konInterstitialClicked @"onInterstitialClicked"
+#define konInterstitialDisplayed @"onInterstitialDisplayed"
+#define konInterstitialFailedToShow @"onInterstitialFailedToShow"
+#define konInterstitialHidden @"onInterstitialHidden"
+#define konInterstitialImpression @"onInterstitialImpression"
+#define konRewardedLoaded @"onRewardedLoaded"
+#define konRewardedLoadFailed @"onRewardedLoadFailed"
+#define konRewardedClicked @"onRewardedClicked"
+#define konRewardedDisplayed @"onRewardedDisplayed"
+#define konRewardedFailedToShow @"onRewardedFailedToShow"
+#define konRewardedHidden @"onRewardedHidden"
+#define konRewardedCompleted @"onRewardedCompleted"
+#define konRewardedImpression @"onRewardedImpression"
+#define kconsentFlowDismissed @"consentFlowDismissed"
 
-static NSString * _Nonnull CASMobileAdsEventToString(CASMobileAdsEvent event) {
-  switch (event) {
-    case onAppOpenLoaded: return @"onAppOpenLoaded";
-    case onAppOpenLoadFailed: return @"onAppOpenLoadFailed";
-    case onAppOpenDisplayed: return @"onAppOpenDisplayed";
-    case onAppOpenFailedToShow: return @"onAppOpenFailedToShow";
-    case onAppOpenHidden: return @"onAppOpenHidden";
-    case onAppOpenClicked: return @"onAppOpenClicked";
-    case onAppOpenImpression: return @"onAppOpenImpression";
-    case onInterstitialLoaded: return @"onInterstitialLoaded";
-    case onInterstitialLoadFailed: return @"onInterstitialLoadFailed";
-    case onInterstitialClicked: return @"onInterstitialClicked";
-    case onInterstitialDisplayed: return @"onInterstitialDisplayed";
-    case onInterstitialFailedToShow: return @"onInterstitialFailedToShow";
-    case onInterstitialHidden: return @"onInterstitialHidden";
-    case onInterstitialImpression: return @"onInterstitialImpression";
-    case onRewardedLoaded: return @"onRewardedLoaded";
-    case onRewardedLoadFailed: return @"onRewardedLoadFailed";
-    case onRewardedClicked: return @"onRewardedClicked";
-    case onRewardedDisplayed: return @"onRewardedDisplayed";
-    case onRewardedFailedToShow: return @"onRewardedFailedToShow";
-    case onRewardedHidden: return @"onRewardedHidden";
-    case onRewardedCompleted: return @"onRewardedCompleted";
-    case onRewardedImpression: return @"onRewardedImpression";
-    case consentFlowDismissed: return @"consentFlowDismissed";
-  }
-}
 
 - (NSArray<NSString *> *)supportedEvents {
   return @[
@@ -112,18 +80,17 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - Init
 
-- (void)initialize:(NSString *)casId
-   withConsentFlow:(BOOL)withConsentFlow
-          testMode:(BOOL)testMode
-           resolve:(RCTPromiseResolveBlock)resolve
-            reject:(RCTPromiseRejectBlock)reject
-{
+- (void)initialize:(nonnull NSString *)casId
+           options:(JS::NativeCASMobileAdsModule::SpecInitializeOptions &)options
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject {
   casIdendifier = casId;
+  
   @try {
     CASManagerBuilder *builder = [CAS buildManager];
-    [builder withTestAdMode:testMode];
-    
-    if (withConsentFlow) {
+    [builder withTestAdMode:options.forceTestAds().value()];
+        
+    if (options.showConsentFormIfRequired().value()) {
       consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
       [builder withConsentFlow: consentFlow];
     }
@@ -143,22 +110,26 @@ RCT_EXPORT_MODULE();
     manager = [builder createWithCasId:casId];
     [CAS setManager:manager];
     
+    if (options.audience().value()) {
+      CASSettings *nativeSettings = CAS.settings;
+      nativeSettings.taggedAudience = (CASAudience)((NSInteger)options.audience().value());
+    }
+        
     interstitial = [[CASInterstitial alloc] initWithCasID:casId];
     rewarded = [[CASRewarded alloc] initWithCasID:casId];
     appOpen = [[CASAppOpen alloc] initWithCasID:casId];
-    
     
   } @catch (NSException *e) {
     resolve(@{ @"error": e.reason ?: @"Unknown error", @"isConsentRequired": @NO, @"consentFlowStatus": @0 });
   }
 }
 
-- (void)isInitialized:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
-{
+- (void)isInitialized:(nonnull RCTPromiseResolveBlock)resolve
+               reject:(nonnull RCTPromiseRejectBlock)reject {
   BOOL initialized = (manager != nil);
   resolve(@(initialized));
 }
+
 
 #pragma mark - Event Emmiter
 
@@ -172,138 +143,20 @@ RCT_EXPORT_MODULE();
   hasListeners = NO;
 }
 
-#pragma mark - Adaptive Banner
-
-- (void)getAdaptiveBannerHeightForWidth:(double)width
-                                resolve:(RCTPromiseResolveBlock)resolve
-                                 reject:(RCTPromiseRejectBlock)reject
-{
-#warning ("REMOVE")
-  @try {
-    CGFloat containerWidth = (CGFloat)width;
-    CASSize *adaptiveSize = [CASSize getAdaptiveBannerForMaxWidth:containerWidth];
-    
-    if (adaptiveSize) {
-      resolve(@(adaptiveSize.height));
-    } else {
-      resolve(@(50));
-    }
-  } @catch (NSException *e) {
-    reject(@"adaptive_banner_size_error", e.reason, nil);
-  }
-}
-
-
-
-#pragma mark - Mediation Extras
-
-- (void)setMediationExtras:(NSString *)key
-                     value:(NSString *)value
-                   resolve:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
-{
-#warning ("REMOVE")
-  @try {
-    if (manager) {
-      // FIXME: ()
-      // [manager setExtraWithKey:key value:value];
-    }
-    resolve(nil);
-  } @catch (NSException *e) {
-    reject(@"set_mediation_extras_error", e.reason, nil);
-  }
-}
 
 #pragma mark - SDK Version
 
-- (void)getSDKVersion:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
+- (void)getSDKVersion:(nonnull RCTPromiseResolveBlock)resolve
+               reject:(nonnull RCTPromiseRejectBlock)reject
 {
   resolve([CAS getSDKVersion]);
 }
 
-#pragma mark - Test Mode
-
-- (void)setTestMode:(BOOL)enabled
-{
-#warning ("REMOVE")
-  // FIXME: ()
-  // [CAS setTestAdMode:enabled];
-}
-
-#pragma mark - Settings
-
-- (void)getSettings:(RCTPromiseResolveBlock)resolve
-             reject:(RCTPromiseRejectBlock)reject
-{
-#warning ("REMOVE")
-  if (!CAS.manager || !CAS.settings) {
-    resolve(@{});
-    return;
-  }
-  
-  CASSettings *settings = CAS.settings;
-  
-  // FIXME: (contentUrl, keywords, testDeviceIDs)
-  resolve(@{
-    @"taggedAudience": @(settings.taggedAudience),
-    @"age": @(0),
-    @"gender": @(0),
-    @"contentUrl": @"",
-    @"keywords": @[],
-    @"debugMode": @(settings.debugMode),
-    @"mutedAdSounds": @(settings.mutedAdSounds),
-    @"testDeviceIDs": @[],
-    @"locationCollectionEnabled": @([CAS.targetingOptions locationCollectionEnabled]),
-    @"trialAdFreeInterval": @(settings.trialAdFreeInterval)
-  });
-}
-
-- (void)setSettings:(JS::NativeCASMobileAdsModule::SpecSetSettingsSettings &)settings
-            resolve:(RCTPromiseResolveBlock)resolve
-             reject:(RCTPromiseRejectBlock)reject
-{
-#warning ("REMOVE")
-  if (!CAS.manager || !CAS.settings) {
-    resolve(nil);
-    return;
-  }
-
-  CASSettings *nativeSettings = CAS.settings;
-  
-  if (settings.taggedAudience().has_value()) {
-    nativeSettings.taggedAudience = (CASAudience)settings.taggedAudience().value();
-  }
-  if (settings.debugMode().has_value()) {
-    nativeSettings.debugMode = settings.debugMode().value();
-  }
-  if (settings.mutedAdSounds().has_value()) {
-    nativeSettings.mutedAdSounds = settings.mutedAdSounds().value();
-  }
-  if (settings.trialAdFreeInterval().has_value()) {
-    nativeSettings.trialAdFreeInterval = settings.trialAdFreeInterval().value();
-  }
-  if (settings.locationCollectionEnabled().has_value()) {
-    [CAS.targetingOptions setLocationCollectionEnabled:settings.locationCollectionEnabled().value()];
-  }
-  if (settings.testDeviceIDs().has_value()) {    
-    FB::LazyVector<NSString *, id> lazyVector = settings.testDeviceIDs().value();
-    NSMutableArray<NSString *> *idsArray = [NSMutableArray arrayWithCapacity:lazyVector.size()];
-    for (size_t i = 0; i < lazyVector.size(); i++) {
-        [idsArray addObject:lazyVector[i]];
-    }
-    [nativeSettings setTestDeviceWithIds:idsArray];
-  }
-
-  resolve(nil);
-}
-
-
 
 #pragma mark - ConsentFlow
 
-- (void)showConsentFlow:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject
+- (void)showConsentFlow:(nonnull RCTPromiseResolveBlock)resolve
+                 reject:(nonnull RCTPromiseRejectBlock)reject
 {
   if (!consentFlow.isEnabled) {
     resolve(nil);
@@ -313,18 +166,85 @@ RCT_EXPORT_MODULE();
   [consentFlow present];
 }
 
-- (void)setConsentFlowEnabled:(BOOL)enabled
+
+#pragma mark - Settings
+
+- (void)setAdSoundsMuted:(BOOL)muted
+                 resolve:(nonnull RCTPromiseResolveBlock)resolve
+                  reject:(nonnull RCTPromiseRejectBlock)reject {
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.mutedAdSounds = muted;
+  resolve(nil);
+}
+
+- (void)setAppContentUrl:(nonnull NSString *)contentUrl
+                 resolve:(nonnull RCTPromiseResolveBlock)resolve
+                  reject:(nonnull RCTPromiseRejectBlock)reject
 {
-#warning ("REMOVE")
-  if (!manager) return;
-  consentFlow.isEnabled = enabled;
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.contentUrl = contentUrl;
+  resolve(nil);
+}
+
+- (void)setAppKeywords:(nonnull NSArray *)keywords
+               resolve:(nonnull RCTPromiseResolveBlock)resolve
+                reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.keywords = keywords;
+  resolve(nil);
+}
+
+- (void)setDebugLoggingEnabled:(BOOL)enabled
+                       resolve:(nonnull RCTPromiseResolveBlock)resolve
+                        reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.debugMode = enabled;
+  resolve(nil);
+}
+
+- (void)setTrialAdFreeInterval:(double)interval
+                       resolve:(nonnull RCTPromiseResolveBlock)resolve
+                        reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.trialAdFreeInterval = interval;
+  resolve(nil);
+}
+
+- (void)setUserAge:(double)age
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.age = age;
+  resolve(nil);
+}
+
+- (void)setUserGender:(double)gender
+              resolve:(nonnull RCTPromiseResolveBlock)resolve
+               reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.gender = (CASGender)((NSInteger)gender);
+  resolve(nil);
+}
+
+- (void)setLocationCollectionEnabled:(BOOL)enabled
+                             resolve:(nonnull RCTPromiseResolveBlock)resolve
+                              reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.locationCollectionEnabled = enabled;
+  resolve(nil);
 }
 
 
 #pragma mark - Interstitial
 
-- (void)isInterstitialAdLoaded:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+- (void)isInterstitialAdLoaded:(nonnull RCTPromiseResolveBlock)resolve
+                        reject:(nonnull RCTPromiseRejectBlock)reject
 {
   if (!interstitial) {
     resolve(@(NO));
@@ -333,10 +253,18 @@ RCT_EXPORT_MODULE();
   resolve(@([interstitial isAdLoaded]));
 }
 
-- (void)loadInterstitialAd:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
+- (void)loadInterstitialAd:(nonnull RCTPromiseResolveBlock)resolve
+                    reject:(nonnull RCTPromiseRejectBlock)reject
 {
   @try {
+    if (!interstitial) {
+      [self sendEventWithName:konInterstitialLoadFailed body:@{
+        @"errorCode": @(CASError.notInitialized.code),
+        @"errorMessage": CASError.notInitialized.description}];
+      resolve(@{@"success": @YES});
+      return;
+    }
+    
     interstitial.delegate = self;
     interstitial.impressionDelegate = self;
     
@@ -348,22 +276,42 @@ RCT_EXPORT_MODULE();
   }
 }
 
-- (void)showInterstitialAd:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
+- (void)showInterstitialAd:(nonnull RCTPromiseResolveBlock)resolve
+                    reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  @try {
-    if (!interstitial) {
-      reject(@"not_loaded", @"Interstitial not loaded", nil);
-      [self adDidFailToLoad:<#(id<CASScreenContent>)#> error:<#(CASError *)#>]
-      return;
-    }
-    
-    [interstitial presentFromViewController: nil];
+  if (!interstitial) {
+    [self sendEventWithName:konInterstitialFailedToShow body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
     resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"interstitial_show_error", e.reason, nil);
+    return;
   }
+  
+  [interstitial presentFromViewController: nil];
+  resolve(@{@"success": @YES});
+}
+
+- (void)setInterstitialMinInterval:(double)seconds
+                           resolve:(nonnull RCTPromiseResolveBlock)resolve
+                            reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!interstitial) {
+    resolve(nil);
+    return;
+  }
+  interstitial.minInterval = seconds;
+  resolve(nil);
+}
+
+- (void)restartInterstitialInterval:(nonnull RCTPromiseResolveBlock)resolve
+                             reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!interstitial) {
+    resolve(nil);
+    return;
+  }
+  [interstitial restartInterval];
+  resolve(nil);
 }
 
 - (void)setInterstitialAutoloadEnabled:(BOOL)enabled
@@ -390,37 +338,104 @@ RCT_EXPORT_MODULE();
   resolve(nil);
 }
 
-- (void)setInterstitialMinInterval:(double)seconds
-                           resolve:(nonnull RCTPromiseResolveBlock)resolve
-                            reject:(nonnull RCTPromiseRejectBlock)reject
-{
-  if (!interstitial) {
-    resolve(nil);
-    return;
-  }
-  interstitial.minInterval = seconds;
-  resolve(nil);
-}
-
-
-- (void)restartInterstitialInterval:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject
-{
-  if (!interstitial) {
-    resolve(nil);
-    return;
-  }
-  [interstitial restartInterval];
-  resolve(nil);
-}
-
 - (void)destroyInterstitial:(nonnull RCTPromiseResolveBlock)resolve
                      reject:(nonnull RCTPromiseRejectBlock)reject
 {
   if (interstitial) {
     [interstitial destroy];
     interstitial = nil;
-    if(casIdendifier){
-      interstitial = [[CASInterstitial alloc] initWithCasID:casIdendifier];
+    
+    if (casIdendifier) {
+      interstitial = [[CASInterstitial alloc] initWithCasID: casIdendifier];
+    }
+  }
+  resolve(nil);
+}
+
+
+#pragma mark - AppOpen
+
+- (void)isAppOpenAdLoaded:(nonnull RCTPromiseResolveBlock)resolve
+                   reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!appOpen) {
+    resolve(@(NO));
+    return;
+  }
+  resolve(@([appOpen isAdLoaded]));
+}
+
+- (void)loadAppOpenAd:(nonnull RCTPromiseResolveBlock)resolve
+               reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  @try {
+    if (!appOpen) {
+      [self sendEventWithName:konAppOpenLoadFailed body:@{
+        @"errorCode": @(CASError.notInitialized.code),
+        @"errorMessage": CASError.notInitialized.description}];
+      resolve(@{@"success": @YES});
+      return;
+    }
+    
+    appOpen.delegate = self;
+    appOpen.impressionDelegate = self;
+    
+    [appOpen loadAd];
+    resolve(@{@"success": @YES});
+    
+  } @catch (NSException *e) {
+    reject(@"appOpen_load_error", e.reason, nil);
+  }
+}
+
+- (void)showAppOpenAd:(nonnull RCTPromiseResolveBlock)resolve
+               reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!appOpen) {
+    [self sendEventWithName:konAppOpenFailedToShow body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
+    resolve(@{@"success": @YES});
+    return;
+  }
+  
+  [appOpen presentFromViewController: nil];
+  resolve(@{@"success": @YES});
+}
+
+- (void)setAppOpenAutoloadEnabled:(BOOL)enabled
+                          resolve:(nonnull RCTPromiseResolveBlock)resolve
+                           reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!appOpen) {
+    resolve(nil);
+    return;
+  }
+  appOpen.isAutoloadEnabled = enabled;
+  resolve(nil);
+}
+
+- (void)setAppOpenAutoshowEnabled:(BOOL)enabled
+                          resolve:(nonnull RCTPromiseResolveBlock)resolve
+                           reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (!appOpen) {
+    resolve(nil);
+    return;
+  }
+  appOpen.isAutoshowEnabled = enabled;
+  resolve(nil);
+}
+
+- (void)destroyAppOpen:(nonnull RCTPromiseResolveBlock)resolve
+                reject:(nonnull RCTPromiseRejectBlock)reject
+{
+  if (appOpen) {
+    [appOpen destroy];
+    appOpen = nil;
+    
+    if (casIdendifier) {
+      appOpen = [[CASAppOpen alloc] initWithCasID: casIdendifier];
     }
   }
   resolve(nil);
@@ -429,8 +444,8 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - Rewarded
 
-- (void)isRewardedAdLoaded:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
+- (void)isRewardedAdLoaded:(nonnull RCTPromiseResolveBlock)resolve
+                    reject:(nonnull RCTPromiseRejectBlock)reject
 {
   if (!rewarded) {
     resolve(@(NO));
@@ -439,14 +454,20 @@ RCT_EXPORT_MODULE();
   resolve(@([rewarded isAdLoaded]));
 }
 
-- (void)loadRewardedAd:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+- (void)loadRewardedAd:(nonnull RCTPromiseResolveBlock)resolve
+                reject:(nonnull RCTPromiseRejectBlock)reject
 {
   @try {
     if (!rewarded) {
-      rewarded.delegate = self;
-      rewarded.impressionDelegate = self;
+      [self sendEventWithName:konRewardedLoadFailed body:@{
+        @"errorCode": @(CASError.notInitialized.code),
+        @"errorMessage": CASError.notInitialized.description}];
+      resolve(@{@"success": @YES});
+      return;
     }
+    
+    rewarded.delegate = self;
+    rewarded.impressionDelegate = self;
     
     [rewarded loadAd];
     resolve(@{@"success": @YES});
@@ -456,23 +477,22 @@ RCT_EXPORT_MODULE();
   }
 }
 
-- (void)showRewardedAd:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+- (void)showRewardedAd:(nonnull RCTPromiseResolveBlock)resolve
+                reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  @try {
-    if (!rewarded.isAdLoaded) {
-      reject(@"rewarded_show_error", @"Rewarded not loaded", nil);
-      return;
-    }
-    
-    [rewarded presentFromViewController: nil userDidEarnRewardHandler:^(CASContentInfo * _Nonnull info) {
-      if (self->hasListeners) [self sendEventWithName: CASMobileAdsEventToString(onRewardedCompleted) body:@{}];
-    }];
+  if (!rewarded) {
+    [self sendEventWithName:konRewardedFailedToShow body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
     resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"rewarded_show_error", e.reason, nil);
+    return;
   }
+  
+  [rewarded presentFromViewController: nil userDidEarnRewardHandler:^(CASContentInfo * _Nonnull info) {
+    if (self->hasListeners) [self sendEventWithName: konRewardedCompleted body:@{}];
+  }];
+   
+  resolve(@{@"success": @YES});
 }
 
 - (void)setRewardedAutoloadEnabled:(BOOL)enabled
@@ -493,86 +513,10 @@ RCT_EXPORT_MODULE();
   if (rewarded) {
     [rewarded destroy];
     rewarded = nil;
-  }
-  resolve(nil);
-}
-
-
-#pragma mark - AppOpen
-
-- (void)isAppOpenAdLoaded:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject
-{
-  if (!appOpen) {
-    resolve(@(NO));
-    return;
-  }
-  resolve(@([appOpen isAdLoaded]));
-}
-
-- (void)loadAppOpenAd:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
-{
-  @try {
-    if (!appOpen) {
-      [self sendEventWithName:konAppOpenLoadFailed body:@{
-        @"errorCode": @(CASError.notInitialized.code),
-        @"errorMessage": CASError.notInitialized.description}];
-      resolve(@{@"success": @YES});
-      return;
+    
+    if (casIdendifier) {
+      rewarded = [[CASRewarded alloc] initWithCasID: casIdendifier];
     }
-    
-    appOpen.delegate = self;
-    appOpen.impressionDelegate = self;
-    [appOpen loadAd];
-    resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"appOpen_load_error", e.reason, nil);
-  }
-}
-
-- (void)showAppOpenAd:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
-{
-  if (!appOpen) {
-    [self sendEventWithName:konAppOpenShowFailed body:@{
-      @"errorCode": @(CASError.notInitialized.code),
-      @"errorMessage": CASError.notInitialized.description}];
-  }else{
-    [appOpen presentFromViewController: nil];
-  }
-  resolve(@{@"success": @YES});
-}
-
-- (void)setAppOpenAutoloadEnabled:(BOOL)enabled
-                          resolve:(nonnull RCTPromiseResolveBlock)resolve
-                           reject:(nonnull RCTPromiseRejectBlock)reject
-{
-  if (!appOpen) {
-    resolve(nil);
-    return;
-  }
-  appOpen.isAutoloadEnabled = enabled;
-  resolve(nil);
-}
-
-- (void)setAppOpenAutoshowEnabled:(BOOL)enabled
-                          resolve:(nonnull RCTPromiseResolveBlock)resolve
-                           reject:(nonnull RCTPromiseRejectBlock)reject
-{
-  if (!appOpen) return;
-  appOpen.isAutoshowEnabled = enabled;
-  resolve(nil);
-}
-
-- (void)destroyAppOpen:(nonnull RCTPromiseResolveBlock)resolve
-                reject:(nonnull RCTPromiseRejectBlock)reject
-{
-  if (appOpen) {
-    [appOpen destroy];
-    appOpen = nil;
-    
   }
   resolve(nil);
 }
@@ -581,39 +525,36 @@ RCT_EXPORT_MODULE();
 #pragma mark - CASScreenContentDelegate
 
 - (void)adDidLoad:(id<CASScreenContent>)ad {
-  if (hasListeners) {
-    if ([ad isKindOfClass:[CASRewarded class]]) {
-      [self sendEventWithName: CASMobileAdsEventToString(onRewardedLoaded) body:@{}];
-    } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-      [self sendEventWithName: CASMobileAdsEventToString(onInterstitialLoaded) body:@{}];
-    } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-      [self sendEventWithName: CASMobileAdsEventToString(onAppOpenLoaded) body:@{}];
-    }
-  }
+  if (!hasListeners) return;
+  
+  NSString *event = @"";
+  if ([ad isKindOfClass:[CASRewarded class]]) event = konRewardedLoaded;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = konInterstitialLoaded;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = konAppOpenLoaded;
+  
+  [self sendEventWithName:event body:@{}];
 }
 
 - (void)adDidFailToLoad:(id<CASScreenContent>)ad error:(CASError *)error {
   if (!hasListeners) return;
   
   NSString *event = @"";
-  if ([ad isKindOfClass:[CASRewarded class]]) event = CASMobileAdsEventToString(onRewardedLoadFailed);
-  else if ([ad isKindOfClass:[CASInterstitial class]]) event = CASMobileAdsEventToString(onInterstitialLoadFailed);
-  else if ([ad isKindOfClass:[CASAppOpen class]]) event = CASMobileAdsEventToString(onAppOpenLoadFailed);
+  if ([ad isKindOfClass:[CASRewarded class]]) event = konRewardedLoadFailed;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = konInterstitialLoadFailed;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = konAppOpenLoadFailed;
   
   [self sendEventWithName:event body:@{
     @"errorCode": @(error.code),
     @"errorMessage": error.description}];
 }
 
--(void) adIntersitialDid
-
 - (void)adDidPresent:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
   
   NSString *event = @"";
-  if ([ad isKindOfClass:[CASRewarded class]]) event = CASMobileAdsEventToString(onRewardedDisplayed);
-  else if ([ad isKindOfClass:[CASInterstitial class]]) event = CASMobileAdsEventToString(onInterstitialDisplayed);
-  else if ([ad isKindOfClass:[CASAppOpen class]]) event = CASMobileAdsEventToString(onAppOpenDisplayed);
+  if ([ad isKindOfClass:[CASRewarded class]]) event = konRewardedDisplayed;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = konInterstitialDisplayed;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = konAppOpenDisplayed;
   
   [self sendEventWithName:event body:@{}];
 }
@@ -622,9 +563,9 @@ RCT_EXPORT_MODULE();
   if (!hasListeners) return;
   
   NSString *event = @"";
-  if ([ad isKindOfClass:[CASRewarded class]]) event = CASMobileAdsEventToString(onRewardedHidden);
-  else if ([ad isKindOfClass:[CASInterstitial class]]) event = CASMobileAdsEventToString(onInterstitialHidden);
-  else if ([ad isKindOfClass:[CASAppOpen class]]) event = CASMobileAdsEventToString(onAppOpenHidden);
+  if ([ad isKindOfClass:[CASRewarded class]]) event = konRewardedHidden;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = konInterstitialHidden;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = konAppOpenHidden;
   
   [self sendEventWithName:event body:@{}];
 }
@@ -633,9 +574,9 @@ RCT_EXPORT_MODULE();
   if (!hasListeners) return;
   
   NSString *event = @"";
-  if ([ad isKindOfClass:[CASRewarded class]]) event = CASMobileAdsEventToString(onRewardedClicked);
-  else if ([ad isKindOfClass:[CASInterstitial class]]) event = CASMobileAdsEventToString(onInterstitialClicked);
-  else if ([ad isKindOfClass:[CASAppOpen class]]) event = CASMobileAdsEventToString(onAppOpenClicked);
+  if ([ad isKindOfClass:[CASRewarded class]]) event = konRewardedClicked;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = konInterstitialClicked;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = konAppOpenClicked;
   
   [self sendEventWithName:event body:@{}];
 }
@@ -684,4 +625,3 @@ RCT_EXPORT_MODULE();
 }
 
 @end
-

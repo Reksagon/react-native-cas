@@ -3,11 +3,20 @@ import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
-  initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
+  // initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
+   initialize(casId: string, options: {
+    audience?: number; // enum Audience int
+    showConsentFormIfRequired?: boolean;
+    forceTestAds?: boolean;
+    testDeviceIds?: string[];
+    trialAdFreeInterval?: number;
+    mediationExtras?: { [key: string]: string };
+  } | null): Promise<InitializationStatus>;
+
   isInitialized(): Promise<boolean>;
 
   setUserAge(age: number): Promise<void>;
-  setUserGender(gender: Gender): Promise<void>;
+  setUserGender(gender: number): Promise<void>;
   setAppContentUrl(contentUrl?: string): Promise<void>;
   setAppKeywords(keywords: string[]): Promise<void>;
   setDebugLoggingEnabled(enabled: boolean): Promise<void>;
