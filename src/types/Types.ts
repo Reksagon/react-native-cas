@@ -37,8 +37,15 @@ export type InitializationParams = {
   showConsentFormIfRequired?: boolean;
   forceTestAds?: boolean;
   testDeviceIds?: string[];
-  trialAdFreeInterval?: number;
+  privacyGeography?: PrivacyGeography;
   mediationExtras?: Record<string, string>;
+};
+
+export enum PrivacyGeography {  
+  Unknown = 0,  
+  EuropeanEconomicArea = 1,  
+  RegulatedUSState = 3,  
+  Unregulated = 4,
 };
 
 export enum Gender {

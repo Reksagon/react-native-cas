@@ -1,6 +1,6 @@
 import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
+import type { InitializationStatus, InitializationParams, PrivacyGeography } from '../types/Types';
 
 export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 
@@ -51,46 +51,43 @@ export class CASMobileAds {
   * 3. Copy your alphanumeric test device ID to your clipboard.
   * 4. Add the test device ID to the [testDeviceIds] list.
   *
-  * @param trialAdFreeInterval
-  * Defines the time interval, in seconds, starting from the moment of the initial app installation,
-  * during which users can use the application without ads being displayed while still retaining
-  * access to the Rewarded Ads format. Within this interval,
-  * users enjoy privileged access to the app's features without intrusive ads.
+  * @param privacyGeography
+  * Sets the debug geography for testing purposes.
+  * 
   *
   * @param mediationExtras
   * Mediation extra parameters.
   */
-  // static initialize(casId: string, options: InitializationParams = {}): Promise<InitializationStatus> {
-  //   if (typeof casId !== 'string') {
-  //     return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
-  //   }
-  //   const payload: any = {};
-  //   if (options.targetAudience != null) payload.audience = options.targetAudience;
-  //   if (options.showConsentFormIfRequired !== undefined)
-  //     payload.showConsentFormIfRequired = options.showConsentFormIfRequired; 
-  //   if (options.forceTestAds !== undefined)
-  //     payload.forceTestAds = options.forceTestAds; 
-
-  //   if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
-  //   if (options.trialAdFreeInterval != null) payload.trialAdFreeInterval = options.trialAdFreeInterval;
-  //   if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
-
-  //   return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
-  // }
-  static initialize(casId: string, options: InitializationParams = {}): Promise<InitializationStatus> {
+  static initialize(
+    casId: string,
+    options: InitializationParams = {}
+  ): Promise<InitializationStatus> {
     if (typeof casId !== 'string') {
-      return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
+      return Promise.reject(
+        new Error('initialize(casId, options?): casId must be a string')
+      );
     }
 
     const payload: any = {};
-    if (options.targetAudience != null) payload.audience = options.targetAudience;
-    if (options.showConsentFormIfRequired !== undefined) payload.showConsentFormIfRequired = options.showConsentFormIfRequired;
+    if (options.targetAudience != null) {
+      payload.audience = options.targetAudience as number; 
+    }
+    
+    if (options.showConsentFormIfRequired !== undefined)
+      payload.showConsentFormIfRequired = options.showConsentFormIfRequired;
     if (options.forceTestAds !== undefined) payload.forceTestAds = options.forceTestAds;
-    if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
-    if (options.trialAdFreeInterval != null) payload.trialAdFreeInterval = options.trialAdFreeInterval;
-    if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
+    if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;      
+    if (options.mediationExtras != null)
+      payload.mediationExtras = options.mediationExtras;
 
-    return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
+    if (options.privacyGeography != null) {      
+      payload.privacyGeography = options.privacyGeography as number;
+    }
+
+    return CASMobileAdsNative.initialize(
+      casId,
+      Object.keys(payload).length ? payload : null
+    );
   }
 
 

@@ -2,14 +2,13 @@ import type { InitializationStatus, InitializationParams, Gender } from '../type
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
-export interface Spec extends TurboModule {
-  // initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
+export interface Spec extends TurboModule {  
    initialize(casId: string, options: {
-    audience?: number; // enum Audience int
+    audience?: number;
     showConsentFormIfRequired?: boolean;
     forceTestAds?: boolean;
     testDeviceIds?: string[];
-    trialAdFreeInterval?: number;
+    privacyGeography?: number;
     mediationExtras?: { [key: string]: string };
   } | null): Promise<InitializationStatus>;
 

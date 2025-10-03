@@ -86,25 +86,35 @@ RCT_EXPORT_MODULE();
             reject:(nonnull RCTPromiseRejectBlock)reject {
   casIdendifier = casId;
   
+  NSLog(@"CASMobileAds init started");
+  
   @try {
     CASManagerBuilder *builder = [CAS buildManager];
-    [builder withTestAdMode:options.forceTestAds().value()];
+ 
+    if (options.forceTestAds().has_value()) {
+      [builder withTestAdMode:options.forceTestAds().value()];
+    }
         
     if (options.showConsentFormIfRequired().value()) {
       consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
+      
+      if (options.privacyGeography().has_value()) {
+        consentFlow.debugGeography = (CASUserDebugGeography)((NSInteger)options.privacyGeography().value());
+      }
+      
       [builder withConsentFlow: consentFlow];
     }
     [builder withCompletionHandler:^(CASInitialConfig * _Nonnull config) {
       NSLog(@"CASMobileAds initialized (Fabric/TurboModule)");
-      
+
       NSDictionary *result = @{
-        @"error":config.error,
-        @"countryCode": config.countryCode,
+        @"error": config.error ?: [NSNull null],
+        @"countryCode": config.countryCode ?: [NSNull null],
         @"isConsentRequired": @(config.isConsentRequired),
         @"consentFlowStatus": @(config.consentFlowStatus)
       };
-      
-      resolve(config);
+
+      resolve(result);
     }];
     
     manager = [builder createWithCasId:casId];
