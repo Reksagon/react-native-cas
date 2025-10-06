@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
-import { CASMobileAds, Audience } from 'react-native-cas';
+import { CASMobileAds, Audience, PrivacyGeography } from 'react-native-cas';
 import { useCasContext } from './cas.context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -19,7 +19,7 @@ export const Setup = () => {
         forceTestAds: true,
         targetAudience: Audience.NotChildren,            
         showConsentFormIfRequired: true,       
-        privacyGeography: 0  });
+        privacyGeography: PrivacyGeography.Unknown });
       logCasInfo('initialize:', init);
       
       const v = await CASMobileAds.getSDKVersion();
