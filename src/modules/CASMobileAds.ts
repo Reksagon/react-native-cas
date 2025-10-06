@@ -1,8 +1,6 @@
 import CASMobileAdsNative from "./NativeCASMobileAdsModule";
-import { NativeModules, NativeEventEmitter } from 'react-native';
+import { addEventListener, removeEventListener } from '../EventEmitter';
 import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
-
-export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 
 export class CASMobileAds {
 
@@ -75,8 +73,7 @@ export class CASMobileAds {
     if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
     if (options.debugPrivacyGeography !== undefined) {
       payload.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
-}
-
+    }
 
     return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
   }
@@ -88,13 +85,7 @@ export class CASMobileAds {
     return CASMobileAdsNative.isInitialized();
   }
 
-  static showConsentFlow() { return CASMobileAdsNative.showConsentFlow(); }
-  static addConsentFlowDismissedEventListener(listener: (status: number) => void) {
-  const sub = eventEmitter.addListener('consentFlowDismissed', (e: any) => {
-    listener(typeof e?.status === 'number' ? e.status : -1);
-  });
-  return () => sub.remove();
-}
+  static showConsentFlow(): Promise<number> { return CASMobileAdsNative.showConsentFlow(); }
 
   static getSDKVersion() { return CASMobileAdsNative.getSDKVersion(); }
 

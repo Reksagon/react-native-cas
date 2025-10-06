@@ -98,14 +98,14 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
         }
       }
 
+      createOrRecreateInterstitial()
+      createOrRecreateRewarded()
+      createOrRecreateAppOpen()
+
       val builder = CAS.buildManager()
         .withCasId(casId)
         .withConsentFlow(consent)
         .withCompletionListener { c ->
-          createOrRecreateInterstitial()
-          createOrRecreateRewarded()
-          createOrRecreateAppOpen()
-
           val out = WritableNativeMap().apply {
             c.error?.let { putString("error", it) }
             c.countryCode?.let { putString("countryCode", it) }
@@ -148,13 +148,9 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
       ConsentFlow()
         .withUIContext(activity)
         .withDismissListener { status ->
-          val map = WritableNativeMap().apply { putInt("status", status) }
-          reactContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit("consentFlowDismissed", map)
+          promise.resolve(status)
         }
         .showIfRequired()
-      promise.resolve(null)
     }
   }
 

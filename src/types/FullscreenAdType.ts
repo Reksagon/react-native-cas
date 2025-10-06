@@ -30,6 +30,10 @@ export type FullscreenAdBase = {
   removeAdImpressionEventListener(): void;
 };
 
+export type AppOpenAdType = FullscreenAdBase & {
+  setAutoshowEnabled(enabled: boolean): Promise<void>;
+};
+
 export type InterstitialAdType = FullscreenAdBase & {
   setAutoshowEnabled(enabled: boolean): Promise<void>;
   setMinInterval(seconds: number): Promise<void>;
@@ -39,8 +43,4 @@ export type InterstitialAdType = FullscreenAdBase & {
 export type RewardedAdType = FullscreenAdBase & {
   addAdUserEarnRewardEventListener(l: () => void): void;
   removeAdUserEarnRewardLoadedEventListener(): void;
-};
-
-export type AppOpenAdType = FullscreenAdBase & {
-  setAutoshowEnabled(enabled: boolean): Promise<void>;
 };

@@ -1,3 +1,32 @@
+export enum Audience {
+  Undefined = 0,
+  Children,
+  NotChildren,
+}
+
+export enum PrivacyGeography {
+  unknown = 0,
+  europeanEconomicArea = 1,
+  regulatedUSState = 3,
+  unregulated = 4,
+}
+
+export type InitializationParams = {
+  targetAudience?: Audience;
+  showConsentFormIfRequired?: boolean;
+  forceTestAds?: boolean;
+  testDeviceIds?: string[];
+  debugPrivacyGeography?: PrivacyGeography | null; 
+  mediationExtras?: { [key: string]: string };
+};
+
+export type InitializationStatus = {
+  error?: string;
+  countryCode?: string;
+  isConsentRequired: boolean;
+  consentFlowStatus: number;
+};
+
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
   NOT_READY = 1,
@@ -18,39 +47,10 @@ export type AdError = {
   message: string;
 };
 
-export type ConsentFlowParams = {
-  enabled?: boolean;
-  privacyPolicy?: string;
-  requestGDPR?: boolean;
-  requestATT?: boolean;
-};
-
-export type InitializationStatus = {
-  error?: string;
-  countryCode?: string;
-  isConsentRequired: boolean;
-  consentFlowStatus: number;
-};
-
-export type InitializationParams = {
-  targetAudience?: Audience;
-  showConsentFormIfRequired?: boolean;
-  forceTestAds?: boolean;
-  testDeviceIds?: string[];
-  mediationExtras?: { [key: string]: string };
-  debugPrivacyGeography?: PrivacyGeography | null; 
-};
-
 export enum Gender {
   Unknown = 0,
   Male,
   Female,
-}
-
-export enum Audience {
-  Undefined = 0,
-  Children,
-  NotChildren,
 }
 
 export type AdContentInfo = {
@@ -63,10 +63,3 @@ export type AdContentInfo = {
   revenueTotal: number;
   impressionDepth: number;
 };
-
-export enum PrivacyGeography {
-  unknown = 0,
-  europeanEconomicArea = 1,
-  regulatedUSState = 3,
-  unregulated = 4,
-}

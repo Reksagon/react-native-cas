@@ -12,9 +12,6 @@ export const Setup = () => {
 
   const initCas = useCallback(async () => {
     try {
-      const unsub = CASMobileAds.addConsentFlowDismissedEventListener((status) => {
-        logCasInfo('consentFlowDismissed:', status);
-      });
       const init = await CASMobileAds.initialize('1058803540', {
         forceTestAds: true,
         audience: Audience.NotChildren,    

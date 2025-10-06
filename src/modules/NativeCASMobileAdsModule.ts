@@ -62,7 +62,7 @@ export interface Spec extends TurboModule {
 
   //Misc
   getSDKVersion(): Promise<string>;
-  showConsentFlow(): Promise<void>;
+  showConsentFlow(): Promise<number>;
 
   addListener(eventName: string): void;    
   removeListeners(count: number): void;     
