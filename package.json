@@ -4,7 +4,6 @@
   "description": "CAS.AI React Native Plugin for Android and iOS",
   "author": "Clever Ads Solutions LTD <support@cas.ai> (https://cas.ai)",
   "license": "MIT",
-  "private": true,
   "keywords": [
     "react-native",
     "ads",
@@ -22,16 +21,22 @@
   "homepage": "https://github.com/cleveradssolutions/CAS-ReactNative#readme",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
-  "react-native": "src/index",
-  "source": "src/index",
   "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.tsx",
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "lib",
     "android",
     "ios",
     "cpp",
-    "react-native-cas.podspec",
+    "*.podspec",
     "react-native.config.js",
     "!ios/build",
     "!android/build",
@@ -45,7 +50,6 @@
     "!**/.*"
   ],
   "scripts": {
-    "codegen": "react-native codegen",
     "example": "yarn workspace react-native-cas-example",
     "test": "jest",
     "typecheck": "tsc",
@@ -58,31 +62,26 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^17.0.2",
+    "@commitlint/config-conventional": "^19.6.0",
     "@eslint/compat": "^1.2.7",
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
-    "@react-native-community/cli": "latest",
-    "@react-native/codegen": "^0.81.1",
-    "@react-native/eslint-config": "^0.73.1",
+    "@react-native-community/cli": "15.0.0-alpha.2",
+    "@react-native/babel-preset": "0.79.2",
+    "@react-native/eslint-config": "^0.78.0",
     "@types/react": "^18.2.44",
     "commitlint": "^19.6.1",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.0.3",
-    "react": "19.0.0",
-    "react-native": "0.79.2",
-    "react-native-builder-bob": "^0.20.4",
-    "typescript": "^5.2.2"
-  },
-  "resolutions": {
-    "@types/react": "^18.2.44"
+    "react-native-builder-bob": "^0.40.8",
+    "typescript": "^5.8.3"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
+    "react": ">=18",
+    "react-native": ">=0.71"
   },
   "workspaces": [
     "example"
@@ -122,13 +121,13 @@
     ]
   },
   "codegenConfig": {
-    "name": "RNCASMobileAdsSpec",
+    "name": "CASMobileAds",
     "type": "all",
     "jsSrcsDir": "./src/modules",
     "ios": {
-      "libraryName": "CAS",
+      "libraryName": "CASMobileAds",
       "podName": "react-native-cas",
-      "moduleName": "CASMobileAds"
+      "swiftName": "CASMobileAds"
     },
     "android": {
       "javaPackageName": "com.cleveradssolutions.plugin.reactnative"

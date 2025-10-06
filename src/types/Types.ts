@@ -37,8 +37,8 @@ export type InitializationParams = {
   showConsentFormIfRequired?: boolean;
   forceTestAds?: boolean;
   testDeviceIds?: string[];
-  trialAdFreeInterval?: number;
-  mediationExtras?: Record<string, string>;
+  mediationExtras?: { [key: string]: string };
+  debugPrivacyGeography?: PrivacyGeography | null; 
 };
 
 export enum Gender {
@@ -64,4 +64,9 @@ export type AdContentInfo = {
   impressionDepth: number;
 };
 
-
+export enum PrivacyGeography {
+  unknown = 0,
+  europeanEconomicArea = 1,
+  regulatedUSState = 3,
+  unregulated = 4,
+}

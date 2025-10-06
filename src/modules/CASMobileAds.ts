@@ -1,6 +1,6 @@
 import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { InitializationStatus, InitializationParams, Audience, Gender } from '../types/Types';
+import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
 
 export const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
 
@@ -72,8 +72,11 @@ export class CASMobileAds {
       payload.forceTestAds = options.forceTestAds; 
 
     if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
-    if (options.trialAdFreeInterval != null) payload.trialAdFreeInterval = options.trialAdFreeInterval;
     if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
+    if (options.debugPrivacyGeography !== undefined) {
+      payload.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
+}
+
 
     return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
   }

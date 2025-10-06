@@ -5,7 +5,6 @@ import { Setup } from './setup.component';
 import { Menu } from './menu.component';
 import { Banners } from './banners.component';
 import { Ads } from './ads.component';
-import { Settings } from './settings.component';
 import { CasProvider } from './cas.context';
 import { LoggerTerminal } from './logger-terminal.component';
 import { NativeCasDebugTap } from './native-cas-debug-tap';
@@ -23,7 +22,6 @@ export default function App() {
             <Stack.Screen name="Menu" component={Menu} />
             <Stack.Screen name="Ads" component={Ads} />
             <Stack.Screen name="Banners" component={Banners} />
-            <Stack.Screen name="Settings" component={Settings} />
           </Stack.Navigator>
         </NavigationContainer>
         <LoggerTerminal />

@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import { Button, View } from 'react-native';
+
+import { View } from 'react-native';
 import { styles } from './styles';
 import { useCasContext } from './cas.context';
 import { AdView, AdViewSize, type AdViewRef, type AdContentInfo } from 'react-native-cas';
@@ -23,18 +23,14 @@ const getImp = (adInfo: any) => (adInfo?.nativeEvent ?? adInfo)?.impression;
 
 export const Banners = () => {
   const { logCasInfo } = useCasContext();
-  const ref = useRef<AdViewRef | null>(null);
-
-  const nextAd = useCallback(() => ref.current?.loadAd(), []);
 
   return (
     <View style={styles.screen}>
-      <Button title="Next ad" onPress={nextAd} />
-
       <AdView
         size={AdViewSize.BANNER}
         onAdViewLoaded={() => logCasInfo('Banner (B) loaded')}
         onAdViewClicked={() => logCasInfo('Banner (B) clicked')}
+        refreshInterval={15}          
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);
           logCasInfo('Banner (B) failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
@@ -45,9 +41,8 @@ export const Banners = () => {
       />
 
       <AdView
-        ref={ref}
         size={AdViewSize.MREC}
-        onAdViewLoaded={() => logCasInfo('MREC loaded')}
+        onAdViewLoaded={() => logCasInfo('MREC loaded')}       
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);
           logCasInfo('MREC failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
@@ -59,7 +54,7 @@ export const Banners = () => {
 
       <AdView
         size={AdViewSize.ADAPTIVE}
-        refreshInterval={20}
+        refreshInterval={15}
         onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);

@@ -29,7 +29,9 @@ export type AdViewProps = {
   style?: StyleProp<ViewStyle>;
   size: AdViewSize;
   isAutoloadEnabled?: boolean;
+  autoRefresh?: boolean;
   refreshInterval?: number;
+  loadOnMount?: boolean;
   casId?: string;
 
   onAdViewLoaded?: (e: NativeSyntheticEvent<{ width: number; height: number }>) => void;
@@ -53,7 +55,7 @@ export const AdViewCommands = {
     UIManager.dispatchViewManagerCommand(
       tag,
       UIManager.getViewManagerConfig('AdView').Commands.loadAd,
-      []
+      [],
     );
   },
 
@@ -63,7 +65,7 @@ export const AdViewCommands = {
     UIManager.dispatchViewManagerCommand(
       tag,
       UIManager.getViewManagerConfig('AdView').Commands.destroy,
-      []
+      [],
     );
   },
 
@@ -73,7 +75,7 @@ export const AdViewCommands = {
     UIManager.dispatchViewManagerCommand(
       tag,
       UIManager.getViewManagerConfig('AdView').Commands.setRefreshInterval,
-      [seconds | 0]
+      [seconds | 0],
     );
   },
 
@@ -85,7 +87,7 @@ export const AdViewCommands = {
       UIManager.dispatchViewManagerCommand(
         tag,
         UIManager.getViewManagerConfig('AdView').Commands.isAdLoaded,
-        []
+        [],
       );
     });
   },

@@ -10,4 +10,10 @@ export {
   type AdViewRef,
   type AdViewImpressionEvent,
 } from './modules/AdViewComponent';
-
+export {
+  Audience,
+  Gender,
+  PrivacyGeography,               
+  type InitializationParams,
+  type InitializationStatus,
+} from './types/Types';

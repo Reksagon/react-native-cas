@@ -4,12 +4,12 @@ import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
 import com.cleveradssolutions.sdk.AdContentInfo
 import com.cleveradssolutions.sdk.AdFormat
 import com.cleveradssolutions.sdk.OnAdImpressionListener
+import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 import com.cleveradssolutions.sdk.screen.ScreenAdContentCallback
 import com.cleversolutions.ads.AdError
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 
 class ScreenContentCallback(
   private val reactContext: ReactApplicationContext,
@@ -36,7 +36,8 @@ class ScreenContentCallback(
     emit("on${title()}Impression", map)
   }
 
-  override fun onUserEarnedReward(ad: AdContentInfo){
+
+  override fun onUserEarnedReward(ad: AdContentInfo) {
     emit("onRewardedCompleted", WritableNativeMap())
   }
 

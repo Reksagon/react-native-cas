@@ -10,7 +10,6 @@ export const Menu = () => {
     <SafeAreaView style={styles.screen}>
       <Button title="Ads" onPress={() => navigation.navigate('Ads' as never)} />
       <Button title="Banners" onPress={() => navigation.navigate('Banners' as never)} />
-      <Button title="Settings" onPress={() => navigation.navigate('Settings' as never)} />
     </SafeAreaView>
   );
 };
