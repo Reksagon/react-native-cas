@@ -128,7 +128,8 @@
     "ios": {
       "libraryName": "CAS",
       "podName": "react-native-cas",
-      "moduleName": "CASMobileAds"
+      "moduleName": "CASMobileAds",
+      "componentProvider": {}
     },
     "android": {
       "javaPackageName": "com.cleveradssolutions.plugin.reactnative"
