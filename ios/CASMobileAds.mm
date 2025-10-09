@@ -66,66 +66,66 @@ RCT_EXPORT_MODULE();
 #pragma mark - Init
 
 - (void)initializeWithCASId:(NSString *)casId
-                     options:(NSDictionary *)options
-                      resolve:(RCTPromiseResolveBlock)resolve
-                       reject:(RCTPromiseRejectBlock)reject
+                    options:(NSDictionary *)options
+                    resolve:(RCTPromiseResolveBlock)resolve
+                     reject:(RCTPromiseRejectBlock)reject
 {
-    casIdendifier = casId;
-
-    @try {
-        CASManagerBuilder *builder = [CAS buildManager];
-
-        NSNumber *forceTestAds = options[@"forceTestAds"];
-        if (forceTestAds != nil) {
-            [builder withTestAdMode:[forceTestAds boolValue]];
-        }
-        
-        NSNumber *showConsent = options[@"showConsentFormIfRequired"];
-        if (showConsent != nil && [showConsent boolValue]) {
-            consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
-
-            // Privacy geography
-            NSNumber *privacyGeo = options[@"privacyGeography"];
-            if (privacyGeo != nil) {
-                consentFlow.debugGeography = (CASUserDebugGeography)((NSInteger)[privacyGeo integerValue]);
-            }
-
-            [builder withConsentFlow:consentFlow];
-        }
-
-        // Completion handler
-        [builder withCompletionHandler:^(CASInitialConfig * _Nonnull config) {
-            NSLog(@"CASMobileAds initialized (dual-mode)");
-
-            NSDictionary *result = @{
-                @"error": config.error ?: [NSNull null],
-                @"countryCode": config.countryCode ?: [NSNull null],
-                @"isConsentRequired": @(config.isConsentRequired),
-                @"consentFlowStatus": @(config.consentFlowStatus)
-            };
-
-            resolve(result);
-        }];
-
-        // Create manager and set globally
-        manager = [builder createWithCasId:casId];
-        [CAS setManager:manager];
-
-        // Tagged audience
-        NSNumber *audience = options[@"audience"];
-        if (audience != nil) {
-            CASSettings *nativeSettings = CAS.settings;
-            nativeSettings.taggedAudience = (CASAudience)((NSInteger)[audience integerValue]);
-        }
-
-        // Initialize ad types
-        interstitial = [[CASInterstitial alloc] initWithCasID:casId];
-        rewarded = [[CASRewarded alloc] initWithCasID:casId];
-        appOpen = [[CASAppOpen alloc] initWithCasID:casId];
-
-    } @catch (NSException *e) {
-        resolve(@{ @"error": e.reason ?: @"Unknown error", @"isConsentRequired": @NO, @"consentFlowStatus": @0 });
+  casIdendifier = casId;
+  
+  @try {
+    CASManagerBuilder *builder = [CAS buildManager];
+    
+    NSNumber *forceTestAds = options[@"forceTestAds"];
+    if (forceTestAds != nil) {
+      [builder withTestAdMode:[forceTestAds boolValue]];
     }
+    
+    NSNumber *showConsent = options[@"showConsentFormIfRequired"];
+    if (showConsent != nil && [showConsent boolValue]) {
+      consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
+      
+      // Privacy geography
+      NSNumber *privacyGeo = options[@"privacyGeography"];
+      if (privacyGeo != nil) {
+        consentFlow.debugGeography = (CASUserDebugGeography)((NSInteger)[privacyGeo integerValue]);
+      }
+      
+      [builder withConsentFlow:consentFlow];
+    }
+    
+    // Completion handler
+    [builder withCompletionHandler:^(CASInitialConfig * _Nonnull config) {
+      NSLog(@"CASMobileAds initialized (dual-mode)");
+      
+      NSDictionary *result = @{
+        @"error": config.error ?: [NSNull null],
+        @"countryCode": config.countryCode ?: [NSNull null],
+        @"isConsentRequired": @(config.isConsentRequired),
+        @"consentFlowStatus": @(config.consentFlowStatus)
+      };
+      
+      resolve(result);
+    }];
+    
+    // Create manager and set globally
+    manager = [builder createWithCasId:casId];
+    [CAS setManager:manager];
+    
+    // Tagged audience
+    NSNumber *audience = options[@"audience"];
+    if (audience != nil) {
+      CASSettings *nativeSettings = CAS.settings;
+      nativeSettings.taggedAudience = (CASAudience)((NSInteger)[audience integerValue]);
+    }
+    
+    // Initialize ad types
+    interstitial = [[CASInterstitial alloc] initWithCasID:casId];
+    rewarded = [[CASRewarded alloc] initWithCasID:casId];
+    appOpen = [[CASAppOpen alloc] initWithCasID:casId];
+    
+  } @catch (NSException *e) {
+    resolve(@{ @"error": e.reason ?: @"Unknown error", @"isConsentRequired": @NO, @"consentFlowStatus": @0 });
+  }
 }
 
 // TurboModule / New Architecture
@@ -135,59 +135,54 @@ RCT_EXPORT_MODULE();
            resolve:(nonnull RCTPromiseResolveBlock)resolve
             reject:(nonnull RCTPromiseRejectBlock)reject
 {
-    // Convert SpecInitializeOptions -> NSDictionary
-    NSMutableDictionary *dictOptions = [NSMutableDictionary dictionary];
-    if (options.forceTestAds().has_value()) {
-        dictOptions[@"forceTestAds"] = @(options.forceTestAds().value());
-    }
-    if (options.showConsentFormIfRequired().has_value()) {
-        dictOptions[@"showConsentFormIfRequired"] = @(options.showConsentFormIfRequired().value());
-    }
-    if (options.privacyGeography().has_value()) {
-        dictOptions[@"privacyGeography"] = @(options.privacyGeography().value());
-    }
-    if (options.audience().has_value()) {
-        dictOptions[@"audience"] = @(options.audience().value());
-    }
-
-    [self initializeWithCASId:casId options:dictOptions resolve:resolve reject:reject];
+  // Convert SpecInitializeOptions -> NSDictionary
+  NSMutableDictionary *dictOptions = [NSMutableDictionary dictionary];
+  if (options.forceTestAds().has_value()) {
+    dictOptions[@"forceTestAds"] = @(options.forceTestAds().value());
+  }
+  if (options.showConsentFormIfRequired().has_value()) {
+    dictOptions[@"showConsentFormIfRequired"] = @(options.showConsentFormIfRequired().value());
+  }
+  if (options.privacyGeography().has_value()) {
+    dictOptions[@"privacyGeography"] = @(options.privacyGeography().value());
+  }
+  if (options.audience().has_value()) {
+    dictOptions[@"audience"] = @(options.audience().value());
+  }
+  
+  [self initializeWithCASId:casId options:dictOptions resolve:resolve reject:reject];
 }
 
 #else
-
 // RCTBridgeModule / Old Architecture
 RCT_EXPORT_METHOD(initialize:(NSString *)casId
                   options:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self initializeWithCASId:casId options:options resolve:resolve reject:reject];
+  [self initializeWithCASId:casId options:options resolve:resolve reject:reject];
 }
 
 #endif
 
 - (void)isInitializedInternal:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+                       reject:(RCTPromiseRejectBlock)reject
 {
-    BOOL initialized = (manager != nil);
-    resolve(@(initialized));
+  BOOL initialized = (manager != nil);
+  resolve(@(initialized));
 }
-
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)isInitialized:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+               reject:(RCTPromiseRejectBlock)reject
 {
-    [self isInitializedInternal:resolve reject:reject];
+  [self isInitializedInternal:resolve reject:reject];
 }
-
 #else
-
 RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    [self isInitializedInternal:resolve reject:reject];
+  [self isInitializedInternal:resolve reject:reject];
 }
-
 #endif
 
 
@@ -207,234 +202,189 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
 #pragma mark - SDK Version
 
 - (void)getSDKVersionInternal:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+                       reject:(RCTPromiseRejectBlock)reject
 {
-    resolve([CAS getSDKVersion]);
+  resolve([CAS getSDKVersion]);
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)getSDKVersion:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+               reject:(RCTPromiseRejectBlock)reject
 {
-    [self getSDKVersionInternal:resolve reject:reject];
+  [self getSDKVersionInternal:resolve reject:reject];
 }
 
 #else
 RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    [self getSDKVersionInternal:resolve reject:reject];
+  [self getSDKVersionInternal:resolve reject:reject];
 }
 
 #endif
 
 #pragma mark - Consent Flow
 
-- (void)showConsentFlowInternal:(RCTPromiseResolveBlock)resolve
-                          reject:(RCTPromiseRejectBlock)reject
+- (void)showConsentFlowInternal
 {
-    if (!consentFlow.isEnabled) {
-        resolve(nil);
-        return;
-    }
-    
+  if (consentFlow.isEnabled) {
     [consentFlow present];
+  }
 }
-
-
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)showConsentFlow:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void)showConsentFlow
 {
-    [self showConsentFlowInternal:resolve reject:reject];
+  [self showConsentFlowInternal];
 }
-
 #else
-
-RCT_EXPORT_METHOD(showConsentFlow:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(showConsentFlow)
 {
-    [self showConsentFlowInternal:resolve reject:reject];
+  [self showConsentFlowInternal];
 }
-
 #endif
 
 
 #pragma mark - Settings
 - (void)setAdSoundsMutedInternal:(BOOL)muted
-                          resolve:(RCTPromiseResolveBlock)resolve
-                           reject:(RCTPromiseRejectBlock)reject {
-    CASSettings *nativeSettings = CAS.settings;
-    nativeSettings.mutedAdSounds = muted;
-    resolve(nil);
+{
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.mutedAdSounds = muted;
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setAdSoundsMuted:(BOOL)muted
-                 resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject {
-    [self setAdSoundsMutedInternal:muted resolve:resolve reject:reject];
+{
+  [self setAdSoundsMutedInternal:muted];
 }
 
 #else
-RCT_EXPORT_METHOD(setAdSoundsMuted:(BOOL)muted
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setAdSoundsMutedInternal:muted resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setAdSoundsMuted:(BOOL)muted) {
+  [self setAdSoundsMutedInternal:muted];
 }
 #endif
 
 
 - (void)setAppContentUrlInternal:(NSString *)contentUrl
-                          resolve:(RCTPromiseResolveBlock)resolve
-                           reject:(RCTPromiseRejectBlock)reject {
-    CASTargetingOptions *targetingOptions = CAS.targetingOptions;
-    targetingOptions.contentUrl = contentUrl;
-    resolve(nil);
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.contentUrl = contentUrl;
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)setAppContentUrl:(NSString *)contentUrl
-                 resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject {
-    [self setAppContentUrlInternal:contentUrl resolve:resolve reject:reject];
+- (void)setAppContentUrl:(NSString *)contentUrl{
+  [self setAppContentUrlInternal:contentUrl];
 }
 #else
-RCT_EXPORT_METHOD(setAppContentUrl:(NSString *)contentUrl
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setAppContentUrlInternal:contentUrl resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setAppContentUrl:(NSString *)contentUrl)
+{
+  [self setAppContentUrlInternal:contentUrl];
 }
 #endif
 
 
 - (void)setAppKeywordsInternal:(NSArray *)keywords
-                        resolve:(RCTPromiseResolveBlock)resolve
-                         reject:(RCTPromiseRejectBlock)reject {
-    CASTargetingOptions *targetingOptions = CAS.targetingOptions;
-    targetingOptions.keywords = keywords;
-    resolve(nil);
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.keywords = keywords;
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setAppKeywords:(NSArray *)keywords
-               resolve:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject {
-    [self setAppKeywordsInternal:keywords resolve:resolve reject:reject];
+{
+  [self setAppKeywordsInternal:keywords];
 }
 #else
-RCT_EXPORT_METHOD(setAppKeywords:(NSArray *)keywords
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setAppKeywordsInternal:keywords resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setAppKeywords:(NSArray *)keywords)
+{
+  [self setAppKeywordsInternal:keywords];
 }
 #endif
 
 
 - (void)setDebugLoggingEnabledInternal:(BOOL)enabled
-                               resolve:(RCTPromiseResolveBlock)resolve
-                                reject:(RCTPromiseRejectBlock)reject {
-    CASSettings *nativeSettings = CAS.settings;
-    nativeSettings.debugMode = enabled;
-    resolve(nil);
+{
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.debugMode = enabled;
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setDebugLoggingEnabled:(BOOL)enabled
-                       resolve:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject {
-    [self setDebugLoggingEnabledInternal:enabled resolve:resolve reject:reject];
+{
+  [self setDebugLoggingEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setDebugLoggingEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setDebugLoggingEnabledInternal:enabled resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setDebugLoggingEnabled:(BOOL)enabled)
+{
+  [self setDebugLoggingEnabledInternal:enabled];
 }
 #endif
 
 
 - (void)setTrialAdFreeIntervalInternal:(double)interval
-                                resolve:(RCTPromiseResolveBlock)resolve
-                                 reject:(RCTPromiseRejectBlock)reject {
-    CASSettings *nativeSettings = CAS.settings;
-    nativeSettings.trialAdFreeInterval = interval;
-    resolve(nil);
+{
+  CASSettings *nativeSettings = CAS.settings;
+  nativeSettings.trialAdFreeInterval = interval;
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setTrialAdFreeInterval:(double)interval
-                       resolve:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject {
-    [self setTrialAdFreeIntervalInternal:interval resolve:resolve reject:reject];
+{
+  [self setTrialAdFreeIntervalInternal:interval];
 }
 #else
-RCT_EXPORT_METHOD(setTrialAdFreeInterval:(double)interval
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setTrialAdFreeIntervalInternal:interval resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setTrialAdFreeInterval:(double)interval)
+{
+  [self setTrialAdFreeIntervalInternal:interval];
 }
 #endif
 
 
 - (void)setUserAgeInternal:(double)age
-                    resolve:(RCTPromiseResolveBlock)resolve
-                     reject:(RCTPromiseRejectBlock)reject {
-    CASTargetingOptions *targetingOptions = CAS.targetingOptions;
-    targetingOptions.age = age;
-    resolve(nil);
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.age = age;
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setUserAge:(double)age
-           resolve:(RCTPromiseResolveBlock)resolve
-            reject:(RCTPromiseRejectBlock)reject {
-    [self setUserAgeInternal:age resolve:resolve reject:reject];
+{
+  [self setUserAgeInternal:age];
 }
 #else
-RCT_EXPORT_METHOD(setUserAge:(double)age
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setUserAgeInternal:age resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setUserAge:(double)age)
+{
+  [self setUserAgeInternal:age];
 }
 #endif
 
 - (void)setUserGenderInternal:(double)gender
-                       resolve:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject {
-    CASTargetingOptions *targetingOptions = CAS.targetingOptions;
-    targetingOptions.gender = (CASGender)((NSInteger)gender);
-    resolve(nil);
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.gender = (CASGender)((NSInteger)gender);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setUserGender:(double)gender
-              resolve:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject {
-    [self setUserGenderInternal:gender resolve:resolve reject:reject];
+{
+  [self setUserGenderInternal:gender];
 }
 #else
-RCT_EXPORT_METHOD(setUserGender:(double)gender
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setUserGenderInternal:gender resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setUserGender:(double)gender)
+{
+  [self setUserGenderInternal:gender];
 }
 #endif
 
 
 - (void)setLocationCollectionEnabledInternal:(BOOL)enabled
-                                     resolve:(RCTPromiseResolveBlock)resolve
-                                      reject:(RCTPromiseRejectBlock)reject {
-    CASTargetingOptions *targetingOptions = CAS.targetingOptions;
-    targetingOptions.locationCollectionEnabled = enabled;
-    resolve(nil);
+{
+  CASTargetingOptions *targetingOptions = CAS.targetingOptions;
+  targetingOptions.locationCollectionEnabled = enabled;
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setLocationCollectionEnabled:(BOOL)enabled
-                             resolve:(RCTPromiseResolveBlock)resolve
-                              reject:(RCTPromiseRejectBlock)reject {
-    [self setLocationCollectionEnabledInternal:enabled resolve:resolve reject:reject];
+{
+  [self setLocationCollectionEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setLocationCollectionEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                   reject:(RCTPromiseRejectBlock)reject) {
-    [self setLocationCollectionEnabledInternal:enabled resolve:resolve reject:reject];
+RCT_EXPORT_METHOD(setLocationCollectionEnabled:(BOOL)enabled)
+{
+  [self setLocationCollectionEnabledInternal:enabled];
 }
 #endif
 
@@ -466,183 +416,134 @@ RCT_EXPORT_METHOD(isInterstitialAdLoaded:(RCTPromiseResolveBlock)resolve
 #endif
 
 
-- (void)loadInterstitialAdInternal:(RCTPromiseResolveBlock)resolve
-                            reject:(RCTPromiseRejectBlock)reject
+- (void)loadInterstitialAdInternal
 {
-  @try {
-    if (!interstitial) {
-      [self sendEventWithName:kOnInterstitialLoadFailed body:@{
-        @"errorCode": @(CASError.notInitialized.code),
-        @"errorMessage": CASError.notInitialized.description}];
-      resolve(@{@"success": @YES});
-      return;
-    }
-    
-    interstitial.delegate = self;
-    interstitial.impressionDelegate = self;
-    
-    [interstitial loadAd];
-    resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"interstitial_load_error", e.reason, nil);
+  if (!interstitial) {
+    [self sendEventWithName:kOnInterstitialLoadFailed body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
+    return;
   }
+  
+  interstitial.delegate = self;
+  interstitial.impressionDelegate = self;
+  
+  [interstitial loadAd];
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)loadInterstitialAd:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
+- (void)loadInterstitialAd
 {
-  [self loadInterstitialAdInternal:resolve reject:reject];
+  [self loadInterstitialAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(loadInterstitialAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(loadInterstitialAd)
 {
-  [self loadInterstitialAdInternal:resolve reject:reject];
+  [self loadInterstitialAdInternal];
 }
 #endif
 
 
-- (void)showInterstitialAdInternal:(RCTPromiseResolveBlock)resolve
-                            reject:(RCTPromiseRejectBlock)reject
+- (void)showInterstitialAdInternal
 {
   if (!interstitial) {
     [self sendEventWithName:kOnInterstitialFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
-    resolve(@{@"success": @YES});
     return;
   }
   
   [interstitial presentFromViewController: nil];
-  // resolve(@{@"success": @YES});
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)showInterstitialAd:(RCTPromiseResolveBlock)resolve
-                    reject:(RCTPromiseRejectBlock)reject
+- (void)showInterstitialAd
 {
-  [self showInterstitialAdInternal:resolve reject:reject];
+  [self showInterstitialAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(showInterstitialAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(showInterstitialAd)
 {
-  [self showInterstitialAdInternal:resolve reject:reject];
+  [self showInterstitialAdInternal];
 }
 #endif
 
 
 - (void)setInterstitialMinIntervalInternal:(double)seconds
-                                   resolve:(RCTPromiseResolveBlock)resolve
-                                    reject:(RCTPromiseRejectBlock)reject
 {
-  if (!interstitial) {
-    resolve(nil);
-    return;
+  if (interstitial) {
+    interstitial.minInterval = seconds;
   }
-  interstitial.minInterval = seconds;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setInterstitialMinInterval:(double)seconds
-                           resolve:(RCTPromiseResolveBlock)resolve
-                            reject:(RCTPromiseRejectBlock)reject
 {
-  [self setInterstitialMinIntervalInternal:seconds resolve:resolve reject:reject];
+  [self setInterstitialMinIntervalInternal:seconds];
 }
 #else
-RCT_EXPORT_METHOD(setInterstitialMinInterval:(double)seconds
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setInterstitialMinInterval:(double)seconds)
 {
-  [self setInterstitialMinIntervalInternal:seconds resolve:resolve reject:reject];
+  [self setInterstitialMinIntervalInternal:seconds];
 }
 #endif
 
 
-- (void)restartInterstitialIntervalInternal:(RCTPromiseResolveBlock)resolve
-                                     reject:(RCTPromiseRejectBlock)reject
+- (void)restartInterstitialIntervalInternal
 {
-  if (!interstitial) {
-    resolve(nil);
-    return;
+  if (interstitial) {
+    [interstitial restartInterval];
   }
-  [interstitial restartInterval];
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)restartInterstitialInterval:(RCTPromiseResolveBlock)resolve
-                             reject:(RCTPromiseRejectBlock)reject
+- (void)restartInterstitialInterval
 {
-  [self restartInterstitialIntervalInternal:resolve reject:reject];
+  [self restartInterstitialIntervalInternal];
 }
 #else
-RCT_EXPORT_METHOD(restartInterstitialInterval:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(restartInterstitialInterval)
 {
-  [self restartInterstitialIntervalInternal:resolve reject:reject];
+  [self restartInterstitialIntervalInternal];
 }
 #endif
 
 
 - (void)setInterstitialAutoloadEnabledInternal:(BOOL)enabled
-                                       resolve:(RCTPromiseResolveBlock)resolve
-                                        reject:(RCTPromiseRejectBlock)reject
 {
-  if (!interstitial) {
-    resolve(nil);
-    return;
+  if (interstitial) {
+    interstitial.isAutoloadEnabled = enabled;
   }
-  interstitial.isAutoloadEnabled = enabled;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setInterstitialAutoloadEnabled:(BOOL)enabled
-                               resolve:(RCTPromiseResolveBlock)resolve
-                                reject:(RCTPromiseRejectBlock)reject
 {
-  [self setInterstitialAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setInterstitialAutoloadEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setInterstitialAutoloadEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setInterstitialAutoloadEnabled:(BOOL)enabled)
 {
-  [self setInterstitialAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setInterstitialAutoloadEnabledInternal:enabled];
 }
 #endif
 
 
 - (void)setInterstitialAutoshowEnabledInternal:(BOOL)enabled
-                                       resolve:(RCTPromiseResolveBlock)resolve
-                                        reject:(RCTPromiseRejectBlock)reject
 {
-  if (!interstitial) {
-    resolve(nil);
-    return;
+  if (interstitial) {
+    interstitial.isAutoshowEnabled = enabled;
   }
-  interstitial.isAutoshowEnabled = enabled;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setInterstitialAutoshowEnabled:(BOOL)enabled
-                               resolve:(nonnull RCTPromiseResolveBlock)resolve
-                                reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  [self setInterstitialAutoshowEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setInterstitialAutoshowEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setInterstitialAutoshowEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setInterstitialAutoshowEnabled:(BOOL)enabled)
 {
-  [self setInterstitialAutoshowEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setInterstitialAutoshowEnabledInternal:enabled];
 }
 #endif
 
 
-- (void)destroyInterstitialInternal:(RCTPromiseResolveBlock)resolve
-                             reject:(RCTPromiseRejectBlock)reject
+- (void)destroyInterstitialInternal
 {
   if (interstitial) {
     [interstitial destroy];
@@ -652,24 +553,18 @@ RCT_EXPORT_METHOD(setInterstitialAutoshowEnabled:(BOOL)enabled
       interstitial = [[CASInterstitial alloc] initWithCasID: casIdendifier];
     }
   }
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)destroyInterstitial:(RCTPromiseResolveBlock)resolve
-                     reject:(RCTPromiseRejectBlock)reject
+- (void)destroyInterstitial
 {
-  [self destroyInterstitialInternal:resolve reject:reject];
+  [self destroyInterstitialInternal];
 }
 #else
-RCT_EXPORT_METHOD(destroyInterstitial:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(destroyInterstitial)
 {
-  [self destroyInterstitialInternal:resolve reject:reject];
+  [self destroyInterstitialInternal];
 }
 #endif
-
-
-
 
 
 #pragma mark - AppOpen
@@ -698,130 +593,96 @@ RCT_EXPORT_METHOD(isAppOpenAdLoaded:(RCTPromiseResolveBlock)resolve
 #endif
 
 
-- (void)loadAppOpenAdInternal:(RCTPromiseResolveBlock)resolve
-                       reject:(RCTPromiseRejectBlock)reject
+- (void)loadAppOpenAdInternal
 {
-  @try {
-    if (!appOpen) {
-      [self sendEventWithName:kOnAppOpenLoadFailed body:@{
-        @"errorCode": @(CASError.notInitialized.code),
-        @"errorMessage": CASError.notInitialized.description}];
-      resolve(@{@"success": @YES});
-      return;
-    }
-    
-    appOpen.delegate = self;
-    appOpen.impressionDelegate = self;
-    
-    [appOpen loadAd];
-    resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"appOpen_load_error", e.reason, nil);
+  if (!appOpen) {
+    [self sendEventWithName:kOnAppOpenLoadFailed body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
+    return;
   }
+  
+  appOpen.delegate = self;
+  appOpen.impressionDelegate = self;
+  
+  [appOpen loadAd];
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)loadAppOpenAd:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
+- (void)loadAppOpenAd
 {
-  [self loadAppOpenAdInternal:resolve reject:reject];
+  [self loadAppOpenAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(loadAppOpenAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(loadAppOpenAd)
 {
-  [self loadAppOpenAdInternal:resolve reject:reject];
+  [self loadAppOpenAdInternal];
 }
 #endif
 
 
-- (void)showAppOpenAdInternal:(RCTPromiseResolveBlock)resolve
-                       reject:(RCTPromiseRejectBlock)reject
+- (void)showAppOpenAdInternal
 {
   if (!appOpen) {
     [self sendEventWithName:kOnAppOpenFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
-    resolve(@{@"success": @YES});
     return;
   }
   
   [appOpen presentFromViewController: nil];
-  resolve(@{@"success": @YES});
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)showAppOpenAd:(RCTPromiseResolveBlock)resolve
-               reject:(RCTPromiseRejectBlock)reject
+- (void)showAppOpenAd
 {
-  [self showAppOpenAdInternal:resolve reject:reject];
+  [self showAppOpenAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(showAppOpenAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(showAppOpenAd)
 {
-  [self showAppOpenAdInternal:resolve reject:reject];
+  [self showAppOpenAdInternal];
 }
 #endif
 
 
 - (void)setAppOpenAutoloadEnabledInternal:(BOOL)enabled
-                                  resolve:(RCTPromiseResolveBlock)resolve
-                                   reject:(RCTPromiseRejectBlock)reject
 {
-  if (!appOpen) {
-    resolve(nil);
-    return;
+  if (appOpen) {
+    appOpen.isAutoloadEnabled = enabled;
   }
-  appOpen.isAutoloadEnabled = enabled;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setAppOpenAutoloadEnabled:(BOOL)enabled
-                          resolve:(RCTPromiseResolveBlock)resolve
-                           reject:(RCTPromiseRejectBlock)reject
 {
-  [self setAppOpenAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setAppOpenAutoloadEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setAppOpenAutoloadEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setAppOpenAutoloadEnabled:(BOOL)enabled)
 {
-  [self setAppOpenAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setAppOpenAutoloadEnabledInternal:enabled];
 }
 #endif
 
 
 - (void)setAppOpenAutoshowEnabledInternal:(BOOL)enabled
-                                  resolve:(RCTPromiseResolveBlock)resolve
-                                   reject:(RCTPromiseRejectBlock)reject
 {
-  if (!appOpen) {
-    resolve(nil);
-    return;
+  if (appOpen) {
+    appOpen.isAutoshowEnabled = enabled;
   }
-  appOpen.isAutoshowEnabled = enabled;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setAppOpenAutoshowEnabled:(BOOL)enabled
-                          resolve:(RCTPromiseResolveBlock)resolve
-                           reject:(RCTPromiseRejectBlock)reject
 {
-  [self setAppOpenAutoshowEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setAppOpenAutoshowEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setAppOpenAutoshowEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setAppOpenAutoshowEnabled:(BOOL)enabled)
 {
-  [self setAppOpenAutoshowEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setAppOpenAutoshowEnabledInternal:enabled];
 }
 #endif
 
 
-- (void)destroyAppOpenInternal:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+- (void)destroyAppOpenInternal
 {
   if (appOpen) {
     [appOpen destroy];
@@ -831,19 +692,16 @@ RCT_EXPORT_METHOD(setAppOpenAutoshowEnabled:(BOOL)enabled
       appOpen = [[CASAppOpen alloc] initWithCasID: casIdendifier];
     }
   }
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)destroyAppOpen:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+- (void)destroyAppOpen
 {
-  [self destroyAppOpenInternal:resolve reject:reject];
+  [self destroyAppOpenInternal];
 }
 #else
-RCT_EXPORT_METHOD(destroyAppOpen:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(destroyAppOpen)
 {
-  [self destroyAppOpenInternal:resolve reject:reject];
+  [self destroyAppOpenInternal];
 }
 #endif
 
@@ -863,116 +721,90 @@ RCT_EXPORT_METHOD(destroyAppOpen:(RCTPromiseResolveBlock)resolve
 - (void)isRewardedAdLoaded:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject
 {
-    [self isRewardedAdLoadedInternal:resolve reject:reject];
+  [self isRewardedAdLoadedInternal:resolve reject:reject];
 }
 #else
 RCT_EXPORT_METHOD(isRewardedAdLoaded:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    [self isRewardedAdLoadedInternal:resolve reject:reject];
+  [self isRewardedAdLoadedInternal:resolve reject:reject];
 }
 #endif
 
 
-- (void)loadRewardedAdInternal:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+- (void)loadRewardedAdInternal
 {
-  @try {
-    if (!rewarded) {
-      [self sendEventWithName:kOnRewardedLoadFailed body:@{
-        @"errorCode": @(CASError.notInitialized.code),
-        @"errorMessage": CASError.notInitialized.description}];
-      resolve(@{@"success": @YES});
-      return;
-    }
-    
-    rewarded.delegate = self;
-    rewarded.impressionDelegate = self;
-    
-    [rewarded loadAd];
-    resolve(@{@"success": @YES});
-    
-  } @catch (NSException *e) {
-    reject(@"rewarded_load_error", e.reason, nil);
+  if (!rewarded) {
+    [self sendEventWithName:kOnRewardedLoadFailed body:@{
+      @"errorCode": @(CASError.notInitialized.code),
+      @"errorMessage": CASError.notInitialized.description}];
+    return;
   }
+  
+  rewarded.delegate = self;
+  rewarded.impressionDelegate = self;
+  
+  [rewarded loadAd];
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)loadRewardedAd:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+- (void)loadRewardedAd
 {
-    [self loadRewardedAdInternal:resolve reject:reject];
+  [self loadRewardedAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(loadRewardedAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(loadRewardedAd)
 {
-    [self loadRewardedAdInternal:resolve reject:reject];
+  [self loadRewardedAdInternal];
 }
 #endif
 
 
-- (void)showRewardedAdInternal:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
+- (void)showRewardedAdInternal
 {
   if (!rewarded) {
     [self sendEventWithName:kOnRewardedFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
-    resolve(@{@"success": @YES});
     return;
   }
   
   [rewarded presentFromViewController: nil userDidEarnRewardHandler:^(CASContentInfo * _Nonnull info) {
     if (self->hasListeners) [self sendEventWithName: kOnRewardedCompleted body:@{}];
   }];
-   
-  resolve(@{@"success": @YES});
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)showRewardedAd:(RCTPromiseResolveBlock)resolve
-                reject:(RCTPromiseRejectBlock)reject
+- (void)showRewardedAd
 {
-    [self showRewardedAdInternal:resolve reject:reject];
+  [self showRewardedAdInternal];
 }
 #else
-RCT_EXPORT_METHOD(showRewardedAd:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(showRewardedAd)
 {
-    [self showRewardedAdInternal:resolve reject:reject];
+  [self showRewardedAdInternal];
 }
 #endif
 
 
 - (void)setRewardedAutoloadEnabledInternal:(BOOL)enabled
-                                   resolve:(RCTPromiseResolveBlock)resolve
-                                    reject:(RCTPromiseRejectBlock)reject
 {
-  if (!rewarded) {
-    resolve(nil);
-    return;
+  if (rewarded) {
+    rewarded.isAutoloadEnabled = enabled;
   }
-  rewarded.isAutoloadEnabled = enabled;
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)setRewardedAutoloadEnabled:(BOOL)enabled
-                           resolve:(RCTPromiseResolveBlock)resolve
-                            reject:(RCTPromiseRejectBlock)reject
 {
-    [self setRewardedAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setRewardedAutoloadEnabledInternal:enabled];
 }
 #else
-RCT_EXPORT_METHOD(setRewardedAutoloadEnabled:(BOOL)enabled
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setRewardedAutoloadEnabled:(BOOL)enabled)
 {
-    [self setRewardedAutoloadEnabledInternal:enabled resolve:resolve reject:reject];
+  [self setRewardedAutoloadEnabledInternal];
 }
 #endif
 
 
-- (void)destroyRewardedInternal:(RCTPromiseResolveBlock)resolve
-                         reject:(RCTPromiseRejectBlock)reject
+- (void)destroyRewardedInternal
 {
   if (rewarded) {
     [rewarded destroy];
@@ -982,26 +814,23 @@ RCT_EXPORT_METHOD(setRewardedAutoloadEnabled:(BOOL)enabled
       rewarded = [[CASRewarded alloc] initWithCasID: casIdendifier];
     }
   }
-  resolve(nil);
 }
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)destroyRewarded:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject
+- (void)destroyRewarded
 {
-    [self destroyRewardedInternal:resolve reject:reject];
+  [self destroyRewardedInternal];
 }
 #else
-RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(destroyRewarded)
 {
-    [self destroyRewardedInternal:resolve reject:reject];
+  [self destroyRewardedInternal];
 }
 #endif
 
 
 #pragma mark - CASScreenContentDelegate
 
-- (void)adDidLoadInternal:(id<CASScreenContent>)ad {
+- (void)adDidLoad:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
   
   NSString *event = @"";
@@ -1011,18 +840,8 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
   
   [self sendEventWithName:event body:@{}];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidLoad:(id<CASScreenContent>)ad {
-    [self adDidLoadInternal:ad];
-}
-#else
-- (void)adDidLoad:(id<CASScreenContent>)ad {
-    [self adDidLoadInternal:ad];
-}
-#endif
 
-
-- (void)adDidFailToLoadInternal:(id<CASScreenContent>)ad error:(CASError *)error {
+- (void)adDidFailToLoad:(id<CASScreenContent>)ad error:(CASError *)error {
   if (!hasListeners) return;
   
   NSString *event = @"";
@@ -1034,18 +853,9 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
     @"errorCode": @(error.code),
     @"errorMessage": error.description}];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidFailToLoad:(id<CASScreenContent>)ad error:(CASError *)error {
-    [self adDidFailToLoadInternal:ad error:error];
-}
-#else
-- (void)adDidFailToLoad:(id<CASScreenContent>)ad error:(CASError *)error {
-    [self adDidFailToLoadInternal:ad error:error];
-}
-#endif
 
 
-- (void)adDidPresentInternal:(id<CASScreenContent>)ad {
+- (void)adDidPresent:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
   
   NSString *event = @"";
@@ -1055,18 +865,9 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
   
   [self sendEventWithName:event body:@{}];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidPresent:(id<CASScreenContent>)ad {
-    [self adDidPresentInternal:ad];
-}
-#else
-- (void)adDidPresent:(id<CASScreenContent>)ad {
-    [self adDidPresentInternal:ad];
-}
-#endif
 
 
-- (void)adDidDismissInternal:(id<CASScreenContent>)ad {
+- (void)adDidDismiss:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
   
   NSString *event = @"";
@@ -1076,18 +877,9 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
   
   [self sendEventWithName:event body:@{}];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidDismiss:(id<CASScreenContent>)ad {
-    [self adDidDismissInternal:ad];
-}
-#else
-- (void)adDidDismiss:(id<CASScreenContent>)ad {
-    [self adDidDismissInternal:ad];
-}
-#endif
 
 
-- (void)adDidClickInternal:(id<CASScreenContent>)ad {
+- (void)adDidClick:(id<CASScreenContent>)ad {
   if (!hasListeners) return;
   
   NSString *event = @"";
@@ -1097,18 +889,9 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
   
   [self sendEventWithName:event body:@{}];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidClick:(id<CASScreenContent>)ad {
-    [self adDidClickInternal:ad];
-}
-#else
-- (void)adDidClick:(id<CASScreenContent>)ad {
-    [self adDidClickInternal:ad];
-}
-#endif
 
 
-- (void)adDidRecordImpressionWithInfoInternal:(CASContentInfo * _Nonnull)info {
+- (void)adDidRecordImpressionWithInfo:(CASContentInfo * _Nonnull)info {
   if (!hasListeners) return;
   
   NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
@@ -1150,15 +933,5 @@ RCT_EXPORT_METHOD(destroyRewarded:(RCTPromiseResolveBlock)resolve
   
   [self sendEventWithName:event body:impressionData];
 }
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)adDidRecordImpressionWithInfo:(CASContentInfo * _Nonnull)info {
-    [self adDidRecordImpressionWithInfoInternal:info];
-}
-#else
-- (void)adDidRecordImpressionWithInfo:(CASContentInfo * _Nonnull)info {
-    [self adDidRecordImpressionWithInfoInternal:info];
-}
-#endif
-
 
 @end
