@@ -62,6 +62,18 @@ RCT_EXPORT_MODULE();
 
 #endif
 
+// `init` requires main queue b/c of UI code
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
+// Invoke all exported methods from main queue
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
+}
+
 
 #pragma mark - Init
 

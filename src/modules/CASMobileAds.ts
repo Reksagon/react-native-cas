@@ -108,28 +108,28 @@ export class CASMobileAds {
 
   static getSDKVersion() { return CASMobileAdsNative.getSDKVersion(); }
 
-  static setDebugLoggingEnabled(enabled: boolean): Promise<void> {
+  static setDebugLoggingEnabled(enabled: boolean) {
     return CASMobileAdsNative.setDebugLoggingEnabled(enabled);
   }
-  static setAdSoundsMuted(muted: boolean): Promise<void> {
+  static setAdSoundsMuted(muted: boolean) {
     return CASMobileAdsNative.setAdSoundsMuted(muted);
   }
-  static setUserAge(age: number): Promise<void> {
+  static setUserAge(age: number) {
     return CASMobileAdsNative.setUserAge(age);
   }
-  static setUserGender(gender: number): Promise<void> {
+  static setUserGender(gender: number) {
     return CASMobileAdsNative.setUserGender(gender);
   }
-  static setAppContentUrl(contentUrl?: string): Promise<void> {
+  static setAppContentUrl(contentUrl?: string) {
     return CASMobileAdsNative.setAppContentUrl(contentUrl);
   }
-  static setAppKeywords(keywords: string[]): Promise<void> {
+  static setAppKeywords(keywords: string[]) {
     return CASMobileAdsNative.setAppKeywords(keywords);
   }
-  static setLocationCollectionEnabled(enabled: boolean): Promise<void> {
+  static setLocationCollectionEnabled(enabled: boolean) {
     return CASMobileAdsNative.setLocationCollectionEnabled(enabled);
   }
-  static setTrialAdFreeInterval(interval: number): Promise<void> {
+  static setTrialAdFreeInterval(interval: number) {
     return CASMobileAdsNative.setTrialAdFreeInterval(interval);
   }
 

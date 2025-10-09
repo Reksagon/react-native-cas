@@ -14,39 +14,39 @@ export interface Spec extends TurboModule {
 
   isInitialized(): Promise<boolean>;
 
-  setUserAge(age: number): Promise<void>;
-  setUserGender(gender: number): Promise<void>;
-  setAppContentUrl(contentUrl?: string): Promise<void>;
-  setAppKeywords(keywords: string[]): Promise<void>;
-  setDebugLoggingEnabled(enabled: boolean): Promise<void>;
-  setAdSoundsMuted(muted: boolean): Promise<void>;
-  setLocationCollectionEnabled(enabled: boolean): Promise<void>;
-  setTrialAdFreeInterval(interval: number): Promise<void>;
+  setUserAge(age: number): void;
+  setUserGender(gender: number): void;
+  setAppContentUrl(contentUrl?: string): void;
+  setAppKeywords(keywords: string[]): void;
+  setDebugLoggingEnabled(enabled: boolean): void;
+  setAdSoundsMuted(muted: boolean): void;
+  setLocationCollectionEnabled(enabled: boolean): void;
+  setTrialAdFreeInterval(interval: number): void;
 
   isInterstitialAdLoaded(): Promise<boolean>;
-  loadInterstitialAd(): Promise<void>;
-  showInterstitialAd(): Promise<void>;
-  setInterstitialAutoloadEnabled(enabled: boolean): Promise<void>;
-  setInterstitialAutoshowEnabled(enabled: boolean): Promise<void>;
-  setInterstitialMinInterval(seconds: number): Promise<void>;
-  restartInterstitialInterval(): Promise<void>;
-  destroyInterstitial(): Promise<void>;
+  loadInterstitialAd(): void;
+  showInterstitialAd(): void;
+  setInterstitialAutoloadEnabled(enabled: boolean): void;
+  setInterstitialAutoshowEnabled(enabled: boolean): void;
+  setInterstitialMinInterval(seconds: number): void;
+  restartInterstitialInterval(): void;
+  destroyInterstitial(): void;
 
   isRewardedAdLoaded(): Promise<boolean>;
-  loadRewardedAd(): Promise<void>;
-  showRewardedAd(): Promise<void>;
-  setRewardedAutoloadEnabled(enabled: boolean): Promise<void>;
-  destroyRewarded(): Promise<void>;
+  loadRewardedAd(): void;
+  showRewardedAd(): void;
+  setRewardedAutoloadEnabled(enabled: boolean): void;
+  destroyRewarded(): void;
 
   isAppOpenAdLoaded(): Promise<boolean>;
-  loadAppOpenAd(): Promise<void>;
-  showAppOpenAd(): Promise<void>;
-  setAppOpenAutoloadEnabled(enabled: boolean): Promise<void>;
-  setAppOpenAutoshowEnabled(enabled: boolean): Promise<void>;
-  destroyAppOpen(): Promise<void>;
+  loadAppOpenAd(): void;
+  showAppOpenAd(): void;
+  setAppOpenAutoloadEnabled(enabled: boolean): void;
+  setAppOpenAutoshowEnabled(enabled: boolean): void;
+  destroyAppOpen(): void;
 
   getSDKVersion(): Promise<string>;
-  showConsentFlow(): Promise<void>;
+  showConsentFlow(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>("CASMobileAds");
