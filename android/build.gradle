@@ -1,8 +1,7 @@
 buildscript {
   ext.getExtOrDefault = { name ->
-    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["Cas_" + name]
+    rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["Cas_" + name]
   }
-
   repositories { google(); mavenCentral() }
   dependencies {
     classpath "com.android.tools.build:gradle:8.7.2"
@@ -10,9 +9,20 @@ buildscript {
   }
 }
 
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
+
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.facebook.react"
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+
+  react {
+    libraryName = "CASMobileAds"
+    codegenJavaPackageName = "com.cleveradssolutions.plugin.reactnative"
+  }
+}
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["Cas_" + name]).toInteger()
@@ -20,51 +30,51 @@ def getExtOrIntegerDefault(name) {
 
 android {
   namespace "com.cleveradssolutions.plugin.reactnative"
-
+  sourceSets {
+    main {
+      manifest.srcFile "src/main/AndroidManifestNew.xml"
+    }
+  }
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
     consumerProguardFiles "consumer-rules.pro"
+    buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
   }
 
   buildFeatures { buildConfig true }
 
-  buildTypes { release { minifyEnabled false } }
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-  }
-  kotlinOptions { jvmTarget = "17" }
-
   sourceSets {
     main {
-      java.srcDirs += ["generated/java", "generated/jni"]
+      if (isNewArchitectureEnabled()) {
+        java.srcDirs += ['src/newarch']
+      } else {
+        java.srcDirs += ['src/oldarch']
+      }
     }
   }
 
+
+  buildTypes { release { minifyEnabled false } }
+  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+  kotlinOptions { jvmTarget = "17" }
   lint { disable += ["GradleCompatible"] }
 }
 
-react {
-  libraryName = "CASMobileAds"
-  codegenJavaPackageName = "com.cleveradssolutions.plugin.reactnative"
-}
+
+
+
 
 repositories {
-  google()
-  mavenCentral()
+  google(); mavenCentral()
   maven { url 'https://sdk.cleveradssolutions.com/repo' }
 }
 
-def kotlin_version = getExtOrDefault("kotlinVersion")
-
 dependencies {
   implementation "com.facebook.react:react-android"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion')}"
   compileOnly "com.cleveradssolutions:cas-sdk:4.3.0"
   implementation 'androidx.preference:preference-ktx:1.2.1'
 }
-

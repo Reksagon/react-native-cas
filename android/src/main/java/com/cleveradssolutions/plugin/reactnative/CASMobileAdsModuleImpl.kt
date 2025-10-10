@@ -105,15 +105,16 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
       val builder = CAS.buildManager()
         .withCasId(casId)
         .withConsentFlow(consent)
-        .withCompletionListener { c ->
+        .withCompletionListener { initConfiguration ->
           val out = WritableNativeMap().apply {
-            c.error?.let { putString("error", it) }
-            c.countryCode?.let { putString("countryCode", it) }
-            putBoolean("isConsentRequired", c.isConsentRequired)
-            putInt("consentFlowStatus", 0)
+            initConfiguration.error?.let { putString("error", it) }
+            initConfiguration.countryCode?.let { putString("countryCode", it) }
+            putBoolean("isConsentRequired", initConfiguration.isConsentRequired)
+            putInt("consentFlowStatus", initConfiguration.consentFlowStatus)
           }
           promise.resolve(out)
         }
+
 
       if (options?.hasKey("mediationExtras") == true && !options.isNull("mediationExtras")) {
         val extras = options.getMap("mediationExtras")

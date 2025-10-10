@@ -1,19 +1,37 @@
-const path = require('path');
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const path = require('path');
+const escape = require('escape-string-regexp');
+const exclusionList = require('metro-config/src/defaults/exclusionList');
+const libPak = require('../package.json');
 
 const root = path.resolve(__dirname, '..');
-const pak = require('../package.json'); // <-- ВАЖЛИВО: parent package.json
+const peerModules = Object.keys({ ...(libPak.peerDependencies || {}) });
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), {
+/** @type {import('metro-config').MetroConfig} */
+const config = {
   projectRoot: __dirname,
   watchFolders: [root],
   resolver: {
-    // щоб import 'react-native-cas' йшов у корінь репо
+    // 1) не дозволяємо тягнути peer deps з кореня бібліотеки
+    blacklistRE: exclusionList(
+      peerModules.map((m) =>
+        new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
+      )
+    ),
+    // 2) явно кажемо, де лежить наш пакет і peer deps
     extraNodeModules: {
-      [pak.name]: root,
-      // опційно залочити ці модулі на example, щоб не дублювались
-      react: path.join(__dirname, 'node_modules/react'),
-      'react-native': path.join(__dirname, 'node_modules/react-native'),
+      'react-native-cas': root, // ← пакет з кореня
+      ...peerModules.reduce((acc, name) => {
+        acc[name] = path.join(__dirname, 'node_modules', name);
+        return acc;
+      }, {}),
     },
   },
-});
+  transformer: {
+    getTransformOptions: async () => ({
+      transform: { experimentalImportSupport: false, inlineRequires: true },
+    }),
+  },
+};
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);

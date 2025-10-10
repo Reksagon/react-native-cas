@@ -4,10 +4,15 @@ export enum Audience {
   NotChildren,
 }
 
+// User's geography for determining consent flow.
 export enum PrivacyGeography {
+  // Geography is unknown.
   unknown = 0,
+  // Geography appears as in European Economic Area.
   europeanEconomicArea = 1,
+  // Geography appears as in a regulated US State.
   regulatedUSState = 3,
+  // Geography appears as in a region with no regulation in force.
   unregulated = 4,
 }
 

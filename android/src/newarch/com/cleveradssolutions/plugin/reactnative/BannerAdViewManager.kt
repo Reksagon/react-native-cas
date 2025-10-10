@@ -7,17 +7,16 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.viewmanagers.AdViewManagerDelegate
-import com.facebook.react.viewmanagers.AdViewManagerInterface
+import com.facebook.react.viewmanagers.CASAdViewManagerDelegate
+import com.facebook.react.viewmanagers.CASAdViewManagerInterface
 
 @ReactModule(name = AdViewManagerImpl.NAME)
 class BannerAdViewManager :
   SimpleViewManager<CASAdView>(),
-  AdViewManagerInterface<CASAdView> {
+  CASAdViewManagerInterface<CASAdView> {
 
-  // delegate з двома generic-типами
   private val delegate: ViewManagerDelegate<CASAdView> =
-    AdViewManagerDelegate<CASAdView, BannerAdViewManager>(this)
+    CASAdViewManagerDelegate<CASAdView, BannerAdViewManager>(this)
 
   override fun getDelegate() = delegate
   override fun getName() = AdViewManagerImpl.NAME
@@ -25,7 +24,6 @@ class BannerAdViewManager :
   override fun createViewInstance(ctx: ThemedReactContext): CASAdView =
     AdViewManagerImpl.createViewInstance(ctx)
 
-  // ----- props із TS-спеки -----
   override fun setSize(view: CASAdView, value: String?) =
     AdViewManagerImpl.setSize(view, value)
 
@@ -41,7 +39,6 @@ class BannerAdViewManager :
   override fun setRefreshInterval(view: CASAdView, @NonNull value: Int) =
     AdViewManagerImpl.setRefreshInterval(view, value)
 
-  // ----- life-cycle -----
   override fun onAfterUpdateTransaction(view: CASAdView) {
     super.onAfterUpdateTransaction(view)
     AdViewManagerImpl.onAfterUpdateTransaction(view)
@@ -52,11 +49,9 @@ class BannerAdViewManager :
     super.onDropViewInstance(view)
   }
 
-  // ----- events (direct) -----
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
     AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
-  // ----- commands з інтерфейсу -----
   override fun isAdLoaded(view: CASAdView) =
     AdViewManagerImpl.commandIsAdLoaded(view)
 

@@ -5,6 +5,7 @@ import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
+import com.cleveradssolutions.sdk.AdContentInfo
 import com.cleveradssolutions.sdk.OnAdImpressionListener
 import com.cleversolutions.ads.AdError
 import com.cleversolutions.ads.AdSize
@@ -16,7 +17,7 @@ import kotlin.math.roundToInt
 
 class CASAdView(context: Context) :
   FrameLayout(context),
-  com.cleversolutions.ads.AdViewListener {
+  com.cleversolutions.ads.AdViewListener, OnAdImpressionListener    {
 
   val banner: CASBannerView = CASBannerView(context)
 
@@ -25,6 +26,7 @@ class CASAdView(context: Context) :
   var size: AdSize = AdSize.BANNER
   private var refreshIntervalSec: Int = 30
   private var refreshWasEnabledByProps: Boolean = true
+  var casId: String? = null
 
   init {
     layoutParams = LayoutParams(
@@ -41,12 +43,7 @@ class CASAdView(context: Context) :
     clipChildren = false
 
     banner.adListener = this
-    banner.onImpressionListener = OnAdImpressionListener { ad ->
-      val map = WritableNativeMap().apply { putMap("impression", ad.toReadableMap()) }
-      (context as ThemedReactContext)
-        .getJSModule(RCTEventEmitter::class.java)
-        .receiveEvent(this.id, "onAdViewImpression", map)
-    }
+    banner.onImpressionListener = this
 
     addView(banner)
   }
@@ -158,5 +155,12 @@ class CASAdView(context: Context) :
     (context as ThemedReactContext)
       .getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(this.id, "onAdViewLoaded", map)
+  }
+
+  override fun onAdImpression(ad: AdContentInfo) {
+    val map = WritableNativeMap().apply { putMap("impression", ad.toReadableMap()) }
+    (context as ThemedReactContext)
+      .getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(this.id, "onAdViewImpression", map)
   }
 }

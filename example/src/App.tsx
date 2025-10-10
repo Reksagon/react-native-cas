@@ -7,15 +7,16 @@ import { Banners } from './banners.component';
 import { Ads } from './ads.component';
 import { CasProvider } from './cas.context';
 import { LoggerTerminal } from './logger-terminal.component';
-import { NativeCasDebugTap } from './native-cas-debug-tap';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
+с
 export default function App() {
   return (
     <SafeAreaProvider>
       <CasProvider>
+        
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Setup" component={Setup} />
@@ -25,7 +26,6 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
         <LoggerTerminal />
-        <NativeCasDebugTap />
       </CasProvider>
     </SafeAreaProvider>
   );

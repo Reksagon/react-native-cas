@@ -3,13 +3,14 @@ package com.cleveradssolutions.plugin.reactnative
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 
-@ReactModule(name = "CASMobileAds")
-class CASMobileAdsModule(private val reactContext: ReactApplicationContext)
+@ReactModule(name = CASMobileAdsModule.NAME)
+class CASMobileAdsModule(reactContext: ReactApplicationContext)
   : ReactContextBaseJavaModule(reactContext) {
 
-  private val impl = CASMobileAdsModuleImpl(reactContext)
+  companion object { const val NAME = "CASMobileAds" }
+  override fun getName() = NAME
 
-  override fun getName() = "CASMobileAds"
+  private val impl = CASMobileAdsModuleImpl(reactContext)
 
   @ReactMethod fun initialize(casId: String, options: ReadableMap?, promise: Promise) =
     impl.initialize(casId, options, promise)
@@ -32,7 +33,6 @@ class CASMobileAdsModule(private val reactContext: ReactApplicationContext)
   @ReactMethod fun setTrialAdFreeInterval(interval: Int, promise: Promise) =
     impl.setTrialAdFreeInterval(interval, promise)
 
-  // interstitial / rewarded / appopen — так само просто делегуємо в impl:
   @ReactMethod fun isInterstitialAdLoaded(promise: Promise) = impl.isInterstitialAdLoaded(promise)
   @ReactMethod fun loadInterstitialAd(promise: Promise) = impl.loadInterstitialAd(promise)
   @ReactMethod fun showInterstitialAd(promise: Promise) = impl.showInterstitialAd(promise)
@@ -42,7 +42,8 @@ class CASMobileAdsModule(private val reactContext: ReactApplicationContext)
     impl.setInterstitialAutoshowEnabled(enabled, promise)
   @ReactMethod fun setInterstitialMinInterval(seconds: Int, promise: Promise) =
     impl.setInterstitialMinInterval(seconds, promise)
-  @ReactMethod fun restartInterstitialInterval(promise: Promise) = impl.restartInterstitialInterval(promise)
+  @ReactMethod fun restartInterstitialInterval(promise: Promise) =
+    impl.restartInterstitialInterval(promise)
   @ReactMethod fun destroyInterstitial(promise: Promise) = impl.destroyInterstitial(promise)
 
   @ReactMethod fun isRewardedAdLoaded(promise: Promise) = impl.isRewardedAdLoaded(promise)
@@ -61,7 +62,9 @@ class CASMobileAdsModule(private val reactContext: ReactApplicationContext)
     impl.setAppOpenAutoshowEnabled(enabled, promise)
   @ReactMethod fun destroyAppOpen(promise: Promise) = impl.destroyAppOpen(promise)
 
-  // events-стабби
-  @ReactMethod fun addListener(eventName: String?) { }
-  @ReactMethod fun removeListeners(count: Int) { }
+  @Suppress("UNUSED_PARAMETER")
+  @ReactMethod fun addListener(eventName: String?) {  }
+
+  @Suppress("UNUSED_PARAMETER")
+  @ReactMethod fun removeListeners(count: Double) {  }
 }

@@ -42,6 +42,7 @@ export const Banners = () => {
 
       <AdView
         size={AdViewSize.MREC}
+        refreshInterval={20}
         onAdViewLoaded={() => logCasInfo('MREC loaded')}       
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);
@@ -54,7 +55,7 @@ export const Banners = () => {
 
       <AdView
         size={AdViewSize.ADAPTIVE}
-        refreshInterval={15}
+        refreshInterval={25}
         onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);

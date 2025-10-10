@@ -1,105 +1,69 @@
 package com.cleveradssolutions.plugin.reactnative
 
+import com.cleveradssolutions.plugin.reactnative.views.AdViewManagerImpl
 import com.cleveradssolutions.plugin.reactnative.views.CASAdView
-import com.cleversolutions.ads.AdSize
-import com.facebook.react.bridge.Dynamic
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.ReadableType
-import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
-import com.facebook.react.uimanager.events.RCTEventEmitter
 
+@ReactModule(name = AdViewManagerImpl.NAME)
 class BannerAdViewManager : SimpleViewManager<CASAdView>() {
 
-  override fun getName() = "AdView"
+  override fun getName() = AdViewManagerImpl.NAME
 
-  override fun createViewInstance(reactContext: ThemedReactContext): CASAdView {
-    return CASAdView(reactContext)
-  }
-
-  @ReactProp(name = "isAutoloadEnabled")
-  fun setAutoloadEnabled(view: CASAdView, enabled: Boolean) {
-    view.banner.isAutoloadEnabled = enabled
-  }
-
-  @ReactProp(name = "autoRefresh", defaultBoolean = true)
-  fun setAutoRefresh(view: CASAdView, enabled: Boolean) {
-    view.autoRefresh = enabled
-  }
-
-  @ReactProp(name = "loadOnMount", defaultBoolean = true)
-  fun setLoadOnMount(view: CASAdView, enabled: Boolean) {
-    view.loadOnMount = enabled
-  }
-
-  @ReactProp(name = "refreshInterval")
-  fun setRefreshInterval(view: CASAdView, interval: Int) {
-    view.setRefreshInterval(interval)
-  }
+  override fun createViewInstance(ctx: ThemedReactContext): CASAdView =
+    AdViewManagerImpl.createViewInstance(ctx)
 
   @ReactProp(name = "size")
-  fun setSize(view: CASAdView, sizeDyn: Dynamic) {
-    var size = AdSize.BANNER
-    when (sizeDyn.type) {
-      ReadableType.String, ReadableType.Number -> {
-        val v = if (sizeDyn.type == ReadableType.Number)
-          sizeDyn.asDouble().toInt().toString()
-        else sizeDyn.asString()
-        size = when (v) {
-          "B","BANNER","320x50" -> AdSize.BANNER
-          "M","MEDIUM_RECTANGLE","300x250" -> AdSize.MEDIUM_RECTANGLE
-          "L","LEADERBOARD","728x90" -> AdSize.LEADERBOARD
-          "S","SMART" -> AdSize.getSmartBanner(view.context)
-          "A","ADAPTIVE" -> AdSize.getAdaptiveBannerInScreen(view.context)
-          else -> AdSize.BANNER
-        }
-      }
-      else -> size = AdSize.BANNER
-    }
-    view.size = size
-  }
+  fun setSize(view: CASAdView, value: String?) =
+    AdViewManagerImpl.setSize(view, value)
+
+  @ReactProp(name = "isAutoloadEnabled", defaultBoolean = true)
+  fun setIsAutoloadEnabled(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setIsAutoloadEnabled(view, value)
+
+  @ReactProp(name = "autoRefresh", defaultBoolean = true)
+  fun setAutoRefresh(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setAutoRefresh(view, value)
+
+  @ReactProp(name = "loadOnMount", defaultBoolean = true)
+  fun setLoadOnMount(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setLoadOnMount(view, value)
+
+  @ReactProp(name = "refreshInterval")
+  fun setRefreshInterval(view: CASAdView, value: Int) =
+    AdViewManagerImpl.setRefreshInterval(view, value)
+
+  @ReactProp(name = "casId")
+  fun setCasId(view: CASAdView, value: String?) =
+    AdViewManagerImpl.setCasId(view, value)
 
   override fun onAfterUpdateTransaction(view: CASAdView) {
     super.onAfterUpdateTransaction(view)
-    view.applyProps()
+    AdViewManagerImpl.onAfterUpdateTransaction(view)
   }
 
   override fun onDropViewInstance(view: CASAdView) {
+    AdViewManagerImpl.onDropViewInstance(view)
     super.onDropViewInstance(view)
-    view.destroyView()
   }
 
-  override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> = mapOf(
-    "onAdViewLoaded" to mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onAdViewLoaded")),
-    "onAdViewFailed" to mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onAdViewFailed")),
-    "onAdViewClicked" to mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onAdViewClicked")),
-    "onAdViewImpression" to mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onAdViewImpression")),
-    "isAdLoaded" to mapOf("phasedRegistrationNames" to mapOf("bubbled" to "isAdLoaded")),
-  )
+  override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
+    AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
-  override fun getCommandsMap(): MutableMap<String, Int> = mutableMapOf(
+  override fun getCommandsMap(): Map<String, Int> = mapOf(
     "isAdLoaded" to 0,
-    "loadAd" to 1,
-    "setRefreshInterval" to 2,
-    "destroy" to 3,
+    "loadAd"     to 1,
+    "destroy"    to 2
   )
 
-  override fun receiveCommand(root: CASAdView, commandId: String?, args: ReadableArray?) {
+  override fun receiveCommand(view: CASAdView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
-      "isAdLoaded" -> {
-        val map = WritableNativeMap().apply { putBoolean("isAdLoaded", root.isLoaded()) }
-        (root.context as ThemedReactContext)
-          .getJSModule(RCTEventEmitter::class.java)
-          .receiveEvent(root.id, "isAdLoaded", map)
-      }
-      "loadAd" -> root.load()
-      "setRefreshInterval" -> {
-        val interval = args?.getInt(0) ?: 0
-        root.setRefreshInterval(interval)
-      }
-      "destroy" -> root.destroyView()
+      0 -> AdViewManagerImpl.commandIsAdLoaded(view)
+      1 -> AdViewManagerImpl.commandLoadAd(view)
+      2 -> AdViewManagerImpl.commandDestroy(view)
     }
   }
 }

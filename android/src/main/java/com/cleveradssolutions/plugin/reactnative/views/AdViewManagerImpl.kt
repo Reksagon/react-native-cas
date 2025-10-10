@@ -1,15 +1,12 @@
-package com.cleveradssolutions.plugin.reactnative
+package com.cleveradssolutions.plugin.reactnative.views
 
-import com.cleveradssolutions.plugin.reactnative.views.CASAdView
 import com.cleversolutions.ads.AdSize
-import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
 
 object AdViewManagerImpl {
-  const val NAME = "AdView"
+  const val NAME = "CASAdView"
 
   fun createViewInstance(ctx: ThemedReactContext): CASAdView = CASAdView(ctx)
 
@@ -45,8 +42,8 @@ object AdViewManagerImpl {
     view.loadOnMount = value
   }
 
-  fun setRefreshInterval(view: CASAdView, value: Double?) {
-    view.setRefreshInterval((value ?: 0.0).toInt())
+  fun setRefreshInterval(view: CASAdView, value: Int) {
+    view.setRefreshInterval(value)
   }
 
   fun onAfterUpdateTransaction(view: CASAdView) {
@@ -57,23 +54,25 @@ object AdViewManagerImpl {
     view.destroyView()
   }
 
-  fun receiveCommand(view: CASAdView, commandId: String, args: ReadableArray?) {
-    when (commandId) {
-      "isAdLoaded" -> {
-        val map = WritableNativeMap().apply {
-          putBoolean("isAdLoaded", view.isLoaded())
-        }
-        (view.context as ThemedReactContext)
-          .getJSModule(RCTEventEmitter::class.java)
-          .receiveEvent(view.id, "isAdLoaded", map)
-      }
-      "loadAd" -> view.load()
-      "setRefreshInterval" -> {
-        val seconds = if (args != null && args.size() > 0 && args.getType(0) == ReadableType.Number)
-          args.getInt(0) else 0
-        view.setRefreshInterval(seconds)
-      }
-      "destroy" -> view.destroyView()
+  fun commandIsAdLoaded(view: CASAdView) {
+    val map = WritableNativeMap().apply {
+      putBoolean("isAdLoaded", view.isLoaded())
     }
+    (view.context as ThemedReactContext)
+      .getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(view.id, "isAdLoaded", map)
   }
+
+  fun commandLoadAd(view: CASAdView) {
+    view.load()
+  }
+
+  fun commandDestroy(view: CASAdView) {
+    view.destroyView()
+  }
+
+  fun setCasId(view: CASAdView, value: String?) {
+    view.casId = value
+  }
+
 }

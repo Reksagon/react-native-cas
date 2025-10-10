@@ -1,6 +1,6 @@
-import type {TurboModule} from 'react-native';
-import {TurboModuleRegistry} from 'react-native';
-import type {Int32} from 'react-native/Libraries/Types/CodegenTypes';
+import { TurboModuleRegistry } from 'react-native';
+import type { TurboModule } from 'react-native';
+import type { Int32 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type InitializationStatus = {
   error?: string;
@@ -19,15 +19,13 @@ export type InitializationParams = {
 };
 
 export interface Spec extends TurboModule {
-  initialize(
-    casId: string,
-    options: InitializationParams | null,
-  ): Promise<InitializationStatus>;
+  // SDK
+  initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
 
-  //App/Targeting settings
+  // App/Targeting
   setUserAge(age: Int32): Promise<void>;
-  setUserGender(gender: Int32): Promise<void>; 
+  setUserGender(gender: Int32): Promise<void>;
   setAppContentUrl(contentUrl?: string): Promise<void>;
   setAppKeywords(keywords: string[]): Promise<void>;
   setDebugLoggingEnabled(enabled: boolean): Promise<void>;
@@ -35,7 +33,7 @@ export interface Spec extends TurboModule {
   setLocationCollectionEnabled(enabled: boolean): Promise<void>;
   setTrialAdFreeInterval(interval: Int32): Promise<void>;
 
-  //Interstitial
+  // Interstitial
   isInterstitialAdLoaded(): Promise<boolean>;
   loadInterstitialAd(): Promise<void>;
   showInterstitialAd(): Promise<void>;
@@ -45,14 +43,14 @@ export interface Spec extends TurboModule {
   restartInterstitialInterval(): Promise<void>;
   destroyInterstitial(): Promise<void>;
 
-  //Rewarded
+  // Rewarded
   isRewardedAdLoaded(): Promise<boolean>;
   loadRewardedAd(): Promise<void>;
   showRewardedAd(): Promise<void>;
   setRewardedAutoloadEnabled(enabled: boolean): Promise<void>;
   destroyRewarded(): Promise<void>;
 
-  //App Open
+  // App Open
   isAppOpenAdLoaded(): Promise<boolean>;
   loadAppOpenAd(): Promise<void>;
   showAppOpenAd(): Promise<void>;
@@ -60,12 +58,13 @@ export interface Spec extends TurboModule {
   setAppOpenAutoshowEnabled(enabled: boolean): Promise<void>;
   destroyAppOpen(): Promise<void>;
 
-  //Misc
+  // Misc
   getSDKVersion(): Promise<string>;
   showConsentFlow(): Promise<number>;
 
-  addListener(eventName: string): void;    
-  removeListeners(count: number): void;     
+  // EventEmitter bridge
+  addListener(eventName: string): void;
+  removeListeners(count: number): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');
