@@ -1,5 +1,6 @@
 package com.cleveradssolutions.plugin.reactnative
 
+import com.cleveradssolutions.plugin.reactnative.NativeCASMobileAdsModuleSpec
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 

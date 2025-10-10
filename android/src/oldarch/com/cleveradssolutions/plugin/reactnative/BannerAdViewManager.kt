@@ -1,5 +1,6 @@
-package com.cleveradssolutions.plugin.reactnative.views
+package com.cleveradssolutions.plugin.reactnative
 
+import com.cleveradssolutions.plugin.reactnative.views.CASAdView
 import com.cleversolutions.ads.AdSize
 import com.facebook.react.bridge.Dynamic
 import com.facebook.react.bridge.ReadableArray

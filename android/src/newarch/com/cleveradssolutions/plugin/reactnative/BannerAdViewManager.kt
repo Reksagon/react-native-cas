@@ -1,0 +1,74 @@
+package com.cleveradssolutions.plugin.reactnative
+
+import androidx.annotation.NonNull
+import com.cleveradssolutions.plugin.reactnative.views.AdViewManagerImpl
+import com.cleveradssolutions.plugin.reactnative.views.CASAdView
+import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.uimanager.SimpleViewManager
+import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.viewmanagers.AdViewManagerDelegate
+import com.facebook.react.viewmanagers.AdViewManagerInterface
+
+@ReactModule(name = AdViewManagerImpl.NAME)
+class BannerAdViewManager :
+  SimpleViewManager<CASAdView>(),
+  AdViewManagerInterface<CASAdView> {
+
+  // delegate з двома generic-типами
+  private val delegate: ViewManagerDelegate<CASAdView> =
+    AdViewManagerDelegate<CASAdView, BannerAdViewManager>(this)
+
+  override fun getDelegate() = delegate
+  override fun getName() = AdViewManagerImpl.NAME
+
+  override fun createViewInstance(ctx: ThemedReactContext): CASAdView =
+    AdViewManagerImpl.createViewInstance(ctx)
+
+  // ----- props із TS-спеки -----
+  override fun setSize(view: CASAdView, value: String?) =
+    AdViewManagerImpl.setSize(view, value)
+
+  override fun setIsAutoloadEnabled(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setIsAutoloadEnabled(view, value)
+
+  override fun setAutoRefresh(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setAutoRefresh(view, value)
+
+  override fun setLoadOnMount(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setLoadOnMount(view, value)
+
+  override fun setRefreshInterval(view: CASAdView, @NonNull value: Int) =
+    AdViewManagerImpl.setRefreshInterval(view, value)
+
+  // ----- life-cycle -----
+  override fun onAfterUpdateTransaction(view: CASAdView) {
+    super.onAfterUpdateTransaction(view)
+    AdViewManagerImpl.onAfterUpdateTransaction(view)
+  }
+
+  override fun onDropViewInstance(view: CASAdView) {
+    AdViewManagerImpl.onDropViewInstance(view)
+    super.onDropViewInstance(view)
+  }
+
+  // ----- events (direct) -----
+  override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
+    AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
+
+  // ----- commands з інтерфейсу -----
+  override fun isAdLoaded(view: CASAdView) =
+    AdViewManagerImpl.commandIsAdLoaded(view)
+
+  override fun loadAd(view: CASAdView) =
+    AdViewManagerImpl.commandLoadAd(view)
+
+  override fun destroy(view: CASAdView) =
+    AdViewManagerImpl.commandDestroy(view)
+
+  override fun setCasId(view: CASAdView?, value: String?) {
+    if (view != null) {
+      AdViewManagerImpl.setCasId(view, value)
+    }
+  }
+}
