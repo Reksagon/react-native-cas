@@ -19,7 +19,6 @@ object AdViewManagerImpl {
   )
 
   fun setSize(view: CASAdView, value: String?) {
-    val v = value ?: "B"
     view.size = when (value) {
       "B" -> AdSize.BANNER
       "M" -> AdSize.MEDIUM_RECTANGLE
