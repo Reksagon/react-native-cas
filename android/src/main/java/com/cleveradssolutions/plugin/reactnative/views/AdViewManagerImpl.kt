@@ -19,13 +19,12 @@ object AdViewManagerImpl {
   )
 
   fun setSize(view: CASAdView, value: String?) {
-    val v = value ?: "B"
-    view.size = when (v) {
-      "B","BANNER","320x50" -> AdSize.BANNER
-      "M","MEDIUM_RECTANGLE","300x250" -> AdSize.MEDIUM_RECTANGLE
-      "L","LEADERBOARD","728x90" -> AdSize.LEADERBOARD
-      "S","SMART" -> AdSize.getSmartBanner(view.context)
-      "A","ADAPTIVE" -> AdSize.getAdaptiveBannerInScreen(view.context)
+    view.size = when (value) {
+      "B" -> AdSize.BANNER
+      "M" -> AdSize.MEDIUM_RECTANGLE
+      "L" -> AdSize.LEADERBOARD
+      "S" -> AdSize.getSmartBanner(view.context)
+      "A" -> AdSize.getAdaptiveBannerInScreen(view.context)
       else -> AdSize.BANNER
     }
   }

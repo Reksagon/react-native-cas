@@ -2,6 +2,7 @@ package com.cleveradssolutions.plugin.reactnative
 
 import android.app.Activity
 import android.content.Context
+import com.cleveradssolutions.sdk.AdFormat
 import com.cleveradssolutions.sdk.base.CASHandler
 import com.cleveradssolutions.sdk.screen.CASAppOpen
 import com.cleveradssolutions.sdk.screen.CASInterstitial
@@ -13,6 +14,7 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) {
+  companion object { const val NAME = "CASMobileAds" }
 
   private var casIdentifier: String? = null
   private var interstitialAd: CASInterstitial? = null
@@ -38,7 +40,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
   private fun createOrRecreateInterstitial() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "interstitial")
+    val cb = ScreenContentCallback(reactContext, AdFormat.INTERSTITIAL.label)
     interstitialCallback = cb
     interstitialAd = CASInterstitial(appCtx(), id).apply {
       contentCallback = cb
@@ -48,7 +50,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
   private fun createOrRecreateRewarded() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "rewarded")
+    val cb = ScreenContentCallback(reactContext, AdFormat.REWARDED.label)
     rewardedCallback = cb
     rewardedAd = CASRewarded(appCtx(), id).apply {
       contentCallback = cb
@@ -58,7 +60,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
   private fun createOrRecreateAppOpen() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "appopen")
+    val cb = ScreenContentCallback(reactContext, AdFormat.APP_OPEN.label)
     appOpenCallback = cb
     appOpenAd = CASAppOpen(appCtx(), id).apply {
       contentCallback = cb

@@ -6,8 +6,9 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 
 private fun precisionToLabel(p: Int): String = when (p) {
-  AdRevenuePrecision.PRECISE -> "bid"
+  AdRevenuePrecision.PRECISE -> "precise"
   AdRevenuePrecision.FLOOR -> "floor"
+  AdRevenuePrecision.ESTIMATED -> "estimated"
   else -> "unknown"
 }
 

@@ -3,12 +3,11 @@ package com.cleveradssolutions.plugin.reactnative
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 
-@ReactModule(name = CASMobileAdsModule.NAME)
+@ReactModule(name = CASMobileAdsModuleImpl.NAME)
 class CASMobileAdsModule(reactContext: ReactApplicationContext)
   : ReactContextBaseJavaModule(reactContext) {
 
-  companion object { const val NAME = "CASMobileAds" }
-  override fun getName() = NAME
+  override fun getName() = CASMobileAdsModuleImpl.NAME
 
   private val impl = CASMobileAdsModuleImpl(reactContext)
 
