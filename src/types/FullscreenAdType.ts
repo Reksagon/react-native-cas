@@ -2,11 +2,13 @@ import type { AdError, AdContentInfo } from './Types';
 
 export type FullscreenAdBase = {
   isAdLoaded(): Promise<boolean>;
-  loadAd(options?: any): Promise<void>;
-  showAd(): Promise<void>;
-  destroy(): Promise<void>;
 
-  setAutoloadEnabled(enabled: boolean): Promise<void>;
+
+  loadAd(options?: any): void;
+  showAd(): void;
+  destroy(): void;
+
+  setAutoloadEnabled(enabled: boolean): void;
 
   addAdLoadedEventListener(l: () => void): void;
   removeAdLoadedEventListener(): void;
@@ -31,13 +33,13 @@ export type FullscreenAdBase = {
 };
 
 export type AppOpenAdType = FullscreenAdBase & {
-  setAutoshowEnabled(enabled: boolean): Promise<void>;
+  setAutoshowEnabled(enabled: boolean): void; 
 };
 
 export type InterstitialAdType = FullscreenAdBase & {
-  setAutoshowEnabled(enabled: boolean): Promise<void>;
-  setMinInterval(seconds: number): Promise<void>;
-  restartInterval(): Promise<void>;
+  setAutoshowEnabled(enabled: boolean): void; 
+  setMinInterval(seconds: number): void;      
+  restartInterval(): void;                    
 };
 
 export type RewardedAdType = FullscreenAdBase & {

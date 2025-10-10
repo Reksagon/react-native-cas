@@ -24,10 +24,6 @@ class BannerAdViewManager : SimpleViewManager<CASAdView>() {
   fun setIsAutoloadEnabled(view: CASAdView, value: Boolean) =
     AdViewManagerImpl.setIsAutoloadEnabled(view, value)
 
-  @ReactProp(name = "autoRefresh", defaultBoolean = true)
-  fun setAutoRefresh(view: CASAdView, value: Boolean) =
-    AdViewManagerImpl.setAutoRefresh(view, value)
-
   @ReactProp(name = "loadOnMount", defaultBoolean = true)
   fun setLoadOnMount(view: CASAdView, value: Boolean) =
     AdViewManagerImpl.setLoadOnMount(view, value)

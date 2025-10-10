@@ -89,50 +89,92 @@ export class CASMobileAds {
 
   static getSDKVersion() { return CASMobileAdsNative.getSDKVersion(); }
 
-  static setDebugLoggingEnabled(enabled: boolean): Promise<void>{
-     return CASMobileAdsNative.setDebugLoggingEnabled(enabled);
-  }
-  static setAdSoundsMuted(muted: boolean): Promise<void>{
-     return CASMobileAdsNative.setAdSoundsMuted(muted);
-  }
-  static setUserAge(age: number): Promise<void>{
-     return CASMobileAdsNative.setUserAge(age);
-  }
-  static setUserGender(gender: Gender): Promise<void>{ 
-    return CASMobileAdsNative.setUserGender(gender);
-  }
-  static setAppContentUrl(contentUrl?: string): Promise<void>{
-     return CASMobileAdsNative.setAppContentUrl(contentUrl);
-  }
-  static setAppKeywords(keywords: string[]): Promise<void>{
-     return CASMobileAdsNative.setAppKeywords(keywords);
-  }
-  static setLocationCollectionEnabled(enabled: boolean): Promise<void>{
-     return CASMobileAdsNative.setLocationCollectionEnabled(enabled);
-  }
-  static setTrialAdFreeInterval(interval: number): Promise<void>{
-     return CASMobileAdsNative.setTrialAdFreeInterval(interval);
-  }
+  static setDebugLoggingEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setDebugLoggingEnabled(enabled);
+}
+static setAdSoundsMuted(muted: boolean): void {
+  CASMobileAdsNative.setAdSoundsMuted(muted);
+}
+static setUserAge(age: number): void {
+  CASMobileAdsNative.setUserAge(age as any);
+}
+static setUserGender(gender: number): void {
+  CASMobileAdsNative.setUserGender(gender as any);
+}
+static setAppContentUrl(contentUrl?: string): void {
+  CASMobileAdsNative.setAppContentUrl(contentUrl);
+}
+static setAppKeywords(keywords: string[]): void {
+  CASMobileAdsNative.setAppKeywords(keywords);
+}
+static setLocationCollectionEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setLocationCollectionEnabled(enabled);
+}
+static setTrialAdFreeInterval(interval: number): void {
+  CASMobileAdsNative.setTrialAdFreeInterval(interval as any);
+}
 
-  static isInterstitialAdLoaded() { return CASMobileAdsNative.isInterstitialAdLoaded(); }
-  static loadInterstitialAd() { return CASMobileAdsNative.loadInterstitialAd(); }
-  static showInterstitialAd() { return CASMobileAdsNative.showInterstitialAd(); }
-  static setInterstitialAutoloadEnabled(enabled: boolean) { return CASMobileAdsNative.setInterstitialAutoloadEnabled(enabled); }
-  static setInterstitialAutoshowEnabled(enabled: boolean) { return CASMobileAdsNative.setInterstitialAutoshowEnabled(enabled); }
-  static setInterstitialMinInterval(seconds: number) { return CASMobileAdsNative.setInterstitialMinInterval(seconds); }
-  static restartInterstitialInterval() { return CASMobileAdsNative.restartInterstitialInterval(); }
-  static destroyInterstitial() { return CASMobileAdsNative.destroyInterstitial(); }
+// Interstitial
+static isInterstitialAdLoaded(): Promise<boolean> {
+  return CASMobileAdsNative.isInterstitialAdLoaded();
+}
+static loadInterstitialAd(): void {
+  CASMobileAdsNative.loadInterstitialAd();
+}
+static showInterstitialAd(): void {
+  CASMobileAdsNative.showInterstitialAd();
+}
+static setInterstitialAutoloadEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setInterstitialAutoloadEnabled(enabled);
+}
+static setInterstitialAutoshowEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setInterstitialAutoshowEnabled(enabled);
+}
+static setInterstitialMinInterval(seconds: number): void {
+  CASMobileAdsNative.setInterstitialMinInterval(seconds as any);
+}
+static restartInterstitialInterval(): void {
+  CASMobileAdsNative.restartInterstitialInterval();
+}
+static destroyInterstitial(): void {
+  CASMobileAdsNative.destroyInterstitial();
+}
 
-  static isRewardedAdLoaded() { return CASMobileAdsNative.isRewardedAdLoaded(); }
-  static loadRewardedAd() { return CASMobileAdsNative.loadRewardedAd(); }
-  static showRewardedAd() { return CASMobileAdsNative.showRewardedAd(); }
-  static setRewardedAutoloadEnabled(enabled: boolean) { return CASMobileAdsNative.setRewardedAutoloadEnabled(enabled); }
-  static destroyRewarded() { return CASMobileAdsNative.destroyRewarded(); }
+// Rewarded
+static isRewardedAdLoaded(): Promise<boolean> {
+  return CASMobileAdsNative.isRewardedAdLoaded();
+}
+static loadRewardedAd(): void {
+  CASMobileAdsNative.loadRewardedAd();
+}
+static showRewardedAd(): void {
+  CASMobileAdsNative.showRewardedAd();
+}
+static setRewardedAutoloadEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setRewardedAutoloadEnabled(enabled);
+}
+static destroyRewarded(): void {
+  CASMobileAdsNative.destroyRewarded();
+}
 
-  static isAppOpenAdLoaded() { return CASMobileAdsNative.isAppOpenAdLoaded(); }
-  static loadAppOpenAd() { return CASMobileAdsNative.loadAppOpenAd(); }
-  static showAppOpenAd() { return CASMobileAdsNative.showAppOpenAd(); }
-  static setAppOpenAutoloadEnabled(enabled: boolean) { return CASMobileAdsNative.setAppOpenAutoloadEnabled(enabled); }
-  static setAppOpenAutoshowEnabled(enabled: boolean) { return CASMobileAdsNative.setAppOpenAutoshowEnabled(enabled); }
-  static destroyAppOpen() { return CASMobileAdsNative.destroyAppOpen(); }
+// App Open
+static isAppOpenAdLoaded(): Promise<boolean> {
+  return CASMobileAdsNative.isAppOpenAdLoaded();
+}
+static loadAppOpenAd(): void {
+  CASMobileAdsNative.loadAppOpenAd();
+}
+static showAppOpenAd(): void {
+  CASMobileAdsNative.showAppOpenAd();
+}
+static setAppOpenAutoloadEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setAppOpenAutoloadEnabled(enabled);
+}
+static setAppOpenAutoshowEnabled(enabled: boolean): void {
+  CASMobileAdsNative.setAppOpenAutoshowEnabled(enabled);
+}
+static destroyAppOpen(): void {
+  CASMobileAdsNative.destroyAppOpen();
+}
+
 }

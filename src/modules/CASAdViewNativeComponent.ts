@@ -14,7 +14,6 @@ type OnImpressionEvent = { data: string };
 export interface NativeProps extends ViewProps {
   size?: WithDefault<AdViewSize, 'B'>;
   isAutoloadEnabled?: WithDefault<boolean, true>;
-  autoRefresh?: WithDefault<boolean, true>;
   loadOnMount?: WithDefault<boolean, true>;
   casId?: string;
   refreshInterval?: Int32;
@@ -38,5 +37,5 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['isAdLoaded', 'loadAd', 'destroy'],
 });
 
-export default codegenNativeComponent<NativeProps>('CASAdView')
+export default codegenNativeComponent<NativeProps>('AdView')
 

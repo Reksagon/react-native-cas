@@ -17,6 +17,7 @@ import {
   StyleSheet,
   StyleProp,
   ViewStyle,
+  PixelRatio,                 
 } from 'react-native';
 
 import {
@@ -25,7 +26,6 @@ import {
   AdViewSize,
   type AdViewProps,
   type AdViewRef,
-  type AdViewImpressionEvent,
 } from '../modules/AdViewComponent';
 import type { AdError } from '../types/Types';
 
@@ -45,8 +45,7 @@ function minHeightFor(size: AdViewSize) {
   }
 }
 
-type Dim = { width: number; height: number };
-
+type Dim = { width: number | '100%'; height: number };
 type Props = AdViewProps & { style?: StyleProp<ViewStyle> };
 
 export const AdView = forwardRef<AdViewRef, Props>(function AdView(
@@ -54,7 +53,6 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
     style,
     size,
     isAutoloadEnabled = true,
-    autoRefresh = true,
     loadOnMount = true,
     refreshInterval,
     onAdViewLoaded,
@@ -71,12 +69,16 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
 
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const defaultSize = (size ?? AdViewSize.BANNER) as AdViewSize;
-  const dimensionsRef = useRef<Dim>({ width: 0, height: minHeightFor(defaultSize) });
+
+  const dimensionsRef = useRef<Dim>({
+    width: '100%',
+    height: minHeightFor(defaultSize),
+  });
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const containerStyle = useMemo(() => {
     const mh = minHeightFor(defaultSize);
-    return StyleSheet.compose(style as any, { minHeight: mh });
+    return StyleSheet.compose(style as any, { minHeight: mh, alignSelf: 'stretch', width: '100%' });
   }, [defaultSize, style]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
@@ -86,33 +88,34 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   }, []);
 
   const recalcDimensions = useCallback(() => {
-    const base = ADVIEW_SIZE[defaultSize] ?? ADVIEW_SIZE[AdViewSize.BANNER];
+  const base = ADVIEW_SIZE[defaultSize] ?? ADVIEW_SIZE[AdViewSize.BANNER];
 
-    const isBannerLike =
-      defaultSize === AdViewSize.BANNER ||
-      defaultSize === AdViewSize.SMART ||
-      defaultSize === AdViewSize.ADAPTIVE;
+  const width = containerWidth ?? screenWidth;
 
-    const width = isBannerLike ? (containerWidth ?? screenWidth) : (base.width || screenWidth);
-    const height = base.height || minHeightFor(defaultSize);
+  const height = base.height || minHeightFor(defaultSize);
 
-    const next: Dim = {
-      width: Math.max(Math.round(width), 1),
-      height: Math.max(Math.round(height), 1),
-    };
+  const next: Dim = {
+    width: Math.max(Math.round(width), 1),
+    height: Math.max(Math.round(height), 1),
+  };
 
-    const cur = dimensionsRef.current;
-    if (cur.width !== next.width || cur.height !== next.height) {
-      dimensionsRef.current = next;
-      forceUpdate();
-    }
-  }, [defaultSize, containerWidth, screenWidth]);
+  const cur = dimensionsRef.current;
+  if (cur.width !== next.width || cur.height !== next.height) {
+    dimensionsRef.current = next;
+    forceUpdate();
+  }
+}, [defaultSize, containerWidth, screenWidth]);
+
 
   useEffect(() => { recalcDimensions(); }, [recalcDimensions]);
 
+
   const onLoaded = useCallback(
     (e: NativeSyntheticEvent<{ width?: number; height?: number }>) => {
-      const h = e.nativeEvent?.height ?? 0;
+      const density = PixelRatio.get();
+      const rawH = e.nativeEvent?.height ?? 0;
+      const h = rawH > 0 ? Math.round(rawH / density) : 0;  
+
       if (h > 0 && h !== dimensionsRef.current.height) {
         dimensionsRef.current = { ...dimensionsRef.current, height: h };
         forceUpdate();
@@ -133,9 +136,9 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   );
 
   const onImpressionCb = useCallback(
-  (e: NativeSyntheticEvent<{ data: string }>) => onAdViewImpression?.(e),
-  [onAdViewImpression]
-);
+    (e: NativeSyntheticEvent<{ data: string }>) => onAdViewImpression?.(e),
+    [onAdViewImpression]
+  );
 
   const isAdLoaded = useCallback(async (): Promise<boolean> => {
     return AdViewCommands.isAdLoaded(viewRef.current) as unknown as boolean;
@@ -146,38 +149,43 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   }, []);
 
   useEffect(() => {
-    if (loadOnMount) {
-      AdViewCommands.loadAd(viewRef.current);
-    }
-  }, [loadOnMount]);
+    if (!loadOnMount) return;
 
+    const isBannerLike =
+      defaultSize === AdViewSize.BANNER ||
+      defaultSize === AdViewSize.SMART ||
+      defaultSize === AdViewSize.ADAPTIVE;
+
+    if (isBannerLike) {
+      if (containerWidth == null) return; 
+    }
+    AdViewCommands.loadAd(viewRef.current);
+  }, [loadOnMount, defaultSize, containerWidth]);
 
   useImperativeHandle(ref, () => ({ isAdLoaded, loadAd }), [isAdLoaded, loadAd]);
 
   return (
-  <View onLayout={onLayout} style={containerStyle}>
-    <AdViewComponent
-      ref={viewRef}
-      style={dimensionsRef.current}
-      size={defaultSize}
-      isAutoloadEnabled={isAutoloadEnabled}
-      autoRefresh={autoRefresh}
-      loadOnMount={loadOnMount}
-      refreshInterval={refreshInterval}
-      onAdViewLoaded={onLoaded}
-      onAdViewFailed={onFailedCb}
-      onAdViewClicked={onClickedCb}
-      onAdViewImpression={onImpressionCb}
-      onAdViewIsLoaded={(ready: NativeSyntheticEvent<{ isAdLoaded: boolean }>) => {
-        const cur: any = viewRef.current;
-        if (cur?.__onIsLoaded) {
-          cur.__onIsLoaded(ready.nativeEvent);
-          cur.__onIsLoaded = null;
-        }
-      }}
-      {...nativeProps}
-    />
-  </View>
-);
-
+    <View onLayout={onLayout} style={containerStyle}>
+      <AdViewComponent
+        ref={viewRef}
+        style={dimensionsRef.current}   
+        size={defaultSize}
+        isAutoloadEnabled={isAutoloadEnabled}
+        loadOnMount={false}           
+        refreshInterval={refreshInterval}
+        onAdViewLoaded={onLoaded}
+        onAdViewFailed={onFailedCb}
+        onAdViewClicked={onClickedCb}
+        onAdViewImpression={onImpressionCb}
+        onAdViewIsLoaded={(ready: NativeSyntheticEvent<{ isAdLoaded: boolean }>) => {
+          const cur: any = viewRef.current;
+          if (cur?.__onIsLoaded) {
+            cur.__onIsLoaded(ready.nativeEvent);
+            cur.__onIsLoaded = null;
+          }
+        }}
+        {...nativeProps}
+      />
+    </View>
+  );
 });

@@ -2,6 +2,11 @@ package com.cleveradssolutions.plugin.reactnative
 
 import android.app.Activity
 import android.content.Context
+import com.cleveradssolutions.plugin.reactnative.extensions.optBoolean
+import com.cleveradssolutions.plugin.reactnative.extensions.optIntOrNull
+import com.cleveradssolutions.plugin.reactnative.extensions.optMap
+import com.cleveradssolutions.plugin.reactnative.extensions.optStringList
+import com.cleveradssolutions.sdk.AdFormat
 import com.cleveradssolutions.sdk.base.CASHandler
 import com.cleveradssolutions.sdk.screen.CASAppOpen
 import com.cleveradssolutions.sdk.screen.CASInterstitial
@@ -13,6 +18,7 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) {
+  companion object { const val NAME = "CASMobileAds" }
 
   private var casIdentifier: String? = null
   private var interstitialAd: CASInterstitial? = null
@@ -38,64 +44,48 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
   private fun createOrRecreateInterstitial() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "interstitial")
-    interstitialCallback = cb
+    val callback = ScreenContentCallback(reactContext, AdFormat.INTERSTITIAL.label)
+    interstitialCallback = callback
     interstitialAd = CASInterstitial(appCtx(), id).apply {
-      contentCallback = cb
-      onImpressionListener = cb
+      contentCallback = callback
+      onImpressionListener = callback
     }
   }
 
   private fun createOrRecreateRewarded() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "rewarded")
-    rewardedCallback = cb
+    val callback = ScreenContentCallback(reactContext, AdFormat.REWARDED.label)
+    rewardedCallback = callback
     rewardedAd = CASRewarded(appCtx(), id).apply {
-      contentCallback = cb
-      onImpressionListener = cb
+      contentCallback = callback
+      onImpressionListener = callback
     }
   }
 
   private fun createOrRecreateAppOpen() {
     val id = casIdentifier ?: return
-    val cb = ScreenContentCallback(reactContext, "appopen")
-    appOpenCallback = cb
+    val callback = ScreenContentCallback(reactContext, AdFormat.APP_OPEN.label)
+    appOpenCallback = callback
     appOpenAd = CASAppOpen(appCtx(), id).apply {
-      contentCallback = cb
-      onImpressionListener = cb
+      contentCallback = callback
+      onImpressionListener = callback
     }
   }
+
 
   fun initialize(casId: String, options: ReadableMap?, promise: Promise) {
     try {
       casIdentifier = casId
 
-      val showConsent =
-        options?.let { it.hasKey("showConsentFormIfRequired") && !it.isNull("showConsentFormIfRequired") && it.getBoolean("showConsentFormIfRequired") }
-          ?: true
-      val forceTest =
-        options?.let { it.hasKey("forceTestAds") && !it.isNull("forceTestAds") && it.getBoolean("forceTestAds") }
-          ?: false
+      val showConsent = options.optBoolean("showConsentFormIfRequired", true)
+      val forceTest = options.optBoolean("forceTestAds", false)
 
-      if (options?.hasKey("audience") == true && !options.isNull("audience")) {
-        CAS.settings.taggedAudience = options.getInt("audience")
-      }
-      if (options?.hasKey("trialAdFreeInterval") == true && !options.isNull("trialAdFreeInterval")) {
-        CAS.settings.trialAdFreeInterval = options.getInt("trialAdFreeInterval")
-      }
-      if (options?.hasKey("testDeviceIds") == true && !options.isNull("testDeviceIds")) {
-        val ids = options.getArray("testDeviceIds")
-          ?.toArrayList()
-          ?.filterIsInstance<String>()
-          ?.toSet() ?: emptySet()
-        CAS.settings.testDeviceIDs = ids
-      }
+      options.optIntOrNull("audience")?.let { CAS.settings.taggedAudience = it }
+      options.optIntOrNull("trialAdFreeInterval")?.let { CAS.settings.trialAdFreeInterval = it }
+      CAS.settings.testDeviceIDs = options.optStringList("testDeviceIds").toSet()
 
       val consent = ConsentFlow(showConsent).apply {
-        if (options?.hasKey("debugPrivacyGeography") == true && !options.isNull("debugPrivacyGeography")) {
-          val geo = options.getInt("debugPrivacyGeography")
-          debugGeography = geo
-        }
+        options.optIntOrNull("debugPrivacyGeography")?.let { debugGeography = it }
       }
 
       createOrRecreateInterstitial()
@@ -115,18 +105,13 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
           promise.resolve(out)
         }
 
-
-      if (options?.hasKey("mediationExtras") == true && !options.isNull("mediationExtras")) {
-        val extras = options.getMap("mediationExtras")
-        extras?.keySetIterator()?.let { it ->
-          while (it.hasNextKey()) {
-            val key = it.nextKey()
-            if (!extras.isNull(key)) {
-              val value = extras.getString(key) ?: ""
-              if (key.isNotEmpty() && value.isNotEmpty()) {
-                builder.withMediationExtras(key, value)
-              }
-            }
+      options.optMap("mediationExtras")?.let { extras ->
+        val it = extras.keySetIterator()
+        while (it.hasNextKey()) {
+          val key = it.nextKey()
+          val value = if (!extras.isNull(key)) extras.getString(key) else null
+          if (key.isNotEmpty() && !value.isNullOrEmpty()) {
+            builder.withMediationExtras(key, value)
           }
         }
       }
@@ -135,7 +120,9 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
       builder.build(curActivity() ?: appCtx())
     } catch (e: Exception) {
-      promise.resolve(WritableNativeMap().apply { putString("error", e.message ?: "initialize exception") })
+      promise.resolve(WritableNativeMap().apply {
+        putString("error", e.message ?: "initialize exception")
+      })
     }
   }
 
@@ -148,131 +135,155 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
     CASHandler.main {
       ConsentFlow()
         .withUIContext(activity)
-        .withDismissListener { status ->
-          promise.resolve(status)
-        }
+        .withDismissListener { status -> promise.resolve(status) }
         .showIfRequired()
     }
   }
 
-  fun getSDKVersion(promise: Promise) { promise.resolve(CAS.getSDKVersion()) }
+  fun getSDKVersion(promise: Promise) {
+    promise.resolve(CAS.getSDKVersion())
+  }
 
-  fun setDebugLoggingEnabled(enabled: Boolean, promise: Promise) {
-    CAS.settings.debugMode = enabled; promise.resolve(null)
+  fun setDebugLoggingEnabled(enabled: Boolean) {
+    CAS.settings.debugMode = enabled
   }
-  fun setAdSoundsMuted(muted: Boolean, promise: Promise) {
-    CAS.settings.mutedAdSounds = muted; promise.resolve(null)
+
+  fun setAdSoundsMuted(muted: Boolean) {
+    CAS.settings.mutedAdSounds = muted
   }
-  fun setUserAge(age: Int, promise: Promise) {
-    CAS.getTargetingOptions().age = age; promise.resolve(null)
+
+  fun setUserAge(age: Int) {
+    CAS.getTargetingOptions().age = age
   }
-  fun setUserGender(gender: Int, promise: Promise) {
-    CAS.getTargetingOptions().gender = gender; promise.resolve(null)
+
+  fun setUserGender(gender: Int) {
+    CAS.getTargetingOptions().gender = gender
   }
-  fun setAppContentUrl(contentUrl: String?, promise: Promise) {
-    CAS.getTargetingOptions().contentUrl = contentUrl; promise.resolve(null)
+
+  fun setAppContentUrl(contentUrl: String?) {
+    CAS.getTargetingOptions().contentUrl = contentUrl
   }
-  fun setAppKeywords(keywordsArray: ReadableArray, promise: Promise) {
+
+  fun setAppKeywords(keywordsArray: ReadableArray) {
     val keywords = keywordsArray.toArrayList().filterIsInstance<String>().toSet()
     CAS.getTargetingOptions().keywords = keywords
-    promise.resolve(null)
   }
-  fun setLocationCollectionEnabled(enabled: Boolean, promise: Promise) {
+
+  fun setLocationCollectionEnabled(enabled: Boolean) {
     try {
       val f = CAS.settings::class.java.getDeclaredField("trackLocation")
       f.isAccessible = true
       f.setBoolean(CAS.settings, enabled)
-    } catch (_: Throwable) {  }
-    promise.resolve(null)
+    } catch (_: Throwable) { }
   }
-  fun setTrialAdFreeInterval(interval: Int, promise: Promise) {
-    CAS.settings.trialAdFreeInterval = interval; promise.resolve(null)
+
+  fun setTrialAdFreeInterval(interval: Int) {
+    CAS.settings.trialAdFreeInterval = interval
   }
 
   fun isInterstitialAdLoaded(promise: Promise) {
     promise.resolve(interstitialAd?.isLoaded == true)
   }
-  fun loadInterstitialAd(promise: Promise) {
+
+  fun loadInterstitialAd() {
     val ad = interstitialAd ?: run {
       emitError("onInterstitialLoadFailed", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    ad.load(appCtx()); promise.resolve(null)
+    ad.load(appCtx())
   }
-  fun showInterstitialAd(promise: Promise) {
+
+  fun showInterstitialAd() {
     val ad = interstitialAd ?: run {
       emitError("onInterstitialFailedToShow", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    ad.show(curActivity()); promise.resolve(null)
+    ad.show(curActivity())
   }
-  fun setInterstitialAutoloadEnabled(enabled: Boolean, promise: Promise) {
-    interstitialAd?.isAutoloadEnabled = enabled; promise.resolve(null)
+
+  fun setInterstitialAutoloadEnabled(enabled: Boolean) {
+    interstitialAd?.isAutoloadEnabled = enabled
   }
-  fun setInterstitialAutoshowEnabled(enabled: Boolean, promise: Promise) {
-    interstitialAd?.isAutoshowEnabled = enabled; promise.resolve(null)
+
+  fun setInterstitialAutoshowEnabled(enabled: Boolean) {
+    interstitialAd?.isAutoshowEnabled = enabled
   }
-  fun setInterstitialMinInterval(seconds: Int, promise: Promise) {
-    interstitialAd?.minInterval = seconds; promise.resolve(null)
+
+  fun setInterstitialMinInterval(seconds: Int) {
+    interstitialAd?.minInterval = seconds
   }
-  fun restartInterstitialInterval(promise: Promise) {
-    interstitialAd?.restartInterval(); promise.resolve(null)
+
+  fun restartInterstitialInterval() {
+    interstitialAd?.restartInterval()
   }
-  fun destroyInterstitial(promise: Promise) {
-    interstitialAd?.destroy(); interstitialAd = null; createOrRecreateInterstitial(); promise.resolve(null)
+
+  fun destroyInterstitial() {
+    interstitialAd?.destroy()
+    interstitialAd = null
+    createOrRecreateInterstitial()
   }
 
   fun isRewardedAdLoaded(promise: Promise) {
     promise.resolve(rewardedAd?.isLoaded == true)
   }
-  fun loadRewardedAd(promise: Promise) {
+
+  fun loadRewardedAd() {
     val ad = rewardedAd ?: run {
       emitError("onRewardedLoadFailed", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    ad.load(appCtx()); promise.resolve(null)
+    ad.load(appCtx())
   }
-  fun showRewardedAd(promise: Promise) {
+
+  fun showRewardedAd() {
     val ad = rewardedAd ?: run {
       emitError("onRewardedFailedToShow", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    rewardedCallback?.let { listener ->
-      ad.show(curActivity(), listener)
-    }
-    promise.resolve(null)
+    rewardedCallback?.let { listener -> ad.show(curActivity(), listener) }
   }
-  fun setRewardedAutoloadEnabled(enabled: Boolean, promise: Promise) {
-    rewardedAd?.isAutoloadEnabled = enabled; promise.resolve(null)
+
+  fun setRewardedAutoloadEnabled(enabled: Boolean) {
+    rewardedAd?.isAutoloadEnabled = enabled
   }
-  fun destroyRewarded(promise: Promise) {
-    rewardedAd?.destroy(); rewardedAd = null; createOrRecreateRewarded(); promise.resolve(null)
+
+  fun destroyRewarded() {
+    rewardedAd?.destroy()
+    rewardedAd = null
+    createOrRecreateRewarded()
   }
 
   fun isAppOpenAdLoaded(promise: Promise) {
     promise.resolve(appOpenAd?.isLoaded == true)
   }
-  fun loadAppOpenAd(promise: Promise) {
+
+  fun loadAppOpenAd() {
     val ad = appOpenAd ?: run {
       emitError("onAppOpenLoadFailed", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    ad.load(appCtx()); promise.resolve(null)
+    ad.load(appCtx())
   }
-  fun showAppOpenAd(promise: Promise) {
+
+  fun showAppOpenAd() {
     val ad = appOpenAd ?: run {
       emitError("onAppOpenFailedToShow", AdError.NOT_INITIALIZED)
-      promise.resolve(null); return
+      return
     }
-    ad.show(curActivity()); promise.resolve(null)
+    ad.show(curActivity())
   }
-  fun setAppOpenAutoloadEnabled(enabled: Boolean, promise: Promise) {
-    appOpenAd?.isAutoloadEnabled = enabled; promise.resolve(null)
+
+  fun setAppOpenAutoloadEnabled(enabled: Boolean) {
+    appOpenAd?.isAutoloadEnabled = enabled
   }
-  fun setAppOpenAutoshowEnabled(enabled: Boolean, promise: Promise) {
-    appOpenAd?.isAutoshowEnabled = enabled; promise.resolve(null)
+
+  fun setAppOpenAutoshowEnabled(enabled: Boolean) {
+    appOpenAd?.isAutoshowEnabled = enabled
   }
-  fun destroyAppOpen(promise: Promise) {
-    appOpenAd?.destroy(); appOpenAd = null; createOrRecreateAppOpen(); promise.resolve(null)
+
+  fun destroyAppOpen() {
+    appOpenAd?.destroy()
+    appOpenAd = null
+    createOrRecreateAppOpen()
   }
 }

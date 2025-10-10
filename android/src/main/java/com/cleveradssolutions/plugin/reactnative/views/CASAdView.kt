@@ -2,6 +2,7 @@ package com.cleveradssolutions.plugin.reactnative.views
 
 import android.content.Context
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
@@ -13,6 +14,7 @@ import com.cleversolutions.ads.android.CASBannerView
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 class CASAdView(context: Context) :
@@ -22,7 +24,6 @@ class CASAdView(context: Context) :
   val banner: CASBannerView = CASBannerView(context)
 
   var loadOnMount: Boolean = true
-  var autoRefresh: Boolean = true
   var size: AdSize = AdSize.BANNER
   private var refreshIntervalSec: Int = 30
   private var refreshWasEnabledByProps: Boolean = true
@@ -71,7 +72,10 @@ class CASAdView(context: Context) :
     val ws = MeasureSpec.makeMeasureSpec(w, MeasureSpec.AT_MOST)
     val hs = MeasureSpec.makeMeasureSpec(h, MeasureSpec.AT_MOST)
     banner.measure(ws, hs)
-    banner.layout(0, 0, banner.measuredWidth, banner.measuredHeight)
+
+    val left = max(0, (w - banner.measuredWidth) / 2)
+    val top = 0
+    banner.layout(left, top, left + banner.measuredWidth, top + banner.measuredHeight)
   }
 
   override fun requestLayout() {
@@ -84,14 +88,11 @@ class CASAdView(context: Context) :
     minimumHeight = fallbackHeightPx()
     minimumWidth = 1
 
-    if (!autoRefresh) {
-      refreshWasEnabledByProps = false
+    if (refreshIntervalSec <= 0) {
       banner.disableAdRefresh()
     } else {
-      refreshWasEnabledByProps = true
-      if (refreshIntervalSec > 0) banner.refreshInterval = refreshIntervalSec
+      banner.refreshInterval = refreshIntervalSec
     }
-
     requestLayout()
   }
 
@@ -99,7 +100,7 @@ class CASAdView(context: Context) :
     refreshIntervalSec = seconds
     if (seconds <= 0) {
       banner.disableAdRefresh()
-    } else if (autoRefresh) {
+    } else {
       banner.refreshInterval = seconds
     }
   }
@@ -115,8 +116,10 @@ class CASAdView(context: Context) :
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    if (refreshWasEnabledByProps && refreshIntervalSec > 0) {
+    if (refreshIntervalSec > 0) {
       banner.refreshInterval = refreshIntervalSec
+    } else {
+      banner.disableAdRefresh()
     }
     post { measureAndLayoutChild() }
   }
@@ -148,14 +151,21 @@ class CASAdView(context: Context) :
   }
 
   private fun emitLoaded(w: Int, h: Int) {
+    val density = resources.displayMetrics.density
+    val pxW = if (w > 0) w else fallbackWidthPx()
+    val pxH = if (h > 0) h else fallbackHeightPx()
+    val dpW = (pxW / density).toInt()
+    val dpH = (pxH / density).toInt()
+
     val map = WritableNativeMap().apply {
-      putInt("width",  if (w > 0) w else fallbackWidthPx())
-      putInt("height", if (h > 0) h else fallbackHeightPx())
+      putInt("width",  dpW)
+      putInt("height", dpH)
     }
     (context as ThemedReactContext)
       .getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(this.id, "onAdViewLoaded", map)
   }
+
 
   override fun onAdImpression(ad: AdContentInfo) {
     val map = WritableNativeMap().apply { putMap("impression", ad.toReadableMap()) }

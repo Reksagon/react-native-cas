@@ -12,15 +12,13 @@ const config = {
   projectRoot: __dirname,
   watchFolders: [root],
   resolver: {
-    // 1) не дозволяємо тягнути peer deps з кореня бібліотеки
     blacklistRE: exclusionList(
       peerModules.map((m) =>
         new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
       )
     ),
-    // 2) явно кажемо, де лежить наш пакет і peer deps
     extraNodeModules: {
-      'react-native-cas': root, // ← пакет з кореня
+      'react-native-cas': root,
       ...peerModules.reduce((acc, name) => {
         acc[name] = path.join(__dirname, 'node_modules', name);
         return acc;
@@ -29,7 +27,10 @@ const config = {
   },
   transformer: {
     getTransformOptions: async () => ({
-      transform: { experimentalImportSupport: false, inlineRequires: true },
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: false,
+      },
     }),
   },
 };

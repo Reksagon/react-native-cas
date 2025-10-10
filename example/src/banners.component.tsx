@@ -30,7 +30,7 @@ export const Banners = () => {
         size={AdViewSize.BANNER}
         onAdViewLoaded={() => logCasInfo('Banner (B) loaded')}
         onAdViewClicked={() => logCasInfo('Banner (B) clicked')}
-        refreshInterval={15}          
+        refreshInterval={20}          
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);
           logCasInfo('Banner (B) failed', err ? `${err.code}: ${err.message}` : '(no error adInfo)');
@@ -42,7 +42,7 @@ export const Banners = () => {
 
       <AdView
         size={AdViewSize.MREC}
-        refreshInterval={20}
+        refreshInterval={25}
         onAdViewLoaded={() => logCasInfo('MREC loaded')}       
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);
@@ -55,7 +55,7 @@ export const Banners = () => {
 
       <AdView
         size={AdViewSize.ADAPTIVE}
-        refreshInterval={25}
+        refreshInterval={30}
         onAdViewLoaded={() => logCasInfo('Adaptive loaded')}
         onAdViewFailed={(adInfo) => {
           const err = getErr(adInfo);

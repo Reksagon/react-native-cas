@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ConsentFlowStatus } from 'react-native-cas';
 import { Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './styles';
@@ -26,6 +25,11 @@ const CONSENT_STATUS_NAME: Record<number, string> = {
   13: 'flowStillShowing',
 };
 
+const CAS_IDS = {
+  android: 'YOUR_ANDROID_CAS_ID',
+  ios: 'YOUR_IOS_CAS_ID',
+};
+
 export const Setup = () => {
   const { logCasInfo } = useCasContext();
   const navigation = useNavigation();
@@ -35,21 +39,29 @@ const consentStatusName = (code: number) =>
 
   const initCas = useCallback(async () => {
     try {
-      const init = await CASMobileAds.initialize('1058803540', {
+      const casId =
+        Platform.OS === 'android' ? CAS_IDS.android : CAS_IDS.ios;
+
+      if (!casId || typeof casId !== 'string') {
+        throw new Error('initialize(casId, options?): casId must be a string');
+      }
+
+      const init = await CASMobileAds.initialize(casId, {
         forceTestAds: true,
-        audience: Audience.NotChildren,    
-        debugPrivacyGeography: PrivacyGeography.europeanEconomicArea,        
-        showConsentFormIfRequired: true          });
+        audience: Audience.NotChildren,
+        debugPrivacyGeography: PrivacyGeography.europeanEconomicArea,
+        showConsentFormIfRequired: true,
+      });
+
       logCasInfo('initialize:', {
         isConsentRequired: init?.isConsentRequired ?? false,
-        consentFlowStatus: consentStatusName(init?.consentFlowStatus ?? 0)
-    });
-      
+        consentFlowStatus: consentStatusName(init?.consentFlowStatus ?? 0),
+      });
+
       const v = await CASMobileAds.getSDKVersion();
       logCasInfo('sdkVersion:', v);
-      
-      navigation.navigate('Menu' as never);
 
+      navigation.navigate('Menu' as never);
     } catch (e: any) {
       logCasInfo('initialize error:', String(e?.message ?? e));
     }

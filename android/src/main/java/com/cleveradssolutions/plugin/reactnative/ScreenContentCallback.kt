@@ -16,14 +16,7 @@ class ScreenContentCallback(
   private val adType: String
 ) : ScreenAdContentCallback(), OnAdImpressionListener, OnRewardEarnedListener {
 
-  private fun title(): String = when (adType) {
-    "interstitial" -> "Interstitial"
-    "rewarded" -> "Rewarded"
-    "appopen" -> "AppOpen"
-    else -> "Ad"
-  }
-
-  private fun emit(event: String, map: WritableNativeMap = WritableNativeMap()) {
+  private fun emit(event: String, map: WritableNativeMap) {
     reactContext
       .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
       .emit(event, map)
@@ -33,16 +26,16 @@ class ScreenContentCallback(
     val map = WritableNativeMap().apply {
       putMap("impression", ad.toReadableMap())
     }
-    emit("on${title()}Impression", map)
+    emit("on${adType}Impression", map)
   }
 
 
   override fun onUserEarnedReward(ad: AdContentInfo) {
-    emit("onRewardedCompleted", WritableNativeMap())
+    emit("on${adType}Completed", WritableNativeMap())
   }
 
   override fun onAdLoaded(ad: AdContentInfo) {
-    emit("on${title()}Loaded", WritableNativeMap())
+    emit("on${adType}Loaded", WritableNativeMap())
   }
 
   override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
@@ -50,11 +43,11 @@ class ScreenContentCallback(
       putInt("errorCode", error.code)
       putString("errorMessage", error.message)
     }
-    emit("on${title()}LoadFailed", map)
+    emit("on${adType}LoadFailed", map)
   }
 
   override fun onAdShowed(ad: AdContentInfo) {
-    emit("on${title()}Displayed", WritableNativeMap())
+    emit("on${adType}Displayed", WritableNativeMap())
   }
 
   override fun onAdFailedToShow(format: AdFormat, error: AdError) {
@@ -62,14 +55,14 @@ class ScreenContentCallback(
       putInt("errorCode", error.code)
       putString("errorMessage", error.message)
     }
-    emit("on${title()}FailedToShow", map)
+    emit("on${adType}FailedToShow", map)
   }
 
   override fun onAdClicked(ad: AdContentInfo) {
-    emit("on${title()}Clicked", WritableNativeMap())
+    emit("on${adType}Clicked", WritableNativeMap())
   }
 
   override fun onAdDismissed(ad: AdContentInfo) {
-    emit("on${title()}Hidden", WritableNativeMap())
+    emit("on${adType}Hidden", WritableNativeMap())
   }
 }

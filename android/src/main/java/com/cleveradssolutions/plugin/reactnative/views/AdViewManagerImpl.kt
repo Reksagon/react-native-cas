@@ -6,7 +6,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
 
 object AdViewManagerImpl {
-  const val NAME = "CASAdView"
+  const val NAME = "AdView"
 
   fun createViewInstance(ctx: ThemedReactContext): CASAdView = CASAdView(ctx)
 
@@ -20,22 +20,18 @@ object AdViewManagerImpl {
 
   fun setSize(view: CASAdView, value: String?) {
     val v = value ?: "B"
-    view.size = when (v) {
-      "B","BANNER","320x50" -> AdSize.BANNER
-      "M","MEDIUM_RECTANGLE","300x250" -> AdSize.MEDIUM_RECTANGLE
-      "L","LEADERBOARD","728x90" -> AdSize.LEADERBOARD
-      "S","SMART" -> AdSize.getSmartBanner(view.context)
-      "A","ADAPTIVE" -> AdSize.getAdaptiveBannerInScreen(view.context)
+    view.size = when (value) {
+      "B" -> AdSize.BANNER
+      "M" -> AdSize.MEDIUM_RECTANGLE
+      "L" -> AdSize.LEADERBOARD
+      "S" -> AdSize.getSmartBanner(view.context)
+      "A" -> AdSize.getAdaptiveBannerInScreen(view.context)
       else -> AdSize.BANNER
     }
   }
 
   fun setIsAutoloadEnabled(view: CASAdView, enabled: Boolean) {
     view.banner.isAutoloadEnabled = enabled
-  }
-
-  fun setAutoRefresh(view: CASAdView, enabled: Boolean) {
-    view.autoRefresh = enabled
   }
 
   fun setLoadOnMount(view: CASAdView, value: Boolean) {
