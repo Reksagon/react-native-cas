@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <React/RCTUtils.h>
 #import <React/RCTEventEmitter.h>
 #import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
 

@@ -75,17 +75,17 @@ export const Ads = () => {
       kind: Exclude<BusyKind, null>,
       opts: {
         isLoaded: () => Promise<boolean>;
-        load: () => Promise<void>;
-        show: () => Promise<void>;
+        load: () => void;
+        show: () => void;
       }
     ) => {
       if (busy) return;
       setBusy(kind);
       try {
-        await opts.load();
+        opts.load();
         for (;;) {
           if (await opts.isLoaded()) {
-            await opts.show();
+            opts.show();
             break;
           }
           await delay(750);

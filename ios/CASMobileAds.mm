@@ -9,17 +9,20 @@
 using namespace facebook::react;
 #endif
 
-@implementation CASMobileAds {
-  NSString* casIdendifier;
-  BOOL hasListeners;
-  CASInterstitial *interstitial;
-  CASRewarded *rewarded;
-  CASAppOpen *appOpen;
-  CASConsentFlow *consentFlow;
-  CASMediationManager *manager;
-}
+@interface CASMobileAds()
+@property (nonatomic, strong) NSString *casIdendifier;
+@property (nonatomic, strong) CASConsentFlow *consentFlow;
+@property (nonatomic, strong) CASMediationManager *manager;
 
-#ifdef RCT_NEW_ARCH_ENABLED
+@property (nonatomic, strong) NSMutableDictionary<NSString *, CASInterstitial *> *interstitialAds;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, CASRewarded *> *rewardedAds;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, CASAppOpen *> *appOpenAds;
+
+@property (nonatomic, assign) BOOL hasListeners;
+@end
+
+@implementation CASMobileAds
+
 
 RCT_EXPORT_MODULE();
 
@@ -55,12 +58,22 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - TurboModule Spec Methods
 
+#ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
   return std::make_shared<NativeCASMobileAdsModuleSpecJSI>(params);
 }
-
 #endif
+
+static CASMobileAds *CASMobileAdsSharedInstance = nil;
+
++ (instancetype)shared {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        CASMobileAdsSharedInstance = [[self alloc] init];
+    });
+    return CASMobileAdsSharedInstance;
+}
 
 // `init` requires main queue b/c of UI code
 + (BOOL)requiresMainQueueSetup
@@ -75,6 +88,24 @@ RCT_EXPORT_MODULE();
 }
 
 
+- (instancetype)init
+{
+    self = [super init];
+    if ( self )
+    {
+      CASMobileAdsSharedInstance = self;
+      
+      self.interstitialAds = [NSMutableDictionary new];
+      self.rewardedAds = [NSMutableDictionary new];
+      self.appOpenAds = [NSMutableDictionary new];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    NSLog(@"CASMobileAds dealloc: %@", self);
+}
+
 #pragma mark - Init
 
 - (void)initializeWithCASId:(NSString *)casId
@@ -82,7 +113,9 @@ RCT_EXPORT_MODULE();
                     resolve:(RCTPromiseResolveBlock)resolve
                      reject:(RCTPromiseRejectBlock)reject
 {
-  casIdendifier = casId;
+  self.casIdendifier = casId;
+  
+  NSLog(@"⚡️ CAS init: %@", self);
   
   @try {
     CASManagerBuilder *builder = [CAS buildManager];
@@ -94,15 +127,15 @@ RCT_EXPORT_MODULE();
     
     NSNumber *showConsent = options[@"showConsentFormIfRequired"];
     if (showConsent != nil && [showConsent boolValue]) {
-      consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
+      self.consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
       
       // Privacy geography
       NSNumber *privacyGeo = options[@"privacyGeography"];
       if (privacyGeo != nil) {
-        consentFlow.debugGeography = (CASUserDebugGeography)((NSInteger)[privacyGeo integerValue]);
+        self.consentFlow.debugGeography = (CASUserDebugGeography)((NSInteger)[privacyGeo integerValue]);
       }
       
-      [builder withConsentFlow:consentFlow];
+      [builder withConsentFlow: self.consentFlow];
     }
     
     // Completion handler
@@ -120,8 +153,8 @@ RCT_EXPORT_MODULE();
     }];
     
     // Create manager and set globally
-    manager = [builder createWithCasId:casId];
-    [CAS setManager:manager];
+    self.manager = [builder createWithCasId:casId];
+    [CAS setManager: self.manager];
     
     // Tagged audience
     NSNumber *audience = options[@"audience"];
@@ -131,9 +164,21 @@ RCT_EXPORT_MODULE();
     }
     
     // Initialize ad types
-    interstitial = [[CASInterstitial alloc] initWithCasID:casId];
-    rewarded = [[CASRewarded alloc] initWithCasID:casId];
-    appOpen = [[CASAppOpen alloc] initWithCasID:casId];
+    CASInterstitial *interstitial = [[CASInterstitial alloc] initWithCasID:casId];
+    interstitial.delegate = self;
+    interstitial.impressionDelegate = self;
+    self.interstitialAds[casId] = interstitial;
+    
+    CASRewarded *rewarded = [[CASRewarded alloc] initWithCasID:casId];
+    rewarded.delegate = self;
+    rewarded.impressionDelegate = self;
+    self.rewardedAds[casId] = rewarded;
+    
+    CASAppOpen *appOpen = [[CASAppOpen alloc] initWithCasID:casId];
+    appOpen.delegate = self;
+    appOpen.impressionDelegate = self;
+    self.appOpenAds[casId] = appOpen;
+        
     
   } @catch (NSException *e) {
     resolve(@{ @"error": e.reason ?: @"Unknown error", @"isConsentRequired": @NO, @"consentFlowStatus": @0 });
@@ -180,7 +225,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)casId
 - (void)isInitializedInternal:(RCTPromiseResolveBlock)resolve
                        reject:(RCTPromiseRejectBlock)reject
 {
-  BOOL initialized = (manager != nil);
+  BOOL initialized = (self.manager != nil);
   resolve(@(initialized));
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -202,12 +247,26 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
 
 - (void)startObserving
 {
-  hasListeners = YES;
+  self.hasListeners = YES;
+  NSLog(@"🟢 CASMobileAds startObserving");
 }
 
 - (void)stopObserving
 {
-  hasListeners = NO;
+  self.hasListeners = NO;
+  NSLog(@"🟡 CASMobileAds stopObserving");
+}
+
+RCT_EXPORT_METHOD(addListener:(NSString *)eventName)
+{
+    self.hasListeners = YES;
+    NSLog(@"🟢 addListener: %@", eventName);
+}
+
+RCT_EXPORT_METHOD(removeListeners:(double)count)
+{
+    self.hasListeners = NO;
+    NSLog(@"🟡 removeListeners: %f", count);
 }
 
 
@@ -239,8 +298,8 @@ RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
 
 - (void)showConsentFlowInternal
 {
-  if (consentFlow.isEnabled) {
-    [consentFlow present];
+  if (self.consentFlow.isEnabled) {
+    [self.consentFlow present];
   }
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -400,6 +459,50 @@ RCT_EXPORT_METHOD(setLocationCollectionEnabled:(BOOL)enabled)
 }
 #endif
 
+- (CASInterstitial *)retrieveInterstitialForCasId:(NSString *)casId
+{
+  CASInterstitial *result = self.interstitialAds[casId];
+  if ( !result )
+  {
+    result = [[CASInterstitial alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.interstitialAds[casId] = result;
+  }
+  
+  return result;
+}
+
+- (CASRewarded *)retrieveRewardedAdForCasId:(NSString *)casId
+{
+  CASRewarded *result = self.rewardedAds[casId];
+  if ( !result )
+  {
+    result = [[CASRewarded alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.rewardedAds[casId] = result;
+  }
+  
+  return result;
+}
+
+- (CASAppOpen *)retrieveAppOpenAdForCasId:(NSString *)casId
+{
+  CASAppOpen *result = self.appOpenAds[casId];
+  if ( !result )
+  {
+    result = [[CASAppOpen alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.appOpenAds[casId] = result;
+  }
+  
+  return result;
+}
 
 
 #pragma mark - Interstitial
@@ -407,6 +510,8 @@ RCT_EXPORT_METHOD(setLocationCollectionEnabled:(BOOL)enabled)
 - (void)isInterstitialAdLoadedInternal:(RCTPromiseResolveBlock)resolve
                                 reject:(RCTPromiseRejectBlock)reject
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
+  
   if (!interstitial) {
     resolve(@(NO));
     return;
@@ -430,15 +535,19 @@ RCT_EXPORT_METHOD(isInterstitialAdLoaded:(RCTPromiseResolveBlock)resolve
 
 - (void)loadInterstitialAdInternal
 {
+  
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
+  
   if (!interstitial) {
+    NSLog(@"🟢 inter is nill, Creating interstitial");
+    
     [self sendEventWithName:kOnInterstitialLoadFailed body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
     return;
   }
   
-  interstitial.delegate = self;
-  interstitial.impressionDelegate = self;
+  NSLog(@"🔵 Loading interstitial: %@", interstitial);
   
   [interstitial loadAd];
 }
@@ -457,6 +566,9 @@ RCT_EXPORT_METHOD(loadInterstitialAd)
 
 - (void)showInterstitialAdInternal
 {
+  
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
+    
   if (!interstitial) {
     [self sendEventWithName:kOnInterstitialFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
@@ -481,6 +593,7 @@ RCT_EXPORT_METHOD(showInterstitialAd)
 
 - (void)setInterstitialMinIntervalInternal:(double)seconds
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     interstitial.minInterval = seconds;
   }
@@ -500,6 +613,7 @@ RCT_EXPORT_METHOD(setInterstitialMinInterval:(double)seconds)
 
 - (void)restartInterstitialIntervalInternal
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     [interstitial restartInterval];
   }
@@ -519,6 +633,7 @@ RCT_EXPORT_METHOD(restartInterstitialInterval)
 
 - (void)setInterstitialAutoloadEnabledInternal:(BOOL)enabled
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     interstitial.isAutoloadEnabled = enabled;
   }
@@ -538,6 +653,7 @@ RCT_EXPORT_METHOD(setInterstitialAutoloadEnabled:(BOOL)enabled)
 
 - (void)setInterstitialAutoshowEnabledInternal:(BOOL)enabled
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     interstitial.isAutoshowEnabled = enabled;
   }
@@ -557,13 +673,12 @@ RCT_EXPORT_METHOD(setInterstitialAutoshowEnabled:(BOOL)enabled)
 
 - (void)destroyInterstitialInternal
 {
+  CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     [interstitial destroy];
     interstitial = nil;
     
-    if (casIdendifier) {
-      interstitial = [[CASInterstitial alloc] initWithCasID: casIdendifier];
-    }
+    [self.interstitialAds removeObjectForKey:self.casIdendifier];
   }
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -584,6 +699,7 @@ RCT_EXPORT_METHOD(destroyInterstitial)
 - (void)isAppOpenAdLoadedInternal:(RCTPromiseResolveBlock)resolve
                            reject:(RCTPromiseRejectBlock)reject
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (!appOpen) {
     resolve(@(NO));
     return;
@@ -607,15 +723,13 @@ RCT_EXPORT_METHOD(isAppOpenAdLoaded:(RCTPromiseResolveBlock)resolve
 
 - (void)loadAppOpenAdInternal
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (!appOpen) {
     [self sendEventWithName:kOnAppOpenLoadFailed body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
     return;
-  }
-  
-  appOpen.delegate = self;
-  appOpen.impressionDelegate = self;
+  }  
   
   [appOpen loadAd];
 }
@@ -634,6 +748,7 @@ RCT_EXPORT_METHOD(loadAppOpenAd)
 
 - (void)showAppOpenAdInternal
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (!appOpen) {
     [self sendEventWithName:kOnAppOpenFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
@@ -658,6 +773,7 @@ RCT_EXPORT_METHOD(showAppOpenAd)
 
 - (void)setAppOpenAutoloadEnabledInternal:(BOOL)enabled
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (appOpen) {
     appOpen.isAutoloadEnabled = enabled;
   }
@@ -677,6 +793,7 @@ RCT_EXPORT_METHOD(setAppOpenAutoloadEnabled:(BOOL)enabled)
 
 - (void)setAppOpenAutoshowEnabledInternal:(BOOL)enabled
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (appOpen) {
     appOpen.isAutoshowEnabled = enabled;
   }
@@ -696,13 +813,12 @@ RCT_EXPORT_METHOD(setAppOpenAutoshowEnabled:(BOOL)enabled)
 
 - (void)destroyAppOpenInternal
 {
+  CASAppOpen *appOpen = [self retrieveAppOpenAdForCasId: self.casIdendifier];
   if (appOpen) {
     [appOpen destroy];
     appOpen = nil;
     
-    if (casIdendifier) {
-      appOpen = [[CASAppOpen alloc] initWithCasID: casIdendifier];
-    }
+    [self.appOpenAds removeObjectForKey:self.casIdendifier];
   }
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -723,6 +839,7 @@ RCT_EXPORT_METHOD(destroyAppOpen)
 - (void)isRewardedAdLoadedInternal:(RCTPromiseResolveBlock)resolve
                             reject:(RCTPromiseRejectBlock)reject
 {
+  CASRewarded *rewarded = [self retrieveRewardedAdForCasId: self.casIdendifier];
   if (!rewarded) {
     resolve(@(NO));
     return;
@@ -746,15 +863,13 @@ RCT_EXPORT_METHOD(isRewardedAdLoaded:(RCTPromiseResolveBlock)resolve
 
 - (void)loadRewardedAdInternal
 {
+  CASRewarded *rewarded = [self retrieveRewardedAdForCasId: self.casIdendifier];
   if (!rewarded) {
     [self sendEventWithName:kOnRewardedLoadFailed body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
     return;
   }
-  
-  rewarded.delegate = self;
-  rewarded.impressionDelegate = self;
   
   [rewarded loadAd];
 }
@@ -773,6 +888,7 @@ RCT_EXPORT_METHOD(loadRewardedAd)
 
 - (void)showRewardedAdInternal
 {
+  CASRewarded *rewarded = [self retrieveRewardedAdForCasId: self.casIdendifier];
   if (!rewarded) {
     [self sendEventWithName:kOnRewardedFailedToShow body:@{
       @"errorCode": @(CASError.notInitialized.code),
@@ -781,7 +897,7 @@ RCT_EXPORT_METHOD(loadRewardedAd)
   }
   
   [rewarded presentFromViewController: nil userDidEarnRewardHandler:^(CASContentInfo * _Nonnull info) {
-    if (self->hasListeners) [self sendEventWithName: kOnRewardedCompleted body:@{}];
+    if (self.hasListeners) [self sendEventWithName: kOnRewardedCompleted body:@{}];
   }];
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -799,6 +915,7 @@ RCT_EXPORT_METHOD(showRewardedAd)
 
 - (void)setRewardedAutoloadEnabledInternal:(BOOL)enabled
 {
+  CASRewarded *rewarded = [self retrieveRewardedAdForCasId: self.casIdendifier];
   if (rewarded) {
     rewarded.isAutoloadEnabled = enabled;
   }
@@ -818,13 +935,12 @@ RCT_EXPORT_METHOD(setRewardedAutoloadEnabled:(BOOL)enabled)
 
 - (void)destroyRewardedInternal
 {
+  CASRewarded *rewarded = [self retrieveRewardedAdForCasId: self.casIdendifier];
   if (rewarded) {
     [rewarded destroy];
     rewarded = nil;
     
-    if (casIdendifier) {
-      rewarded = [[CASRewarded alloc] initWithCasID: casIdendifier];
-    }
+    [self.rewardedAds removeObjectForKey:self.casIdendifier];
   }
 }
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -842,69 +958,69 @@ RCT_EXPORT_METHOD(destroyRewarded)
 
 #pragma mark - CASScreenContentDelegate
 
-- (void)adDidLoad:(id<CASScreenContent>)ad {
-  if (!hasListeners) return;
-  
+- (void)screenAdDidLoadContent:(id<CASScreenContent>)ad {
+  // if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedLoaded;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialLoaded;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenLoaded;
-  
+  NSLog(@"🟢 screenAdDidLoadContent");
   [self sendEventWithName:event body:@{}];
 }
 
-- (void)adDidFailToLoad:(id<CASScreenContent>)ad error:(CASError *)error {
-  if (!hasListeners) return;
-  
+- (void)screenAd:(id<CASScreenContent>)ad didFailToLoadWithError:(CASError *)error {
+  // if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedLoadFailed;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialLoadFailed;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenLoadFailed;
-  
-  [self sendEventWithName:event body:@{
-    @"errorCode": @(error.code),
-    @"errorMessage": error.description}];
+  [self sendEventWithName:event body:@{@"errorCode": @(error.code), @"errorMessage": error.description}];
+  NSLog(@"🟢 screenAd:didFailToLoadWithError");
 }
 
-
-- (void)adDidPresent:(id<CASScreenContent>)ad {
-  if (!hasListeners) return;
-  
+- (void)screenAdWillPresentContent:(id<CASScreenContent>)ad {
+  // if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedDisplayed;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialDisplayed;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenDisplayed;
-  
+  NSLog(@"🟢 screenAdWillPresentContent");
   [self sendEventWithName:event body:@{}];
 }
 
-
-- (void)adDidDismiss:(id<CASScreenContent>)ad {
-  if (!hasListeners) return;
-  
+- (void)screenAd:(id<CASScreenContent>)ad didFailToPresentWithError:(CASError *)error {
+  // if (!self.hasListeners) return;
   NSString *event = @"";
-  if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedHidden;
-  else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialHidden;
-  else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenHidden;
-  
-  [self sendEventWithName:event body:@{}];
+  if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedFailedToShow;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialFailedToShow;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenFailedToShow;
+  [self sendEventWithName:event body:@{@"errorCode": @(error.code), @"errorMessage": error.description}];
+  NSLog(@"🟢 screenAd:didFailToPresentWithError");
 }
 
-
-- (void)adDidClick:(id<CASScreenContent>)ad {
-  if (!hasListeners) return;
-  
+- (void)screenAdDidClickContent:(id<CASScreenContent>)ad {
+  // if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedClicked;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialClicked;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenClicked;
-  
+  NSLog(@"🟢 screenAdDidClickContent");
+  [self sendEventWithName:event body:@{}];
+}
+
+- (void)screenAdDidDismissContent:(id<CASScreenContent>)ad {
+  // if (!self.hasListeners) return;
+  NSString *event = @"";
+  if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedHidden;
+  else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialHidden;
+  else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenHidden;
+  NSLog(@"🟢 screenAdDidDismissContent");
   [self sendEventWithName:event body:@{}];
 }
 
 
 - (void)adDidRecordImpressionWithInfo:(CASContentInfo * _Nonnull)info {
-  if (!hasListeners) return;
+  // if (!self.hasListeners) return;
   
   NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
   if (info.format) {

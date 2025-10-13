@@ -47,6 +47,9 @@ export interface Spec extends TurboModule {
 
   getSDKVersion(): Promise<string>;
   showConsentFlow(): void;
+
+  addListener(eventType: string): void;
+  removeListeners(count: number): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>("CASMobileAds");
