@@ -26,7 +26,6 @@ class CASAdView(context: Context) :
   var loadOnMount: Boolean = true
   var size: AdSize = AdSize.BANNER
   private var refreshIntervalSec: Int = 30
-  private var refreshWasEnabledByProps: Boolean = true
   var casId: String? = null
 
   init {
@@ -48,11 +47,6 @@ class CASAdView(context: Context) :
 
     addView(banner)
   }
-
-  private fun dp(v: Int): Int =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics)
-      .roundToInt()
-
 
   private fun measureAndLayoutChild() {
     val w = width.takeIf { it > 0 } ?: measuredWidth
@@ -118,15 +112,14 @@ class CASAdView(context: Context) :
 
   override fun onAdViewFailed(view: CASBannerView, error: AdError) {
     val map = WritableNativeMap().apply {
-      putMap("error", WritableNativeMap().apply {
-        putInt("code", error.code)
-        putString("message", error.message)
-      })
+      putInt("code", error.code)
+      putString("message", error.message)
     }
     (context as ThemedReactContext)
       .getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(this.id, "onAdViewFailed", map)
   }
+
 
   override fun onAdViewLoaded(view: CASBannerView) {
     requestLayout()

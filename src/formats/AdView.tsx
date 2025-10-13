@@ -27,7 +27,6 @@ import {
   type AdViewProps,
   type AdViewRef,
 } from '../modules/AdViewComponent';
-import type { AdError } from '../types/Types';
 
 const ADVIEW_SIZE = {
   [AdViewSize.BANNER]: { width: 320, height: 50 },
@@ -126,23 +125,25 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   );
 
   const onFailedCb = useCallback(
-    (e: NativeSyntheticEvent<{ error: AdError }>) => onAdViewFailed?.(e),
-    [onAdViewFailed],
-  );
+  (e: NativeSyntheticEvent<{ code: number; message: string }>) => onAdViewFailed?.(e),
+  [onAdViewFailed],
+);
+
 
   const onClickedCb = useCallback(
-    (e: NativeSyntheticEvent<{}>) => onAdViewClicked?.(e),
-    [onAdViewClicked]
-  );
+  (e: any) => onAdViewClicked?.(e),
+  [onAdViewClicked]
+);
 
   const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<{ data: string }>) => onAdViewImpression?.(e),
-    [onAdViewImpression]
-  );
+  (e: NativeSyntheticEvent<{ impression: {
+    format: string; revenue: number; revenuePrecision: string;
+    sourceUnitId: string; sourceName: string; creativeId?: string;
+    revenueTotal: number; impressionDepth: number;
+  } }>) => onAdViewImpression?.(e),
+  [onAdViewImpression],
+);
 
-  const isAdLoaded = useCallback(async (): Promise<boolean> => {
-    return AdViewCommands.isAdLoaded(viewRef.current) as unknown as boolean;
-  }, []);
 
   const loadAd = useCallback(async () => {
     AdViewCommands.loadAd(viewRef.current);
@@ -162,7 +163,11 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
     AdViewCommands.loadAd(viewRef.current);
   }, [loadOnMount, defaultSize, containerWidth]);
 
-  useImperativeHandle(ref, () => ({ isAdLoaded, loadAd }), [isAdLoaded, loadAd]);
+ useImperativeHandle(ref, () => ({
+  loadAd: () => AdViewCommands.loadAd(viewRef.current),
+  destroy: () => AdViewCommands.destroy(viewRef.current),
+}), []);
+
 
   return (
     <View onLayout={onLayout} style={containerStyle}>
@@ -177,13 +182,6 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
         onAdViewFailed={onFailedCb}
         onAdViewClicked={onClickedCb}
         onAdViewImpression={onImpressionCb}
-        onAdViewIsLoaded={(ready: NativeSyntheticEvent<{ isAdLoaded: boolean }>) => {
-          const cur: any = viewRef.current;
-          if (cur?.__onIsLoaded) {
-            cur.__onIsLoaded(ready.nativeEvent);
-            cur.__onIsLoaded = null;
-          }
-        }}
         {...nativeProps}
       />
     </View>

@@ -8,6 +8,7 @@ import com.cleveradssolutions.sdk.screen.OnRewardEarnedListener
 import com.cleveradssolutions.sdk.screen.ScreenAdContentCallback
 import com.cleversolutions.ads.AdError
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
@@ -16,19 +17,20 @@ class ScreenContentCallback(
   private val adType: String
 ) : ScreenAdContentCallback(), OnAdImpressionListener, OnRewardEarnedListener {
 
-  private fun emit(event: String, map: WritableNativeMap) {
+  private fun emit(event: String, map: ReadableMap = WritableNativeMap()) {
     reactContext
       .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
       .emit(event, map)
   }
 
-  override fun onAdImpression(ad: AdContentInfo) {
-    val map = WritableNativeMap().apply {
-      putMap("impression", ad.toReadableMap())
-    }
-    emit("on${adType}Impression", map)
+  private fun errorMap(error: AdError) = WritableNativeMap().apply {
+    putInt("code", error.code)
+    putString("message", error.message)
   }
 
+  override fun onAdImpression(ad: AdContentInfo) {
+    emit("on${adType}Impression", ad.toReadableMap())
+  }
 
   override fun onUserEarnedReward(ad: AdContentInfo) {
     emit("on${adType}Completed", WritableNativeMap())
@@ -39,11 +41,7 @@ class ScreenContentCallback(
   }
 
   override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-    val map = WritableNativeMap().apply {
-      putInt("errorCode", error.code)
-      putString("errorMessage", error.message)
-    }
-    emit("on${adType}LoadFailed", map)
+    emit("on${adType}LoadFailed", errorMap(error))
   }
 
   override fun onAdShowed(ad: AdContentInfo) {
@@ -51,11 +49,7 @@ class ScreenContentCallback(
   }
 
   override fun onAdFailedToShow(format: AdFormat, error: AdError) {
-    val map = WritableNativeMap().apply {
-      putInt("errorCode", error.code)
-      putString("errorMessage", error.message)
-    }
-    emit("on${adType}FailedToShow", map)
+    emit("on${adType}FailedToShow", errorMap(error))
   }
 
   override fun onAdClicked(ad: AdContentInfo) {

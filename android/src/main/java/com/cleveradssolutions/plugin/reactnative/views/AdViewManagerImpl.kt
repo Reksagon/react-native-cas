@@ -49,15 +49,6 @@ object AdViewManagerImpl {
     view.destroyView()
   }
 
-  fun commandIsAdLoaded(view: CASAdView) {
-    val map = WritableNativeMap().apply {
-      putBoolean("isAdLoaded", view.isLoaded())
-    }
-    (view.context as ThemedReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(view.id, "isAdLoaded", map)
-  }
-
   fun commandLoadAd(view: CASAdView) {
     view.load()
   }

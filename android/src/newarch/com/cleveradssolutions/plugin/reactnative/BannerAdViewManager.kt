@@ -34,7 +34,6 @@ class BannerAdViewManager :
     super.onDropViewInstance(view)
   }
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> = AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
-  override fun isAdLoaded(view: CASAdView) = AdViewManagerImpl.commandIsAdLoaded(view)
   override fun loadAd(view: CASAdView) = AdViewManagerImpl.commandLoadAd(view)
   override fun destroy(view: CASAdView) = AdViewManagerImpl.commandDestroy(view)
   override fun setCasId(view: CASAdView?, value: String?) {

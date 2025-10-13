@@ -53,6 +53,11 @@ const consentStatusName = (code: number) =>
         showConsentFormIfRequired: true,
       });
 
+      if (init?.error) {
+      logCasInfo('initialize error:', init.error);
+      return;
+      }
+
       logCasInfo('initialize:', {
         isConsentRequired: init?.isConsentRequired ?? false,
         consentFlowStatus: consentStatusName(init?.consentFlowStatus ?? 0),
