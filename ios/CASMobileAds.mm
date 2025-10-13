@@ -115,8 +115,6 @@ static CASMobileAds *CASMobileAdsSharedInstance = nil;
 {
   self.casIdendifier = casId;
   
-  NSLog(@"⚡️ CAS init: %@", self);
-  
   @try {
     CASManagerBuilder *builder = [CAS buildManager];
     
@@ -248,25 +246,21 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
 - (void)startObserving
 {
   self.hasListeners = YES;
-  NSLog(@"🟢 CASMobileAds startObserving");
 }
 
 - (void)stopObserving
 {
   self.hasListeners = NO;
-  NSLog(@"🟡 CASMobileAds stopObserving");
 }
 
 RCT_EXPORT_METHOD(addListener:(NSString *)eventName)
 {
     self.hasListeners = YES;
-    NSLog(@"🟢 addListener: %@", eventName);
 }
 
 RCT_EXPORT_METHOD(removeListeners:(double)count)
 {
     self.hasListeners = NO;
-    NSLog(@"🟡 removeListeners: %f", count);
 }
 
 
@@ -459,51 +453,6 @@ RCT_EXPORT_METHOD(setLocationCollectionEnabled:(BOOL)enabled)
 }
 #endif
 
-- (CASInterstitial *)retrieveInterstitialForCasId:(NSString *)casId
-{
-  CASInterstitial *result = self.interstitialAds[casId];
-  if ( !result )
-  {
-    result = [[CASInterstitial alloc] initWithCasID:casId];
-    result.delegate = self;
-    result.impressionDelegate = self;
-    
-    self.interstitialAds[casId] = result;
-  }
-  
-  return result;
-}
-
-- (CASRewarded *)retrieveRewardedAdForCasId:(NSString *)casId
-{
-  CASRewarded *result = self.rewardedAds[casId];
-  if ( !result )
-  {
-    result = [[CASRewarded alloc] initWithCasID:casId];
-    result.delegate = self;
-    result.impressionDelegate = self;
-    
-    self.rewardedAds[casId] = result;
-  }
-  
-  return result;
-}
-
-- (CASAppOpen *)retrieveAppOpenAdForCasId:(NSString *)casId
-{
-  CASAppOpen *result = self.appOpenAds[casId];
-  if ( !result )
-  {
-    result = [[CASAppOpen alloc] initWithCasID:casId];
-    result.delegate = self;
-    result.impressionDelegate = self;
-    
-    self.appOpenAds[casId] = result;
-  }
-  
-  return result;
-}
-
 
 #pragma mark - Interstitial
 
@@ -535,19 +484,14 @@ RCT_EXPORT_METHOD(isInterstitialAdLoaded:(RCTPromiseResolveBlock)resolve
 
 - (void)loadInterstitialAdInternal
 {
-  
   CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   
   if (!interstitial) {
-    NSLog(@"🟢 inter is nill, Creating interstitial");
-    
     [self sendEventWithName:kOnInterstitialLoadFailed body:@{
       @"errorCode": @(CASError.notInitialized.code),
       @"errorMessage": CASError.notInitialized.description}];
     return;
   }
-  
-  NSLog(@"🔵 Loading interstitial: %@", interstitial);
   
   [interstitial loadAd];
 }
@@ -566,7 +510,6 @@ RCT_EXPORT_METHOD(loadInterstitialAd)
 
 - (void)showInterstitialAdInternal
 {
-  
   CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
     
   if (!interstitial) {
@@ -959,68 +902,62 @@ RCT_EXPORT_METHOD(destroyRewarded)
 #pragma mark - CASScreenContentDelegate
 
 - (void)screenAdDidLoadContent:(id<CASScreenContent>)ad {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedLoaded;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialLoaded;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenLoaded;
-  NSLog(@"🟢 screenAdDidLoadContent");
   [self sendEventWithName:event body:@{}];
 }
 
 - (void)screenAd:(id<CASScreenContent>)ad didFailToLoadWithError:(CASError *)error {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedLoadFailed;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialLoadFailed;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenLoadFailed;
   [self sendEventWithName:event body:@{@"errorCode": @(error.code), @"errorMessage": error.description}];
-  NSLog(@"🟢 screenAd:didFailToLoadWithError");
 }
 
 - (void)screenAdWillPresentContent:(id<CASScreenContent>)ad {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedDisplayed;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialDisplayed;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenDisplayed;
-  NSLog(@"🟢 screenAdWillPresentContent");
   [self sendEventWithName:event body:@{}];
 }
 
 - (void)screenAd:(id<CASScreenContent>)ad didFailToPresentWithError:(CASError *)error {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedFailedToShow;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialFailedToShow;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenFailedToShow;
   [self sendEventWithName:event body:@{@"errorCode": @(error.code), @"errorMessage": error.description}];
-  NSLog(@"🟢 screenAd:didFailToPresentWithError");
 }
 
 - (void)screenAdDidClickContent:(id<CASScreenContent>)ad {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedClicked;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialClicked;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenClicked;
-  NSLog(@"🟢 screenAdDidClickContent");
   [self sendEventWithName:event body:@{}];
 }
 
 - (void)screenAdDidDismissContent:(id<CASScreenContent>)ad {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   NSString *event = @"";
   if ([ad isKindOfClass:[CASRewarded class]]) event = kOnRewardedHidden;
   else if ([ad isKindOfClass:[CASInterstitial class]]) event = kOnInterstitialHidden;
   else if ([ad isKindOfClass:[CASAppOpen class]]) event = kOnAppOpenHidden;
-  NSLog(@"🟢 screenAdDidDismissContent");
   [self sendEventWithName:event body:@{}];
 }
 
 
 - (void)adDidRecordImpressionWithInfo:(CASContentInfo * _Nonnull)info {
-  // if (!self.hasListeners) return;
+  if (!self.hasListeners) return;
   
   NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
   if (info.format) {
@@ -1060,6 +997,54 @@ RCT_EXPORT_METHOD(destroyRewarded)
   }
   
   [self sendEventWithName:event body:impressionData];
+}
+
+
+#pragma mark - Additional Functions
+
+- (CASInterstitial *)retrieveInterstitialForCasId:(NSString *)casId
+{
+  CASInterstitial *result = self.interstitialAds[casId];
+  if ( !result )
+  {
+    result = [[CASInterstitial alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.interstitialAds[casId] = result;
+  }
+  
+  return result;
+}
+
+- (CASRewarded *)retrieveRewardedAdForCasId:(NSString *)casId
+{
+  CASRewarded *result = self.rewardedAds[casId];
+  if ( !result )
+  {
+    result = [[CASRewarded alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.rewardedAds[casId] = result;
+  }
+  
+  return result;
+}
+
+- (CASAppOpen *)retrieveAppOpenAdForCasId:(NSString *)casId
+{
+  CASAppOpen *result = self.appOpenAds[casId];
+  if ( !result )
+  {
+    result = [[CASAppOpen alloc] initWithCasID:casId];
+    result.delegate = self;
+    result.impressionDelegate = self;
+    
+    self.appOpenAds[casId] = result;
+  }
+  
+  return result;
 }
 
 @end

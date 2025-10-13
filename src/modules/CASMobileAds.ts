@@ -2,10 +2,7 @@ import CASMobileAdsNative from "./NativeCASMobileAdsModule";
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 import type { InitializationStatus, InitializationParams, PrivacyGeography } from '../types/Types';
 
-// const eventEmitter = Platform.OS === 'android' ? new NativeEventEmitter() : new NativeEventEmitter(NativeModules.CASMobileAds)
-
-const eventEmitter = new NativeEventEmitter(NativeModules.CASMobileAds);
-eventEmitter.addListener("onInterstitialLoaded", () => console.log("JS got it"));
+const eventEmitter = Platform.OS === 'android' ? new NativeEventEmitter() : new NativeEventEmitter(NativeModules.CASMobileAds)
 
 export class CASMobileAds {
 

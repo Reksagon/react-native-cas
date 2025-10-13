@@ -79,8 +79,8 @@ export const Ads = () => {
         show: () => void;
       }
     ) => {
-      if (busy) return;
-      setBusy(kind);
+      // if (busy) return;
+      // setBusy(kind);
       try {
         opts.load();
         for (;;) {
@@ -91,7 +91,7 @@ export const Ads = () => {
           await delay(750);
         }
       } finally {
-        setBusy(null);
+        // setBusy(null);
       }
     },
     [busy]
