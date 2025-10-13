@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 
 class CASAdView(context: Context) :
   FrameLayout(context),
-  com.cleversolutions.ads.AdViewListener, OnAdImpressionListener    {
+  com.cleversolutions.ads.AdViewListener, OnAdImpressionListener {
 
   val banner: CASBannerView = CASBannerView(context)
 
@@ -50,19 +50,9 @@ class CASAdView(context: Context) :
   }
 
   private fun dp(v: Int): Int =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).roundToInt()
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics)
+      .roundToInt()
 
-  private fun fallbackHeightPx(): Int = when (size) {
-    AdSize.MEDIUM_RECTANGLE -> dp(250)
-    AdSize.LEADERBOARD -> dp(90)
-    else -> dp(50)
-  }
-
-  private fun fallbackWidthPx(): Int = when (size) {
-    AdSize.MEDIUM_RECTANGLE -> dp(300)
-    AdSize.LEADERBOARD -> dp(728)
-    else -> dp(320)
-  }
 
   private fun measureAndLayoutChild() {
     val w = width.takeIf { it > 0 } ?: measuredWidth
@@ -85,7 +75,7 @@ class CASAdView(context: Context) :
 
   fun applyProps() {
     banner.size = size
-    minimumHeight = fallbackHeightPx()
+    minimumHeight = 1
     minimumWidth = 1
 
     if (refreshIntervalSec <= 0) {
@@ -116,11 +106,7 @@ class CASAdView(context: Context) :
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    if (refreshIntervalSec > 0) {
-      banner.refreshInterval = refreshIntervalSec
-    } else {
-      banner.disableAdRefresh()
-    }
+    banner.refreshInterval = refreshIntervalSec
     post { measureAndLayoutChild() }
   }
 
@@ -143,29 +129,25 @@ class CASAdView(context: Context) :
   }
 
   override fun onAdViewLoaded(view: CASBannerView) {
-    val mw = if (banner.measuredWidth > 0) banner.measuredWidth else fallbackWidthPx()
-    val mh = if (banner.measuredHeight > 0) banner.measuredHeight else fallbackHeightPx()
-
     requestLayout()
-    emitLoaded(mw, mh)
-  }
 
-  private fun emitLoaded(w: Int, h: Int) {
-    val density = resources.displayMetrics.density
-    val pxW = if (w > 0) w else fallbackWidthPx()
-    val pxH = if (h > 0) h else fallbackHeightPx()
-    val dpW = (pxW / density).toInt()
-    val dpH = (pxH / density).toInt()
+    val adSize = view.size
+    var dpW = adSize.width
+    var dpH = adSize.height
+    view.getChildAt(0)?.layoutParams?.let {
+      val density = view.context.resources.displayMetrics.density
+      dpW = (it.width / density).roundToInt()
+      dpH = (it.height / density).roundToInt()
+    }
 
     val map = WritableNativeMap().apply {
-      putInt("width",  dpW)
+      putInt("width", dpW)
       putInt("height", dpH)
     }
     (context as ThemedReactContext)
       .getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(this.id, "onAdViewLoaded", map)
   }
-
 
   override fun onAdImpression(ad: AdContentInfo) {
     val map = WritableNativeMap().apply { putMap("impression", ad.toReadableMap()) }
