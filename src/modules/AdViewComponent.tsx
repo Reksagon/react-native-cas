@@ -28,11 +28,3 @@ export type AdViewRef = {
   destroy:() => void;
 
 };
-
-export enum AdViewSize {
-  BANNER = 'B',
-  LEADERBOARD = 'L',
-  MREC = 'M',
-  ADAPTIVE = 'A',
-  SMART = 'S',
-}

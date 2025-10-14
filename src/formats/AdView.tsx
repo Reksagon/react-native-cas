@@ -17,22 +17,17 @@ import {
   StyleSheet,
   StyleProp,
   ViewStyle,
-  PixelRatio,                 
+  PixelRatio,
 } from 'react-native';
 
-import {
-  AdViewComponent,
-  AdViewCommands,
-  AdViewSize,
-  type AdViewProps,
-  type AdViewRef,
-} from '../modules/AdViewComponent';
+import { AdViewComponent, AdViewCommands } from '../modules/AdViewComponent';
+import { AdViewSize, type AdViewProps, type AdViewRef } from '../types/AdView';
 
 const ADVIEW_SIZE = {
   [AdViewSize.BANNER]: { width: 320, height: 50 },
   [AdViewSize.LEADERBOARD]: { width: 728, height: 90 },
   [AdViewSize.MREC]: { width: 300, height: 250 },
-  [AdViewSize.ADAPTIVE]: { width: 0, height: 50 },
+  [AdViewSize.ADAPTIVE]: { width: 0, height: 50 }, 
   [AdViewSize.SMART]: { width: 320, height: 50 },
 } as const;
 
@@ -77,7 +72,11 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
 
   const containerStyle = useMemo(() => {
     const mh = minHeightFor(defaultSize);
-    return StyleSheet.compose(style as any, { minHeight: mh, alignSelf: 'stretch', width: '100%' });
+    return StyleSheet.compose(style as any, {
+      minHeight: mh,
+      width: '100%',
+      alignSelf: 'stretch',
+    });
   }, [defaultSize, style]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
@@ -87,65 +86,69 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   }, []);
 
   const recalcDimensions = useCallback(() => {
-  const base = ADVIEW_SIZE[defaultSize] ?? ADVIEW_SIZE[AdViewSize.BANNER];
+    const base = ADVIEW_SIZE[defaultSize] ?? ADVIEW_SIZE[AdViewSize.BANNER];
 
-  const width = containerWidth ?? screenWidth;
+    const baseWidth = base.width && base.width > 0 ? base.width : (containerWidth ?? screenWidth);
+    const width = Math.max(Math.round(baseWidth), 1);
+    const height = Math.max(base.height || minHeightFor(defaultSize), 1);
 
-  const height = base.height || minHeightFor(defaultSize);
-
-  const next: Dim = {
-    width: Math.max(Math.round(width), 1),
-    height: Math.max(Math.round(height), 1),
-  };
-
-  const cur = dimensionsRef.current;
-  if (cur.width !== next.width || cur.height !== next.height) {
-    dimensionsRef.current = next;
-    forceUpdate();
-  }
-}, [defaultSize, containerWidth, screenWidth]);
-
+    const cur = dimensionsRef.current;
+    if (cur.width !== width || cur.height !== height) {
+      dimensionsRef.current = { width, height };
+      forceUpdate();
+    }
+  }, [defaultSize, containerWidth, screenWidth]);
 
   useEffect(() => { recalcDimensions(); }, [recalcDimensions]);
-
 
   const onLoaded = useCallback(
     (e: NativeSyntheticEvent<{ width?: number; height?: number }>) => {
       const density = PixelRatio.get();
+      const rawW = e.nativeEvent?.width ?? 0;
       const rawH = e.nativeEvent?.height ?? 0;
-      const h = rawH > 0 ? Math.round(rawH / density) : 0;  
+      const w = rawW > 0 ? Math.round(rawW / density) : 0;
+      const h = rawH > 0 ? Math.round(rawH / density) : 0;
 
-      if (h > 0 && h !== dimensionsRef.current.height) {
-        dimensionsRef.current = { ...dimensionsRef.current, height: h };
-        forceUpdate();
+      let changed = false;
+      const cur = dimensionsRef.current;
+
+      if (h > 0 && h !== cur.height) {
+        dimensionsRef.current = { ...cur, height: h };
+        changed = true;
       }
+      if (w > 0 && (typeof cur.width !== 'number' || w !== cur.width)) {
+        dimensionsRef.current = { ...dimensionsRef.current, width: w };
+        changed = true;
+      }
+
+      if (changed) forceUpdate();
       onAdViewLoaded?.(e);
     },
     [onAdViewLoaded],
   );
 
   const onFailedCb = useCallback(
-  (e: NativeSyntheticEvent<{ code: number; message: string }>) => onAdViewFailed?.(e),
-  [onAdViewFailed],
-);
-
+    (e: NativeSyntheticEvent<{ code: number; message: string }>) => onAdViewFailed?.(e),
+    [onAdViewFailed],
+  );
 
   const onClickedCb = useCallback(
-  (e: any) => onAdViewClicked?.(e),
-  [onAdViewClicked]
-);
+    (e: any) => onAdViewClicked?.(e),
+    [onAdViewClicked]
+  );
 
   const onImpressionCb = useCallback(
-  (e: NativeSyntheticEvent<{ impression: {
-    format: string; revenue: number; revenuePrecision: string;
-    sourceUnitId: string; sourceName: string; creativeId?: string;
-    revenueTotal: number; impressionDepth: number;
-  } }>) => onAdViewImpression?.(e),
-  [onAdViewImpression],
-);
+    (e: NativeSyntheticEvent<{
+      impression: {
+        format: string; revenue: number; revenuePrecision: string;
+        sourceUnitId: string; sourceName: string; creativeId?: string;
+        revenueTotal: number; impressionDepth: number;
+      }
+    }>) => onAdViewImpression?.(e),
+    [onAdViewImpression],
+  );
 
-
-  const loadAd = useCallback(async () => {
+  const loadAd = useCallback(() => {
     AdViewCommands.loadAd(viewRef.current);
   }, []);
 
@@ -157,26 +160,24 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
       defaultSize === AdViewSize.SMART ||
       defaultSize === AdViewSize.ADAPTIVE;
 
-    if (isBannerLike) {
-      if (containerWidth == null) return; 
-    }
+    if (isBannerLike && containerWidth == null) return;
+
     AdViewCommands.loadAd(viewRef.current);
   }, [loadOnMount, defaultSize, containerWidth]);
 
- useImperativeHandle(ref, () => ({
-  loadAd: () => AdViewCommands.loadAd(viewRef.current),
-  destroy: () => AdViewCommands.destroy(viewRef.current),
-}), []);
-
+  useImperativeHandle(ref, () => ({
+    loadAd: () => AdViewCommands.loadAd(viewRef.current),
+    destroy: () => AdViewCommands.destroy(viewRef.current),
+  }), []);
 
   return (
     <View onLayout={onLayout} style={containerStyle}>
       <AdViewComponent
         ref={viewRef}
-        style={dimensionsRef.current}   
+        style={dimensionsRef.current}    
         size={defaultSize}
         isAutoloadEnabled={isAutoloadEnabled}
-        loadOnMount={false}           
+        loadOnMount={false}
         refreshInterval={refreshInterval}
         onAdViewLoaded={onLoaded}
         onAdViewFailed={onFailedCb}

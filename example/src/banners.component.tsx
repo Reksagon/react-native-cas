@@ -42,7 +42,7 @@ export const Banners = () => {
     };
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.screen} >
       <AdView
         size={AdViewSize.BANNER}
         refreshInterval={20}

@@ -1,4 +1,4 @@
-import { CASMobileAds } from '../modules/CASMobileAds';
+import { CASMobileAds } from '../CASMobileAds';
 import type { RewardedAdType } from '../types/FullscreenAdType';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
