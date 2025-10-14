@@ -10,4 +10,3 @@ export {
   type AdViewRef,
   type AdViewImpressionEvent,
 } from './modules/AdViewComponent';
-

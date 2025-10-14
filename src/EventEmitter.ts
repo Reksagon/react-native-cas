@@ -1,24 +1,15 @@
 import { NativeEventEmitter, NativeModules, EmitterSubscription } from 'react-native';
 
 const emitter = new NativeEventEmitter(NativeModules.CASMobileAds);
-
 const registry = new Map<string, Set<EmitterSubscription>>();
 
-export type Unsub = () => void;
-
-export const addEventListener = (name: string, cb: (p?: any) => void): Unsub => {
-  const sub = emitter.addListener(name, cb);
+export const addEventListener = <T = void>(
+  name: string,
+  cb: (p: T) => void
+): void => {
+  const sub = emitter.addListener(name, cb as any);
   if (!registry.has(name)) registry.set(name, new Set());
   registry.get(name)!.add(sub);
-
-  return () => {
-    sub.remove();
-    const set = registry.get(name);
-    if (set) {
-      set.delete(sub);
-      if (set.size === 0) registry.delete(name);
-    }
-  };
 };
 
 export const removeEventListener = (name: string): void => {

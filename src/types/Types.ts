@@ -1,3 +1,21 @@
+export enum Audience {
+  Undefined = 0,
+  Children,
+  NotChildren,
+}
+
+// User's geography for determining consent flow.
+export enum PrivacyGeography {
+  // Geography is unknown.
+  unknown = 0,
+  // Geography appears as in European Economic Area.
+  europeanEconomicArea = 1,
+  // Geography appears as in a regulated US State.
+  regulatedUSState = 3,
+  // Geography appears as in a region with no regulation in force.
+  unregulated = 4,
+}
+
 export enum AdErrorCode {
   INTERNAL_ERROR = 0,
   NOT_READY = 1,
@@ -54,12 +72,6 @@ export enum Gender {
   Female,
 }
 
-export enum Audience {
-  Undefined = 0,
-  Children,
-  NotChildren,
-}
-
 export type AdContentInfo = {
   format: string;           
   revenue: number;
@@ -70,5 +82,3 @@ export type AdContentInfo = {
   revenueTotal: number;
   impressionDepth: number;
 };
-
-

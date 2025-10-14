@@ -1,5 +1,4 @@
-import React from 'react';
-import {
+import React, {
   forwardRef,
   useRef,
   useImperativeHandle,
@@ -13,12 +12,12 @@ import {
   View,
   useWindowDimensions,
   NativeSyntheticEvent,
-  Dimensions,
   LayoutChangeEvent,
   LayoutRectangle,
-  PixelRatio,
-  Platform,
   StyleSheet,
+  StyleProp,
+  ViewStyle,
+  PixelRatio,                 
 } from 'react-native';
 
 import {
@@ -27,26 +26,33 @@ import {
   AdViewSize,
   type AdViewProps,
   type AdViewRef,
-  type AdViewEvent,
 } from '../modules/AdViewComponent';
-import type { AdError } from '../types/Types';
 
-const pr = PixelRatio.get();
-
-const BASE = {
+const ADVIEW_SIZE = {
   [AdViewSize.BANNER]: { width: 320, height: 50 },
   [AdViewSize.LEADERBOARD]: { width: 728, height: 90 },
   [AdViewSize.MREC]: { width: 300, height: 250 },
-  [AdViewSize.ADAPTIVE]: { width: 0, height: 0 },
-  [AdViewSize.SMART]: { width: 320, height: 50 }, 
+  [AdViewSize.ADAPTIVE]: { width: 0, height: 50 },
+  [AdViewSize.SMART]: { width: 320, height: 50 },
 } as const;
 
+function minHeightFor(size: AdViewSize) {
+  switch (size) {
+    case AdViewSize.MREC: return 250;
+    case AdViewSize.LEADERBOARD: return 90;
+    default: return 50;
+  }
+}
 
-export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
+type Dim = { width: number | '100%'; height: number };
+type Props = AdViewProps & { style?: StyleProp<ViewStyle> };
+
+export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   {
     style,
     size,
     isAutoloadEnabled = true,
+    loadOnMount = true,
     refreshInterval,
     onAdViewLoaded,
     onAdViewFailed,
@@ -54,103 +60,128 @@ export const AdView = forwardRef<AdViewRef, AdViewProps>(function AdView(
     onAdViewImpression,
     ...nativeProps
   },
-  ref
+  ref,
 ) {
   const viewRef = useRef<any>(null);
   const layoutRef = useRef<LayoutRectangle | null>(null);
   const { width: screenWidth } = useWindowDimensions();
+
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const defaultSize = (size ?? AdViewSize.BANNER) as AdViewSize;
 
-  useReducer((x) => x + 1, 0);
-
-  const [measured, setMeasured] = useState(() => (
-  size === AdViewSize.ADAPTIVE
-    ? { width: Dimensions.get('window').width, height: BASE[AdViewSize.BANNER].height }
-    : BASE[size]));
+  const dimensionsRef = useRef<Dim>({
+    width: '100%',
+    height: minHeightFor(defaultSize),
+  });
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const containerStyle = useMemo(() => {
-  if (size === AdViewSize.ADAPTIVE) {
-    return StyleSheet.compose(style as any, { width: containerWidth ?? screenWidth });
-  }
-  return StyleSheet.compose(style as any, BASE[size]);
-}, [size, style, containerWidth, screenWidth]);
-
+    const mh = minHeightFor(defaultSize);
+    return StyleSheet.compose(style as any, { minHeight: mh, alignSelf: 'stretch', width: '100%' });
+  }, [defaultSize, style]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const layout = { ...e.nativeEvent.layout };
     layoutRef.current = layout;
     setContainerWidth(layout.width);
+  }, []);
 
-    if (size === AdViewSize.ADAPTIVE || size === AdViewSize.BANNER || size === AdViewSize.SMART) {
-      setMeasured((prev) => ({ ...prev, width: layout.width }));
-    }
-  }, [size]);
+  const recalcDimensions = useCallback(() => {
+  const base = ADVIEW_SIZE[defaultSize] ?? ADVIEW_SIZE[AdViewSize.BANNER];
 
-  useEffect(() => {
-  if (size === AdViewSize.ADAPTIVE || size === AdViewSize.SMART || size === AdViewSize.BANNER) {
-    const width = containerWidth ?? screenWidth;
-    setMeasured((prev) => ({ ...prev, width }));
-  } else {
-    setMeasured(BASE[size]);
+  const width = containerWidth ?? screenWidth;
+
+  const height = base.height || minHeightFor(defaultSize);
+
+  const next: Dim = {
+    width: Math.max(Math.round(width), 1),
+    height: Math.max(Math.round(height), 1),
+  };
+
+  const cur = dimensionsRef.current;
+  if (cur.width !== next.width || cur.height !== next.height) {
+    dimensionsRef.current = next;
+    forceUpdate();
   }
-}, [size, screenWidth, containerWidth]);
+}, [defaultSize, containerWidth, screenWidth]);
+
+
+  useEffect(() => { recalcDimensions(); }, [recalcDimensions]);
 
 
   const onLoaded = useCallback(
-    (e: NativeSyntheticEvent<any>) => {
-      const { width: ew, height: eh } = e.nativeEvent as { width: number; height: number };
-      if (Platform.OS === 'android') {
-        let w = ew / pr;
-        const h = layoutRef.current?.height ?? eh / pr;
-        if (Math.floor(w) % 2) w += 1; else w -= 1;
-        setMeasured({ width: w, height: h });
+    (e: NativeSyntheticEvent<{ width?: number; height?: number }>) => {
+      const density = PixelRatio.get();
+      const rawH = e.nativeEvent?.height ?? 0;
+      const h = rawH > 0 ? Math.round(rawH / density) : 0;  
+
+      if (h > 0 && h !== dimensionsRef.current.height) {
+        dimensionsRef.current = { ...dimensionsRef.current, height: h };
+        forceUpdate();
       }
       onAdViewLoaded?.(e);
     },
-    [onAdViewLoaded]
+    [onAdViewLoaded],
   );
 
   const onFailedCb = useCallback(
-    (e: NativeSyntheticEvent<{ error: AdError }>) => onAdViewFailed?.(e),
-    [onAdViewFailed]
-  );
+  (e: NativeSyntheticEvent<{ code: number; message: string }>) => onAdViewFailed?.(e),
+  [onAdViewFailed],
+);
 
-  const onClickedCb = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
+
+  const onClickedCb = useCallback(
+  (e: any) => onAdViewClicked?.(e),
+  [onAdViewClicked]
+);
 
   const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<AdViewEvent>) => onAdViewImpression?.(e),
-    [onAdViewImpression]
-  );
+  (e: NativeSyntheticEvent<{ impression: {
+    format: string; revenue: number; revenuePrecision: string;
+    sourceUnitId: string; sourceName: string; creativeId?: string;
+    revenueTotal: number; impressionDepth: number;
+  } }>) => onAdViewImpression?.(e),
+  [onAdViewImpression],
+);
 
-  const isAdLoaded = useCallback(async (): Promise<boolean> => {
-    return AdViewCommands.isAdLoaded(viewRef.current);
-  }, []);
 
   const loadAd = useCallback(async () => {
     AdViewCommands.loadAd(viewRef.current);
   }, []);
 
-  useImperativeHandle(ref, () => ({ isAdLoaded, loadAd }), [isAdLoaded, loadAd]);
+  useEffect(() => {
+    if (!loadOnMount) return;
+
+    const isBannerLike =
+      defaultSize === AdViewSize.BANNER ||
+      defaultSize === AdViewSize.SMART ||
+      defaultSize === AdViewSize.ADAPTIVE;
+
+    if (isBannerLike) {
+      if (containerWidth == null) return; 
+    }
+    AdViewCommands.loadAd(viewRef.current);
+  }, [loadOnMount, defaultSize, containerWidth]);
+
+ useImperativeHandle(ref, () => ({
+  loadAd: () => AdViewCommands.loadAd(viewRef.current),
+  destroy: () => AdViewCommands.destroy(viewRef.current),
+}), []);
+
 
   return (
     <View onLayout={onLayout} style={containerStyle}>
       <AdViewComponent
         ref={viewRef}
-        style={measured}
-        size={size}
+        style={dimensionsRef.current}   
+        size={defaultSize}
         isAutoloadEnabled={isAutoloadEnabled}
+        loadOnMount={false}           
         refreshInterval={refreshInterval}
         onAdViewLoaded={onLoaded}
         onAdViewFailed={onFailedCb}
         onAdViewClicked={onClickedCb}
         onAdViewImpression={onImpressionCb}
-        isAdLoaded={(ready: NativeSyntheticEvent<boolean>) => {
-          const cur: any = viewRef.current;
-          if (cur?.__onIsLoaded) {
-            cur.__onIsLoaded(ready.nativeEvent);
-            cur.__onIsLoaded = null;
-          }
-        }}
         {...nativeProps}
       />
     </View>

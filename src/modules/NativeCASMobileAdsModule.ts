@@ -1,43 +1,58 @@
-import type { InitializationStatus, InitializationParams, Gender } from '../types/Types';
-import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
+import type { TurboModule } from 'react-native';
+import type { Int32 } from 'react-native/Libraries/Types/CodegenTypes';
 
-export interface Spec extends TurboModule {  
-   initialize(casId: string, options: {
-    audience?: number;
-    showConsentFormIfRequired?: boolean;
-    forceTestAds?: boolean;
-    testDeviceIds?: string[];
-    privacyGeography?: number;
-    mediationExtras?: { [key: string]: string };
-  } | null): Promise<InitializationStatus>;
+export type InitializationStatus = {
+  error?: string;
+  countryCode?: string;
+  isConsentRequired: boolean;
+  consentFlowStatus: Int32;
+};
 
+export type InitializationParams = {
+  targetAudience?: Int32;
+  showConsentFormIfRequired?: boolean;
+  forceTestAds?: boolean;
+  testDeviceIds?: string[];
+  debugPrivacyGeography?: Int32 | null;
+  mediationExtras?: { [key: string]: string };
+};
+
+export interface Spec extends TurboModule {
+  // SDK
+  initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
+  getSDKVersion(): Promise<string>;
+  showConsentFlow(): Promise<number>;
 
-  setUserAge(age: number): void;
-  setUserGender(gender: number): void;
+  // App/Targeting (VOID)
+  setUserAge(age: Int32): void;
+  setUserGender(gender: Int32): void;
   setAppContentUrl(contentUrl?: string): void;
   setAppKeywords(keywords: string[]): void;
   setDebugLoggingEnabled(enabled: boolean): void;
   setAdSoundsMuted(muted: boolean): void;
   setLocationCollectionEnabled(enabled: boolean): void;
-  setTrialAdFreeInterval(interval: number): void;
+  setTrialAdFreeInterval(interval: Int32): void;
 
+  // Interstitial
   isInterstitialAdLoaded(): Promise<boolean>;
   loadInterstitialAd(): void;
   showInterstitialAd(): void;
   setInterstitialAutoloadEnabled(enabled: boolean): void;
   setInterstitialAutoshowEnabled(enabled: boolean): void;
-  setInterstitialMinInterval(seconds: number): void;
+  setInterstitialMinInterval(seconds: Int32): void;
   restartInterstitialInterval(): void;
   destroyInterstitial(): void;
 
+  // Rewarded
   isRewardedAdLoaded(): Promise<boolean>;
   loadRewardedAd(): void;
   showRewardedAd(): void;
   setRewardedAutoloadEnabled(enabled: boolean): void;
   destroyRewarded(): void;
 
+  // App Open
   isAppOpenAdLoaded(): Promise<boolean>;
   loadAppOpenAd(): void;
   showAppOpenAd(): void;
@@ -45,11 +60,9 @@ export interface Spec extends TurboModule {
   setAppOpenAutoshowEnabled(enabled: boolean): void;
   destroyAppOpen(): void;
 
-  getSDKVersion(): Promise<string>;
-  showConsentFlow(): void;
-
-  addListener(eventType: string): void;
+  // EventEmitter bridge
+  addListener(eventName: string): void;
   removeListeners(count: number): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>("CASMobileAds");
+export default TurboModuleRegistry.getEnforcing<Spec>('CASMobileAds');
