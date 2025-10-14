@@ -1,12 +1,16 @@
-export * from './types/Types';
-export { CASMobileAds } from './modules/CASMobileAds';
-export { AdView } from './formats/AdView';
+// SDK
+export { CASMobileAds } from './CASMobileAds';
+
+// Fullscreen
 export { InterstitialAd } from './formats/InterstitialAd';
 export { RewardedAd } from './formats/RewardedAd';
 export { AppOpenAd } from './formats/AppOpenAd';
-export {
-  AdViewSize,
-  type AdViewProps,
-  type AdViewRef,
-  type AdViewImpressionEvent,
-} from './modules/AdViewComponent';
+
+// Banner
+export { AdView } from './formats/AdView';
+export type { AdViewProps, AdViewRef, AdContentInfo, AdError } from './types/AdView';
+export { AdViewSize  } from './types/AdView';
+
+// Types
+export * from './types/FullscreenAdType';
+export * from './types/Types';
