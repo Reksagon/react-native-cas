@@ -16,7 +16,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'example' do  
+target 'CASExample' do  
   pod 'react-native-cas', :path => '../..'    
 
   config = use_native_modules!
