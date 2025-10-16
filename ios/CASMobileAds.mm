@@ -183,24 +183,40 @@ static CASMobileAds *CASMobileAdsSharedInstance = nil;
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
-- (void)initialize:(nonnull NSString *)casId
-           options:(JS::NativeCASMobileAdsModule::SpecInitializeOptions &)options
-           resolve:(nonnull RCTPromiseResolveBlock)resolve
-            reject:(nonnull RCTPromiseRejectBlock)reject
+- (void)initialize:(NSString *)casId
+           options:(JS::NativeCASMobileAdsModule::InitializationParams &)options
+           resolve:(RCTPromiseResolveBlock)resolve
+            reject:(RCTPromiseRejectBlock)reject
 {
-  // Convert SpecInitializeOptions -> NSDictionary
   NSMutableDictionary *dictOptions = [NSMutableDictionary dictionary];
-  if (options.forceTestAds().has_value()) {
-    dictOptions[@"forceTestAds"] = @(options.forceTestAds().value());
+  if (auto val = options.forceTestAds()) {
+    dictOptions[@"forceTestAds"] = @(*val);
   }
-  if (options.showConsentFormIfRequired().has_value()) {
-    dictOptions[@"showConsentFormIfRequired"] = @(options.showConsentFormIfRequired().value());
+
+  if (auto val = options.showConsentFormIfRequired()) {
+    dictOptions[@"showConsentFormIfRequired"] = @(*val);
   }
-  if (options.privacyGeography().has_value()) {
-    dictOptions[@"privacyGeography"] = @(options.privacyGeography().value());
+  
+  if (auto val = options.debugPrivacyGeography()) {
+    dictOptions[@"privacyGeography"] = @(*val);
   }
-  if (options.audience().has_value()) {
-    dictOptions[@"audience"] = @(options.audience().value());
+  
+  if (auto val = options.targetAudience()) {
+    dictOptions[@"audience"] = @(*val);
+  }
+  
+  if (options.testDeviceIds().has_value()) {
+    auto vec = options.testDeviceIds().value();
+    NSMutableArray *devices = [NSMutableArray arrayWithCapacity:vec.size()];
+    for (size_t i = 0; i < vec.size(); i++) {
+      [devices addObject:vec.at(i)];
+    }
+    dictOptions[@"testDeviceIds"] = devices;
+  }
+  
+  id extras = options.mediationExtras();
+  if (extras != nil && [extras isKindOfClass:[NSDictionary class]]) {
+    dictOptions[@"mediationExtras"] = (NSDictionary *)extras;
   }
   
   [self initializeWithCASId:casId options:dictOptions resolve:resolve reject:reject];
@@ -251,7 +267,8 @@ RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
 
 #pragma mark - Consent Flow
 
-RCT_EXPORT_METHOD(showConsentFlow) {
+RCT_EXPORT_METHOD(showConsentFlow: (nonnull RCTPromiseResolveBlock)resolve
+                  reject:(nonnull RCTPromiseRejectBlock)reject) {
   if (self.consentFlow.isEnabled) {
     [self.consentFlow present];
   }
@@ -280,17 +297,17 @@ RCT_EXPORT_METHOD(setDebugLoggingEnabled:(BOOL)enabled) {
   nativeSettings.debugMode = enabled;
 }
 
-RCT_EXPORT_METHOD(setTrialAdFreeInterval:(double)interval) {
+RCT_EXPORT_METHOD(setTrialAdFreeInterval:(long)interval) {
   CASSettings *nativeSettings = CAS.settings;
   nativeSettings.trialAdFreeInterval = interval;
 }
 
-RCT_EXPORT_METHOD(setUserAge:(double)age) {
+RCT_EXPORT_METHOD(setUserAge:(long)age) {
   CASTargetingOptions *targetingOptions = CAS.targetingOptions;
   targetingOptions.age = age;
 }
 
-RCT_EXPORT_METHOD(setUserGender:(double)gender) {
+RCT_EXPORT_METHOD(setUserGender:(long)gender) {
   CASTargetingOptions *targetingOptions = CAS.targetingOptions;
   targetingOptions.gender = (CASGender)((NSInteger)gender);
 }
@@ -340,7 +357,7 @@ RCT_EXPORT_METHOD(showInterstitialAd) {
   [interstitial presentFromViewController: nil];
 }
 
-RCT_EXPORT_METHOD(setInterstitialMinInterval:(double)seconds) {
+RCT_EXPORT_METHOD(setInterstitialMinInterval:(long)seconds) {
   CASInterstitial *interstitial = [self retrieveInterstitialForCasId: self.casIdendifier];
   if (interstitial) {
     interstitial.minInterval = seconds;
