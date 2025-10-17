@@ -6,7 +6,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
 
 object AdViewManagerImpl {
-  const val NAME = "AdView"
+  const val NAME = "CASAdView"
 
   fun createViewInstance(ctx: ThemedReactContext): CASAdView = CASAdView(ctx)
 

@@ -7,16 +7,16 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.viewmanagers.AdViewManagerDelegate
-import com.facebook.react.viewmanagers.AdViewManagerInterface
+import com.facebook.react.viewmanagers.CASAdViewManagerDelegate
+import com.facebook.react.viewmanagers.CASAdViewManagerInterface
 
 @ReactModule(name = AdViewManagerImpl.NAME)
 class BannerAdViewManager :
   SimpleViewManager<CASAdView>(),
-  AdViewManagerInterface<CASAdView> {
+  CASAdViewManagerInterface<CASAdView> {
 
   private val delegate: ViewManagerDelegate<CASAdView> =
-    AdViewManagerDelegate<CASAdView, BannerAdViewManager>(this)
+    CASAdViewManagerDelegate<CASAdView, BannerAdViewManager>(this)
 
   override fun getDelegate() = delegate
   override fun getName() = AdViewManagerImpl.NAME

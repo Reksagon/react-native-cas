@@ -50,14 +50,12 @@ class BannerAdViewManager : SimpleViewManager<CASAdView>() {
     AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
   override fun getCommandsMap(): Map<String, Int> = mapOf(
-    "isAdLoaded" to 0,
-    "loadAd"     to 1,
-    "destroy"    to 2
+    "loadAd"  to 1,
+    "destroy" to 2
   )
 
   override fun receiveCommand(view: CASAdView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
-      0 -> AdViewManagerImpl.commandIsAdLoaded(view)
       1 -> AdViewManagerImpl.commandLoadAd(view)
       2 -> AdViewManagerImpl.commandDestroy(view)
     }
