@@ -19,8 +19,25 @@ export default function AppOpenExample() {
 
   const onPress = async () => {
     const ready = await AppOpenAd.isAdLoaded();
-    if (ready) AppOpenAd.showAd();
-    else { setLoading(true); AppOpenAd.loadAd(); }
+    if (ready) {
+      AppOpenAd.showAd();
+    } else {
+      setLoading(true);
+      AppOpenAd.loadAd();
+
+      const checkLoaded = async () => {
+        for (; ;) {
+          if (await AppOpenAd.isAdLoaded()) {
+            AppOpenAd.showAd();
+            break;
+          }
+          await new Promise(r => setTimeout(r, 500));
+        }
+        setLoading(false);
+      };
+
+      checkLoaded();
+    }
   };
 
   return (

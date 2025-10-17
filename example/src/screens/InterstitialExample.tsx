@@ -29,8 +29,24 @@ export default function InterstitialExample() {
   }, []);
 
   const onPress = async () => {
-    if (await InterstitialAd.isAdLoaded()) InterstitialAd.showAd();
-    else { setState('loading'); InterstitialAd.loadAd(); }
+    if (await InterstitialAd.isAdLoaded()) {
+      InterstitialAd.showAd();
+    } else {
+      setState('loading');
+      InterstitialAd.loadAd();
+
+      const checkLoaded = async () => {
+        for (; ;) {
+          if (await InterstitialAd.isAdLoaded()) {
+            InterstitialAd.showAd();
+            break;
+          }
+          await new Promise(r => setTimeout(r, 500));
+        }
+      };
+
+      checkLoaded();
+    }
   };
 
   const title = state === 'ready' ? 'Show Interstitial' : state === 'loading' ? 'Loading…' : 'Load Interstitial';
