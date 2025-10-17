@@ -29,24 +29,8 @@ export default function RewardedExample() {
   }, []);
 
   const onPress = async () => {
-    if (await RewardedAd.isAdLoaded()) {
-      RewardedAd.showAd();
-    } else {
-      setState('loading');
-      RewardedAd.loadAd();
-
-      const checkLoaded = async () => {
-        for (; ;) {
-          if (await RewardedAd.isAdLoaded()) {
-            RewardedAd.showAd();
-            break;
-          }
-          await new Promise(r => setTimeout(r, 500));
-        }
-      };
-
-      checkLoaded();
-    }
+    if (await RewardedAd.isAdLoaded()) RewardedAd.showAd();
+    else { setState('loading'); RewardedAd.loadAd(); }
   };
 
   const title = state === 'ready' ? 'Show Rewarded' : state === 'loading' ? 'Loading…' : 'Load Rewarded';

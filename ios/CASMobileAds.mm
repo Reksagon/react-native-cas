@@ -248,14 +248,6 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
   self.hasListeners = NO;
 }
 
-RCT_EXPORT_METHOD(addListener:(NSString *)eventName) {
-    self.hasListeners = YES;
-}
-
-RCT_EXPORT_METHOD(removeListeners:(double)count) {
-    self.hasListeners = NO;
-}
-
 
 #pragma mark - SDK Version
 
@@ -613,7 +605,7 @@ RCT_EXPORT_METHOD(destroyRewarded) {
     event = @"onNativeImpression";
   }
   
-  [self sendEventWithName:event body:impressionData];
+  [self sendEventWithName:event body:impressionData];  
 }
 
 
