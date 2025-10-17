@@ -1,20 +1,17 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent, Animated } from 'react-native';
-import { AdView, AdViewSize, type AdViewRef } from 'react-native-cas';
-
-type OnFailedEvent = { code: number; message: string };
-type OnLoadedEvent = { width?: number; height?: number };
-type OnImpressionEvent = { impression: {
-  format: string; revenue: number; revenuePrecision: string;
-  sourceUnitId: string; sourceName: string; creativeId?: string;
-  revenueTotal: number; impressionDepth: number;
-} };
+import { Platform, StyleSheet, View, Button, Text, Animated } from 'react-native';
+import {
+  AdView, AdViewSize,
+  type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
+} from 'react-native-cas';
 
 export default function MRecExample() {
-  const [visible, setVisible] = useState(false);   
-  const [loaded, setLoaded] = useState(false);     
+  const [visible, setVisible] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
   const adRef = useRef<AdViewRef>(null);
-  const translateY = useRef(new Animated.Value(320)).current; 
+  const translateY = useRef(new Animated.Value(320)).current;
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setLoaded(false);
@@ -22,32 +19,43 @@ export default function MRecExample() {
   }, []);
 
   useEffect(() => {
-    if (visible && loaded) {
-      Animated.timing(translateY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
-    } else {
-      Animated.timing(translateY, { toValue: 320, duration: 160, useNativeDriver: true }).start();
-    }
+    const anim = Animated.timing(translateY, {
+      toValue: visible && loaded ? 0 : 320,
+      duration: visible && loaded ? 180 : 160,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
   }, [visible, loaded, translateY]);
 
-  const onLoaded = useCallback((e?: NativeSyntheticEvent<OnLoadedEvent>) => {
-    const { width, height } = e?.nativeEvent ?? {};
+  const onLoaded = useCallback((data: AdViewLoaded) => {
     setLoaded(true);
-    console.log('MREC loaded', { width, height });
+    if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
+    console.log('MREC loaded', data);
   }, []);
 
-  const onFailed = useCallback((e: NativeSyntheticEvent<OnFailedEvent>) => {
-    const { code, message } = e.nativeEvent;
+  const onFailed = useCallback((err: AdViewFailed) => {
     setLoaded(false);
-    console.log('MREC failed', { code, message });
-    setTimeout(() => adRef.current?.loadAd(), 2000);
+    console.log('MREC failed', err);
+    if (retryRef.current) clearTimeout(retryRef.current);
+    retryRef.current = setTimeout(() => {
+      retryRef.current = null;
+      adRef.current?.loadAd();
+    }, 2000);
   }, []);
 
   const onClicked = useCallback(() => console.log('MREC clicked'), []);
-  const onImpression = useCallback(
-    (e: NativeSyntheticEvent<OnImpressionEvent>) =>
-      console.log('MREC impression', e.nativeEvent.impression),
-    []
-  );
+  const onImpression = useCallback((info: AdImpression) => {
+    console.log('MREC impression', info);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current);
+      retryRef.current = null;
+      adRef.current?.destroy?.();
+    };
+  }, []);
 
   return (
     <View style={S.screen}>
@@ -58,12 +66,13 @@ export default function MRecExample() {
           <Button title="Reload (ref)" onPress={() => { setLoaded(false); adRef.current?.loadAd(); }} />
         </View>
       </View>
+
       <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
         <View style={S.centerRow}>
           <AdView
             ref={adRef}
             size={AdViewSize.MREC}
-            loadOnMount={false}         
+            loadOnMount={false}
             refreshInterval={30}
             style={S.mrec}
             onAdViewLoaded={onLoaded}

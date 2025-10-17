@@ -1,65 +1,77 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent, Animated } from 'react-native';
-import { AdView, AdViewSize, CASMobileAds, type AdViewRef } from 'react-native-cas';
-
-type OnFailedEvent = { code: number; message: string };
-type OnLoadedEvent = { width?: number; height?: number };
-type OnImpressionEvent = { impression: {
-  format: string; revenue: number; revenuePrecision: string;
-  sourceUnitId: string; sourceName: string; creativeId?: string;
-  revenueTotal: number; impressionDepth: number;
-} };
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Platform, StyleSheet, View, Button, Text, Animated } from 'react-native';
+import {
+  AdView, AdViewSize, CASMobileAds,
+  type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
+} from 'react-native-cas';
 
 export default function AdaptiveBannerExample() {
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
   const bannerRef = useRef<AdViewRef>(null);
   const translateY = useRef(new Animated.Value(120)).current;
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      try { const ok = await CASMobileAds.isInitialized(); if (mounted) setReady(ok); }
-      catch { if (mounted) setReady(false); }
+      try {
+        const ok = await CASMobileAds.isInitialized();
+        if (mounted) setReady(ok);
+      } catch {
+        if (mounted) setReady(false);
+      }
     })();
     return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
-    if (ready) {
+    if (ready && bannerRef.current) {
       setLoaded(false);
-      bannerRef.current?.loadAd();
+      bannerRef.current.loadAd();
     }
   }, [ready]);
 
   useEffect(() => {
-    if (visible && loaded) {
-      Animated.timing(translateY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
-    } else {
-      Animated.timing(translateY, { toValue: 120, duration: 160, useNativeDriver: true }).start();
-    }
+    const anim = Animated.timing(translateY, {
+      toValue: visible && loaded ? 0 : 120,
+      duration: visible && loaded ? 180 : 160,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
   }, [visible, loaded, translateY]);
 
-  const onLoaded = useCallback((e?: NativeSyntheticEvent<OnLoadedEvent>) => {
-    const { width, height } = e?.nativeEvent ?? {};
+  const onLoaded = useCallback((data: AdViewLoaded) => {
     setLoaded(true);
-    console.log('Adaptive loaded', { width, height });
+    if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
+    console.log('Adaptive loaded', data);
   }, []);
 
-  const onFailed = useCallback((e: NativeSyntheticEvent<OnFailedEvent>) => {
-    const { code, message } = e.nativeEvent;
+  const onFailed = useCallback((err: AdViewFailed) => {
     setLoaded(false);
-    console.log('Adaptive failed', { code, message });
-    setTimeout(() => bannerRef.current?.loadAd(), 2000);
+    console.log('Adaptive failed', err);
+    if (retryRef.current) clearTimeout(retryRef.current);
+    retryRef.current = setTimeout(() => {
+      retryRef.current = null;
+      bannerRef.current?.loadAd();
+    }, 2000);
   }, []);
 
   const onClicked = useCallback(() => console.log('Adaptive clicked'), []);
-  const onImpression = useCallback(
-    (e: NativeSyntheticEvent<OnImpressionEvent>) =>
-      console.log('Adaptive impression', e.nativeEvent.impression),
-    []
-  );
+  const onImpression = useCallback((info: AdImpression) => {
+    console.log('Adaptive impression', info);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current);
+      retryRef.current = null;
+      bannerRef.current?.destroy?.();
+    };
+  }, []);
 
   return (
     <View style={S.screen}>
@@ -78,12 +90,11 @@ export default function AdaptiveBannerExample() {
         </View>
       </View>
 
-    
       <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
         <AdView
           ref={bannerRef}
           size={AdViewSize.ADAPTIVE}
-          loadOnMount={false}        
+          loadOnMount={false}
           refreshInterval={30}
           style={S.banner}
           onAdViewLoaded={onLoaded}
