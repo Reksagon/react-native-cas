@@ -4,12 +4,14 @@ import React, {
 } from 'react';
 import {
   View, useWindowDimensions, NativeSyntheticEvent,
-  LayoutChangeEvent, LayoutRectangle, StyleSheet,
-  StyleProp, ViewStyle, PixelRatio,
+  LayoutChangeEvent, StyleSheet, StyleProp, ViewStyle, PixelRatio,
 } from 'react-native';
 
 import { AdViewComponent, AdViewCommands } from '../modules/AdViewComponent';
-import { AdViewSize, type AdViewProps, type AdViewRef } from '../types/AdView';
+import {
+  AdViewLoaded, AdViewFailed, AdImpression, AdViewSize,
+  type AdViewProps, type AdViewRef
+} from '../types/AdView';
 
 const ADVIEW_SIZE = {
   [AdViewSize.BANNER]: { width: 320, height: 50 },
@@ -46,7 +48,6 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   ref,
 ) {
   const viewRef = useRef<any>(null);
-  const layoutRef = useRef<LayoutRectangle | null>(null);
   const { width: screenWidth } = useWindowDimensions();
 
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -72,9 +73,7 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
   }, [defaultSize, isFluid, style]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
-    const layout = { ...e.nativeEvent.layout };
-    layoutRef.current = layout;
-    setContainerWidth(layout.width);
+    setContainerWidth(e.nativeEvent.layout.width);
   }, []);
 
   const recalcDimensions = useCallback(() => {
@@ -82,7 +81,7 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
 
     const width = isFluid
       ? Math.max(Math.round(containerWidth ?? screenWidth), 1)
-      : Math.max(base.width || 0, 1); 
+      : Math.max(base.width || 0, 1);
 
     const height = Math.max(base.height || minHeightFor(defaultSize), 1);
 
@@ -116,42 +115,53 @@ export const AdView = forwardRef<AdViewRef, Props>(function AdView(
       }
 
       if (changed) forceUpdate();
-      onAdViewLoaded?.(e);
+      onAdViewLoaded?.({ width: w, height: h } as AdViewLoaded);
     },
     [onAdViewLoaded, isFluid],
   );
 
   const onFailedCb = useCallback(
-    (e: NativeSyntheticEvent<{ code: number; message: string }>) => onAdViewFailed?.(e),
+    (e: NativeSyntheticEvent<{ code: number; message: string }>) => {
+      onAdViewFailed?.(e.nativeEvent as AdViewFailed);
+    },
     [onAdViewFailed],
   );
 
-  const onClickedCb = useCallback((e: any) => onAdViewClicked?.(e), [onAdViewClicked]);
-
   const onImpressionCb = useCallback(
-    (e: NativeSyntheticEvent<{
-      impression: {
-        format: string; revenue: number; revenuePrecision: string;
-        sourceUnitId: string; sourceName: string; creativeId?: string;
-        revenueTotal: number; impressionDepth: number;
-      }
-    }>) => onAdViewImpression?.(e),
+    (e: NativeSyntheticEvent<{ impression: AdImpression }>) => {
+      onAdViewImpression?.(e.nativeEvent.impression as AdImpression);
+    },
     [onAdViewImpression],
   );
 
-  useEffect(() => {
-    if (!loadOnMount) return;
+  const onClickedCb = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
 
-    if (isFluid) {
-      if (containerWidth == null) return; 
-    }
+  useEffect(() => {
+  let mounted = true;
+
+  if (!loadOnMount) return;
+  if (isFluid && containerWidth == null) return;
+
+  if (mounted && viewRef.current) {
     AdViewCommands.loadAd(viewRef.current);
+  }
+
+  return () => {
+    mounted = false;
+    };
   }, [loadOnMount, isFluid, containerWidth]);
 
   useImperativeHandle(ref, () => ({
-    loadAd: () => AdViewCommands.loadAd(viewRef.current),
-    destroy: () => AdViewCommands.destroy(viewRef.current),
+  loadAd: () => {
+    if (viewRef.current) AdViewCommands.loadAd(viewRef.current);
+  },
+  destroy: () => {
+    if (viewRef.current) AdViewCommands.destroy(viewRef.current);
+    },
   }), []);
+
+
+  useEffect(() => () => AdViewCommands.destroy?.(viewRef.current), []);
 
   return (
     <View onLayout={onLayout} style={containerStyle}>

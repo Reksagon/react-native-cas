@@ -9,8 +9,18 @@ export enum AdViewSize {
   SMART = 'S',
 }
 
-/** Parsed impression payload for banners */
-export type AdContentInfo = {
+/** Payloads that your callbacks receive (plain objects, без RN events) */
+export type AdViewLoaded = {
+  width?: number;
+  height?: number;
+};
+
+export type AdViewFailed = {
+  code: number;
+  message: string;
+};
+
+export type AdImpression = {
   format: string;
   revenue: number;
   revenuePrecision: string;
@@ -21,39 +31,25 @@ export type AdContentInfo = {
   impressionDepth: number;
 };
 
-/** Mediation/network error payload */
-export type AdError = { code: number; message: string };
-
 /** Public props of the AdView component */
 export type AdViewProps = {
-  /** Banner size (defaults to BANNER) */
   size?: AdViewSize;
-  /** Autoload new ads (defaults to true) */
   isAutoloadEnabled?: boolean;
-  /** Load an ad right after mount (defaults to true) */
   loadOnMount?: boolean;
-  /** CAS Id. Optional if the SDK was initialized separately */
   casId?: string;
-  /** Auto-refresh interval in seconds */
   refreshInterval?: number;
+
   /** Container style. Minimum height is enforced automatically */
   style?: StyleProp<ViewStyle>;
 
-  /** Fired when an ad is loaded. May include actual width/height */
-  onAdViewLoaded?: (e: { width?: number; height?: number }) => void;
-  /** Fired when the ad failed to load */
-  onAdViewFailed?: (e: AdError) => void;
-  /** Fired on banner click */
+  onAdViewLoaded?: (data: AdViewLoaded) => void;
+  onAdViewFailed?: (err: AdViewFailed) => void;
   onAdViewClicked?: () => void;
-  /** Fired on impression with a parsed payload */
-  onAdViewImpression?: (e: AdContentInfo) => void;
+  onAdViewImpression?: (info: AdImpression) => void;
 };
 
-/** The public ref of AdView */
+/** Public ref methods available on <AdView ref={...} /> */
 export type AdViewRef = {
-  /** Manually trigger loading a new ad */
   loadAd: () => void;
-  /** Destroy the native view */
   destroy: () => void;
 };
-

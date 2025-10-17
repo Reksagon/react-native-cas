@@ -8,7 +8,7 @@ export { AppOpenAd } from './formats/AppOpenAd';
 
 // Banner
 export { AdView } from './formats/AdView';
-export type { AdViewProps, AdViewRef, AdContentInfo, AdError } from './types/AdView';
+export type { AdViewRef, AdViewProps, AdViewLoaded, AdViewFailed, AdImpression } from './types/AdView';
 export { AdViewSize  } from './types/AdView';
 
 // Types
