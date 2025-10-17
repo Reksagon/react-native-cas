@@ -47,9 +47,4 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['loadAd', 'destroy'],
 });
 
-<<<<<<< HEAD
 export default codegenNativeComponent<NativeProps>('CASAdView')
-=======
-export default codegenNativeComponent<NativeProps>('CASAdView')
-
->>>>>>> b3688904dc3ae90342c08b2165ab0009f9e451c9
