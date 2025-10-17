@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent } from 'react-native';
-import { AdView, AdViewSize, CASMobileAds } from 'react-native-cas';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent, Animated } from 'react-native';
+import { AdView, AdViewSize, CASMobileAds, type AdViewRef } from 'react-native-cas';
 
 type OnFailedEvent = { code: number; message: string };
 type OnLoadedEvent = { width?: number; height?: number };
@@ -12,7 +12,10 @@ type OnImpressionEvent = { impression: {
 
 export default function AdaptiveBannerExample() {
   const [ready, setReady] = useState(false);
-  const [isShowing, setIsShowing] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const bannerRef = useRef<AdViewRef>(null);
+  const translateY = useRef(new Animated.Value(120)).current;
 
   useEffect(() => {
     let mounted = true;
@@ -23,17 +26,38 @@ export default function AdaptiveBannerExample() {
     return () => { mounted = false; };
   }, []);
 
+  useEffect(() => {
+    if (ready) {
+      setLoaded(false);
+      bannerRef.current?.loadAd();
+    }
+  }, [ready]);
+
+  useEffect(() => {
+    if (visible && loaded) {
+      Animated.timing(translateY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(translateY, { toValue: 120, duration: 160, useNativeDriver: true }).start();
+    }
+  }, [visible, loaded, translateY]);
+
   const onLoaded = useCallback((e?: NativeSyntheticEvent<OnLoadedEvent>) => {
     const { width, height } = e?.nativeEvent ?? {};
+    setLoaded(true);
     console.log('Adaptive loaded', { width, height });
   }, []);
+
   const onFailed = useCallback((e: NativeSyntheticEvent<OnFailedEvent>) => {
     const { code, message } = e.nativeEvent;
+    setLoaded(false);
     console.log('Adaptive failed', { code, message });
+    setTimeout(() => bannerRef.current?.loadAd(), 2000);
   }, []);
+
   const onClicked = useCallback(() => console.log('Adaptive clicked'), []);
   const onImpression = useCallback(
-    (e: NativeSyntheticEvent<OnImpressionEvent>) => console.log('Adaptive impression', e.nativeEvent.impression),
+    (e: NativeSyntheticEvent<OnImpressionEvent>) =>
+      console.log('Adaptive impression', e.nativeEvent.impression),
     []
   );
 
@@ -43,26 +67,31 @@ export default function AdaptiveBannerExample() {
         <Text style={S.title}>Adaptive Banner</Text>
         <View style={S.stack}>
           <Button
-            title={isShowing ? 'Hide Adaptive Banner' : 'Show Adaptive Banner'}
+            title={visible ? 'Hide Adaptive Banner' : 'Show Adaptive Banner'}
             disabled={!ready}
-            onPress={() => setIsShowing(s => !s)}
+            onPress={() => setVisible(v => !v)}
+          />
+          <Button
+            title="Reload (ref)"
+            onPress={() => { setLoaded(false); bannerRef.current?.loadAd(); }}
           />
         </View>
       </View>
 
-      {isShowing && (
-        <View style={S.dock} pointerEvents="box-none">
-          <AdView
-            size={AdViewSize.ADAPTIVE}
-            refreshInterval={30}
-            style={S.banner}
-            onAdViewLoaded={onLoaded}
-            onAdViewFailed={onFailed}
-            onAdViewClicked={onClicked}
-            onAdViewImpression={onImpression}
-          />
-        </View>
-      )}
+    
+      <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
+        <AdView
+          ref={bannerRef}
+          size={AdViewSize.ADAPTIVE}
+          loadOnMount={false}        
+          refreshInterval={30}
+          style={S.banner}
+          onAdViewLoaded={onLoaded}
+          onAdViewFailed={onFailed}
+          onAdViewClicked={onClicked}
+          onAdViewImpression={onImpression}
+        />
+      </Animated.View>
     </View>
   );
 }

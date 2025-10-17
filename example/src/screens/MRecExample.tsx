@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent } from 'react-native';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
+import { Platform, StyleSheet, View, Button, Text, NativeSyntheticEvent, Animated } from 'react-native';
 import { AdView, AdViewSize, type AdViewRef } from 'react-native-cas';
 
 type OnFailedEvent = { code: number; message: string };
@@ -11,20 +11,41 @@ type OnImpressionEvent = { impression: {
 } };
 
 export default function MRecExample() {
-  const [show, setShow] = useState(false);
+  const [visible, setVisible] = useState(false);   
+  const [loaded, setLoaded] = useState(false);     
   const adRef = useRef<AdViewRef>(null);
+  const translateY = useRef(new Animated.Value(320)).current; 
+
+  useEffect(() => {
+    setLoaded(false);
+    adRef.current?.loadAd();
+  }, []);
+
+  useEffect(() => {
+    if (visible && loaded) {
+      Animated.timing(translateY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(translateY, { toValue: 320, duration: 160, useNativeDriver: true }).start();
+    }
+  }, [visible, loaded, translateY]);
 
   const onLoaded = useCallback((e?: NativeSyntheticEvent<OnLoadedEvent>) => {
     const { width, height } = e?.nativeEvent ?? {};
+    setLoaded(true);
     console.log('MREC loaded', { width, height });
   }, []);
+
   const onFailed = useCallback((e: NativeSyntheticEvent<OnFailedEvent>) => {
     const { code, message } = e.nativeEvent;
+    setLoaded(false);
     console.log('MREC failed', { code, message });
+    setTimeout(() => adRef.current?.loadAd(), 2000);
   }, []);
+
   const onClicked = useCallback(() => console.log('MREC clicked'), []);
   const onImpression = useCallback(
-    (e: NativeSyntheticEvent<OnImpressionEvent>) => console.log('MREC impression', e.nativeEvent.impression),
+    (e: NativeSyntheticEvent<OnImpressionEvent>) =>
+      console.log('MREC impression', e.nativeEvent.impression),
     []
   );
 
@@ -33,26 +54,25 @@ export default function MRecExample() {
       <View style={S.card}>
         <Text style={S.title}>MREC</Text>
         <View style={S.stack}>
-          <Button title={show ? 'Hide MREC' : 'Show MREC'} onPress={() => setShow(s => !s)} />
+          <Button title={visible ? 'Hide MREC' : 'Show MREC'} onPress={() => setVisible(v => !v)} />
+          <Button title="Reload (ref)" onPress={() => { setLoaded(false); adRef.current?.loadAd(); }} />
         </View>
       </View>
-
-      {show && (
-        <View style={S.dock} pointerEvents="box-none">
-          <View style={S.centerRow}>
-            <AdView
-              ref={adRef}
-              size={AdViewSize.MREC}
-              refreshInterval={30}
-              style={S.mrec}
-              onAdViewLoaded={onLoaded}
-              onAdViewFailed={onFailed}
-              onAdViewClicked={onClicked}
-              onAdViewImpression={onImpression}
-            />
-          </View>
+      <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
+        <View style={S.centerRow}>
+          <AdView
+            ref={adRef}
+            size={AdViewSize.MREC}
+            loadOnMount={false}         
+            refreshInterval={30}
+            style={S.mrec}
+            onAdViewLoaded={onLoaded}
+            onAdViewFailed={onFailed}
+            onAdViewClicked={onClicked}
+            onAdViewImpression={onImpression}
+          />
         </View>
-      )}
+      </Animated.View>
     </View>
   );
 }
