@@ -166,12 +166,10 @@
   self.onAdViewImpression(@{ @"impression": impressionData });
 }
 
-#pragma mark - Helpers
+#pragma mark - Additionals Functions
 
 - (void)setSize:(NSString *)sizeName {
     _adSize = [self casSizeFromString:sizeName];
-  
-  NSLog(@"[CASAdView] setSize");
 }
 
 - (CASSize *)casSizeFromString:(NSString *)sizeName {
@@ -188,10 +186,8 @@
     } else if ([sizeName isEqualToString:@"A"]) {
         return [CASSize getAdaptiveBannerInContainer:self];
     }
-
-    NSLog(@"[CASAdView] Unknown AdViewSize: %@", sizeName);
+    
     return nil;
 }
-
 
 @end
