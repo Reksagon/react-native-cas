@@ -1,26 +1,11 @@
 import { TurboModuleRegistry } from 'react-native';
 import type { TurboModule } from 'react-native';
 import type { Int32 } from 'react-native/Libraries/Types/CodegenTypes';
-
-export type InitializationStatus = {
-  error?: string;
-  countryCode?: string;
-  isConsentRequired: boolean;
-  consentFlowStatus: Int32;
-};
-
-export type InitializationParams = {
-  targetAudience?: Int32;
-  showConsentFormIfRequired?: boolean;
-  forceTestAds?: boolean;
-  testDeviceIds?: string[];
-  debugPrivacyGeography?: Int32 | null;
-  mediationExtras?: { [key: string]: string };
-};
+import type { InitializationStatus } from '../types/Types';
 
 export interface Spec extends TurboModule {
   // SDK
-  initialize(casId: string, options: InitializationParams | null): Promise<InitializationStatus>;
+  initialize(casId: string, options: { [key: string]: any; }): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
   getSDKVersion(): Promise<string>;
   showConsentFlow(): Promise<number>;

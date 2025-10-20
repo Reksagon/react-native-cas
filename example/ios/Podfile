@@ -19,6 +19,8 @@ end
 target 'CASExample' do  
   pod 'react-native-cas', :path => '../..'    
 
+  # Add other pod 'CleverAdsSolutions-SDK/...' here
+  
   config = use_native_modules!
 
   use_react_native!(

@@ -61,20 +61,20 @@ export class CASMobileAds {
     if (typeof casId !== 'string') {
       return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
     }
-    const payload: any = {};
-    if (options.targetAudience != null) payload.audience = options.targetAudience;
+    const params: any = {};
+    if (options.targetAudience != null) params.targetAudience = Number(options.targetAudience);
     if (options.showConsentFormIfRequired !== undefined)
-      payload.showConsentFormIfRequired = options.showConsentFormIfRequired; 
+      params.showConsentFormIfRequired = options.showConsentFormIfRequired; 
     if (options.forceTestAds !== undefined)
-      payload.forceTestAds = options.forceTestAds; 
+      params.forceTestAds = options.forceTestAds; 
 
-    if (Array.isArray(options.testDeviceIds)) payload.testDeviceIds = options.testDeviceIds;
-    if (options.mediationExtras != null) payload.mediationExtras = options.mediationExtras;
+    if (Array.isArray(options.testDeviceIds)) params.testDeviceIds = options.testDeviceIds;
+    if (options.mediationExtras != null) params.mediationExtras = options.mediationExtras;
     if (options.debugPrivacyGeography !== undefined) {
-      payload.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
+      params.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
     }
 
-    return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
+    return CASMobileAdsNative.initialize(casId, params);
   }
 
   /**

@@ -34,8 +34,8 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
   private fun emitError(finalEvent: String, error: AdError) {
     val map = WritableNativeMap().apply {
-      putInt("errorCode", error.code)
-      putString("errorMessage", error.message)
+      putInt("code", error.code)
+      putString("message", error.message)
     }
     reactContext
       .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -80,8 +80,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
       val showConsent = options.optBoolean("showConsentFormIfRequired", true)
       val forceTest = options.optBoolean("forceTestAds", false)
 
-      options.optIntOrNull("audience")?.let { CAS.settings.taggedAudience = it }
-      options.optIntOrNull("trialAdFreeInterval")?.let { CAS.settings.trialAdFreeInterval = it }
+      options.optIntOrNull("targetAudience")?.let { CAS.settings.taggedAudience = it }
       CAS.settings.testDeviceIDs = options.optStringList("testDeviceIds").toSet()
 
       val consent = ConsentFlow(showConsent).apply {
@@ -131,12 +130,11 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
   }
 
   fun showConsentFlow(promise: Promise) {
-    val activity = curActivity()
     CASHandler.main {
       ConsentFlow()
-        .withUIContext(activity)
+        .withUIContext(curActivity())
         .withDismissListener { status -> promise.resolve(status) }
-        .showIfRequired()
+        .show()
     }
   }
 

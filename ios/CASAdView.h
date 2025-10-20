@@ -1,25 +1,22 @@
-#import <UIKit/UIKit.h>
 #import <React/RCTComponent.h>
+#import <UIKit/UIKit.h>
 
 @class CASBannerView;
 @class CASSize;
 @class CASContentInfo;
 
-NS_ASSUME_NONNULL_BEGIN
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <React/RCTViewComponentView.h>
+@interface CASAdView : RCTViewComponentView
+#else
 @interface CASAdView : UIView
+#endif
 
-// MARK: - Designated Initializers
-- (instancetype)initWithCasID:(NSString *)casID
-                         size:(CASSize *)size
-                       origin:(CGPoint)origin NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithFrame:(CGRect)frame NS_DESIGNATED_INITIALIZER;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;
+NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Configurable Properties
 @property (nonatomic, copy, nullable) NSString *casID;              // JS: casId
-@property (nonatomic, strong, nullable) CASSize *adSize;            // JS: adSize
 @property (nonatomic, copy) NSString *size;                         // JS: size
 @property (nonatomic) BOOL isAutoloadEnabled;                       // JS: isAutoloadEnabled
 @property (nonatomic) BOOL loadOnMount;                             // JS: loadOnMount
@@ -33,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Readonly Info
 @property (nonatomic, readonly, strong, nullable) CASBannerView *bannerView;
-@property (nonatomic, readonly, getter=isAdLoaded) BOOL adLoaded;
+@property (nonatomic, readonly, getter = isAdLoaded) BOOL adLoaded;
 @property (nonatomic, readonly, strong, nullable) CASContentInfo *contentInfo;
 
 // MARK: - Public Methods

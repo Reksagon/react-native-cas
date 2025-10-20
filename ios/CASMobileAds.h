@@ -1,7 +1,7 @@
-#import <Foundation/Foundation.h>
-#import <React/RCTUtils.h>
-#import <React/RCTEventEmitter.h>
 #import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
+#import <Foundation/Foundation.h>
+#import <React/RCTEventEmitter.h>
+#import <React/RCTUtils.h>
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <RNCASMobileAdsSpec/RNCASMobileAdsSpec.h>
@@ -11,4 +11,5 @@
 @interface CASMobileAds : RCTEventEmitter <RCTBridgeModule, CASScreenContentDelegate, CASImpressionDelegate>
 #endif
 
++ (NSDictionary *)convertImpressionInfo:(CASContentInfo *)info;
 @end

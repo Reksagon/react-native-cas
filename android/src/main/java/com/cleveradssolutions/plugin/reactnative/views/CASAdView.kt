@@ -25,8 +25,6 @@ class CASAdView(context: Context) :
 
   var loadOnMount: Boolean = true
   var size: AdSize = AdSize.BANNER
-  private var refreshIntervalSec: Int = 30
-  var casId: String? = null
 
   init {
     layoutParams = LayoutParams(
@@ -72,21 +70,11 @@ class CASAdView(context: Context) :
     minimumHeight = 1
     minimumWidth = 1
 
-    if (refreshIntervalSec <= 0) {
-      banner.disableAdRefresh()
-    } else {
-      banner.refreshInterval = refreshIntervalSec
-    }
     requestLayout()
   }
 
   fun setRefreshInterval(seconds: Int) {
-    refreshIntervalSec = seconds
-    if (seconds <= 0) {
-      banner.disableAdRefresh()
-    } else {
-      banner.refreshInterval = seconds
-    }
+    banner.refreshInterval = seconds
   }
 
   fun isLoaded(): Boolean = banner.isLoaded
@@ -100,7 +88,6 @@ class CASAdView(context: Context) :
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    banner.refreshInterval = refreshIntervalSec
     post { measureAndLayoutChild() }
   }
 
