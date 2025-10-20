@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import AppButton from '../components/AppButton';
-import { InterstitialAd, type AdError } from 'react-native-cas';
+import { InterstitialAd, type AdError, type AdContentInfo } from 'react-native-cas';
 
 const MAX_RETRY = 6 as const;
 
@@ -10,21 +10,35 @@ export default function InterstitialExample() {
   const retry = useRef(0);
 
   useEffect(() => {
-    const onLoaded = () => { setState('ready'); retry.current = 0; };
-    const onFailed = (_e: AdError) => {
+    const onLoaded = () => {
+      console.log('[Interstitial] LOADED');
+      setState('ready'); retry.current = 0;
+    };
+    const onFailed = (e: AdError) => {
+      console.log('[Interstitial] LOAD_FAILED', e);
       setState('idle');
       if (retry.current >= MAX_RETRY) return;
       retry.current += 1;
       const delay = Math.min(64, 2 ** retry.current);
       setTimeout(() => { setState('loading'); InterstitialAd.loadAd(); }, delay * 1000);
     };
-    InterstitialAd.addAdLoadedEventListener(onLoaded);
-    InterstitialAd.addAdLoadFailedEventListener(onFailed);
-    InterstitialAd.addAdDismissedEventListener(() => setState('idle'));
+
+    const offLoaded = InterstitialAd.addAdLoadedEventListener(onLoaded);
+    const offLoadFailed = InterstitialAd.addAdLoadFailedEventListener(onFailed);
+    const offClicked = InterstitialAd.addAdClickedEventListener(() => console.log('[Interstitial] CLICKED'));
+    const offDisplayed = InterstitialAd.addAdShowedEventListener(() => console.log('[Interstitial] SHOWED'));
+    const offFailShow = InterstitialAd.addAdFailedToShowEventListener((e: AdError) => console.log('[Interstitial] FAILED_TO_SHOW', e));
+    const offHidden = InterstitialAd.addAdDismissedEventListener(() => { console.log('[Interstitial] CLOSED'); setState('idle'); });
+    const offImpression = InterstitialAd.addAdImpressionEventListener((info: AdContentInfo) => console.log('[Interstitial] IMPRESSION', info));
+
     return () => {
-      InterstitialAd.removeAdLoadedEventListener();
-      InterstitialAd.removeAdLoadFailedEventListener();
-      InterstitialAd.removeAdDismissedEventListener();
+      offLoaded();
+      offLoadFailed();
+      offClicked();
+      offDisplayed();
+      offFailShow();
+      offHidden();
+      offImpression();
     };
   }, []);
 

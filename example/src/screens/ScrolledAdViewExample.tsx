@@ -105,7 +105,7 @@ const S = StyleSheet.create({
   },
   card: {
     width: '100%', maxWidth: 420, borderRadius: 16, backgroundColor: '#121821',
-    padding: 20, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12,
+    padding: 10, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 }, elevation: 6,
   },
   title: { fontSize: 20, fontWeight: '700', color: '#E8EEF6', textAlign: 'center', marginBottom: 12 },

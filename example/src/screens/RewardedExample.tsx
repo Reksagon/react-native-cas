@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import AppButton from '../components/AppButton';
-import { RewardedAd, type AdError } from 'react-native-cas';
+import { RewardedAd, type AdError, type AdContentInfo } from 'react-native-cas';
 
 const MAX_RETRY = 6 as const;
 
@@ -10,21 +10,38 @@ export default function RewardedExample() {
   const retry = useRef(0);
 
   useEffect(() => {
-    RewardedAd.addAdLoadedEventListener(() => { setState('ready'); retry.current = 0; });
-    RewardedAd.addAdLoadFailedEventListener((_e: AdError) => {
+    const offLoaded = RewardedAd.addAdLoadedEventListener(() => {
+      console.log('[Rewarded] LOADED');
+      setState('ready'); retry.current = 0;
+    });
+
+    const offLoadFailed = RewardedAd.addAdLoadFailedEventListener((e: AdError) => {
+      console.log('[Rewarded] LOAD_FAILED', e);
       setState('idle');
       if (retry.current >= MAX_RETRY) return;
       retry.current += 1;
       const delay = Math.min(64, 2 ** retry.current);
       setTimeout(() => { setState('loading'); RewardedAd.loadAd(); }, delay * 1000);
     });
-    RewardedAd.addAdDismissedEventListener(() => setState('idle'));
-    RewardedAd.addAdUserEarnRewardEventListener(() => console.log('Reward earned'));
+
+    const offClicked = RewardedAd.addAdClickedEventListener(() => console.log('[Rewarded] CLICKED'));
+    const offDisplayed = RewardedAd.addAdShowedEventListener(() => console.log('[Rewarded] DISPLAYED'));
+    const offFailShow = RewardedAd.addAdFailedToShowEventListener((e: AdError) => console.log('[Rewarded] FAILED_TO_SHOW', e));
+    const offHidden = RewardedAd.addAdDismissedEventListener(() => { console.log('[Rewarded] HIDDEN'); setState('idle'); });
+    const offImpression = RewardedAd.addAdImpressionEventListener((info: AdContentInfo) => console.log('[Rewarded] IMPRESSION', info));
+    const offEarned = RewardedAd.addAdUserEarnRewardEventListener(() => {
+      console.log('[Rewarded] EARNED_REWARD');
+    });
+
     return () => {
-      RewardedAd.removeAdLoadedEventListener();
-      RewardedAd.removeAdLoadFailedEventListener();
-      RewardedAd.removeAdDismissedEventListener();
-      RewardedAd.removeAdUserEarnRewardLoadedEventListener?.();
+      offLoaded();
+      offLoadFailed();
+      offClicked();
+      offDisplayed();
+      offFailShow();
+      offHidden();
+      offImpression();
+      offEarned();
     };
   }, []);
 

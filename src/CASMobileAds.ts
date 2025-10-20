@@ -1,5 +1,8 @@
 import CASMobileAdsNative from "./modules/NativeCASMobileAdsModule";
 import type { InitializationStatus, InitializationParams, Gender } from './types/Types';
+import { version as reactNativeVersion } from 'react-native/Libraries/Core/ReactNativeVersion';
+
+const RN_VERSION = `${reactNativeVersion.major}.${reactNativeVersion.minor}.${reactNativeVersion.patch}`;
 
 export class CASMobileAds {
 
@@ -73,7 +76,8 @@ export class CASMobileAds {
     if (options.debugPrivacyGeography !== undefined) {
       payload.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
     }
-
+    payload.reactNativeVersion = RN_VERSION;
+    
     return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
   }
 

@@ -16,6 +16,7 @@ export type InitializationParams = {
   testDeviceIds?: string[];
   debugPrivacyGeography?: Int32 | null;
   mediationExtras?: { [key: string]: string };
+  reactNativeVersion?: string;
 };
 
 export interface Spec extends TurboModule {
@@ -25,7 +26,7 @@ export interface Spec extends TurboModule {
   getSDKVersion(): Promise<string>;
   showConsentFlow(): Promise<number>;
 
-  // App/Targeting (VOID)
+  // App/Targeting 
   setUserAge(age: Int32): void;
   setUserGender(gender: Int32): void;
   setAppContentUrl(contentUrl?: string): void;

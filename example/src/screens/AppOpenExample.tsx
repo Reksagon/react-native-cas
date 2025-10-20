@@ -1,19 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import AppButton from '../components/AppButton';
-import { AppOpenAd } from 'react-native-cas';
+import { AppOpenAd, type AdError, type AdContentInfo } from 'react-native-cas';
 
 export default function AppOpenExample() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const onLoaded = () => setLoading(false);
-    const onFailed = () => setLoading(false);
-    AppOpenAd.addAdLoadedEventListener(onLoaded);
-    AppOpenAd.addAdLoadFailedEventListener(onFailed);
+    const offLoaded = AppOpenAd.addAdLoadedEventListener(() => { console.log('[AppOpen] LOADED'); setLoading(false);});
+    const offLoadFailed = AppOpenAd.addAdLoadFailedEventListener((e: AdError) => { console.log('[AppOpen] LOAD_FAILED', e);setLoading(false); });
+    const offClicked = AppOpenAd.addAdClickedEventListener(() => { console.log('[AppOpen] CLICKED'); });
+    const offDisplayed = AppOpenAd.addAdShowedEventListener(() => { console.log('[AppOpen] SHOWED'); });
+    const offFailShow = AppOpenAd.addAdFailedToShowEventListener((e: AdError) => { console.log('[AppOpen] FAILED_TO_SHOW', e); });
+    const offHidden = AppOpenAd.addAdDismissedEventListener(() => { console.log('[AppOpen] CLOSED'); });
+    const offImpression = AppOpenAd.addAdImpressionEventListener((info: AdContentInfo) => { console.log('[AppOpen] IMPRESSION', info); });
+
     return () => {
-      AppOpenAd.removeAdLoadedEventListener();
-      AppOpenAd.removeAdLoadFailedEventListener();
+      offLoaded();
+      offLoadFailed();
+      offClicked();
+      offDisplayed();
+      offFailShow();
+      offHidden();
+      offImpression();
     };
   }, []);
 
