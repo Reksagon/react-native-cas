@@ -1,4 +1,4 @@
-import { CASMobileAds } from '../CASMobileAds';
+import CASMobileAdsNative from '../modules/NativeCASMobileAdsModule';
 import type { RewardedAdType } from '../types/FullscreenAdType';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
@@ -14,33 +14,27 @@ const E = {
 };
 
 export const RewardedAd: RewardedAdType = {
-  isAdLoaded: CASMobileAds.isRewardedAdLoaded,
-  loadAd: CASMobileAds.loadRewardedAd,
-  showAd: CASMobileAds.showRewardedAd,
-  setAutoloadEnabled: CASMobileAds.setRewardedAutoloadEnabled,
-  destroy: CASMobileAds.destroyRewarded,
+  isAdLoaded: CASMobileAdsNative.isRewardedAdLoaded,
+  loadAd: CASMobileAdsNative.loadRewardedAd,
+  showAd: CASMobileAdsNative.showRewardedAd,
+  setAutoloadEnabled: CASMobileAdsNative.setRewardedAutoloadEnabled,
+  destroy: CASMobileAdsNative.destroyRewarded,
 
   addAdUserEarnRewardEventListener: (l) => addEventListener(E.COMPLETED, l),
-  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(E.COMPLETED),
-
   addAdLoadedEventListener: (l) => addEventListener(E.LOADED, l),
-  removeAdLoadedEventListener: () => removeEventListener(E.LOADED),
-
   addAdLoadFailedEventListener: (l) => addEventListener(E.LOAD_FAILED, l),
-  removeAdLoadFailedEventListener: () => removeEventListener(E.LOAD_FAILED),
-
   addAdClickedEventListener: (l) => addEventListener(E.CLICKED, l),
-  removeAdClickedEventListener: () => removeEventListener(E.CLICKED),
-
   addAdShowedEventListener: (l) => addEventListener(E.DISPLAYED, l),
-  removeAdShowedEventListener: () => removeEventListener(E.DISPLAYED),
-
   addAdFailedToShowEventListener: (l) => addEventListener(E.FAILED_TO_SHOW, l),
-  removeAdFailedToShowEventListener: () => removeEventListener(E.FAILED_TO_SHOW),
-
   addAdDismissedEventListener: (l) => addEventListener(E.HIDDEN, l),
-  removeAdDismissedEventListener: () => removeEventListener(E.HIDDEN),
-
   addAdImpressionEventListener: (l) => addEventListener(E.IMPRESSION, l),
+
+  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(E.COMPLETED),
+  removeAdLoadedEventListener: () => removeEventListener(E.LOADED),
+  removeAdLoadFailedEventListener: () => removeEventListener(E.LOAD_FAILED),
+  removeAdClickedEventListener: () => removeEventListener(E.CLICKED),
+  removeAdShowedEventListener: () => removeEventListener(E.DISPLAYED),
+  removeAdFailedToShowEventListener: () => removeEventListener(E.FAILED_TO_SHOW),
+  removeAdDismissedEventListener: () => removeEventListener(E.HIDDEN),
   removeAdImpressionEventListener: () => removeEventListener(E.IMPRESSION),
 };

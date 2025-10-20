@@ -10,7 +10,7 @@ export interface Spec extends TurboModule {
   getSDKVersion(): Promise<string>;
   showConsentFlow(): Promise<number>;
 
-  // App/Targeting (VOID)
+  // App/Targeting 
   setUserAge(age: Int32): void;
   setUserGender(gender: Int32): void;
   setAppContentUrl(contentUrl?: string): void;

@@ -15,9 +15,9 @@
 
 using namespace facebook::react;
 
-@interface CASAdView() <RCTCASAdViewViewProtocol, CASBannerDelegate, CASImpressionDelegate>
+@interface CASAdView () <RCTCASAdViewViewProtocol, CASBannerDelegate, CASImpressionDelegate>
 #else
-@interface CASAdView() <CASBannerDelegate, CASImpressionDelegate>
+@interface CASAdView () <CASBannerDelegate, CASImpressionDelegate>
 #endif
 
 @end
@@ -28,15 +28,7 @@ using namespace facebook::react;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        // Creating empty banner (init with JS)
-        _loadOnMount = NO;
-        _bannerView = [[CASBannerView alloc] initWithFrame:frame];
-        _bannerView.isAutoloadEnabled = NO;
-        _bannerView.delegate = self;
-        _bannerView.impressionDelegate = self;
-        _bannerView.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:_bannerView];
-        [self setupConstraintsForBanner:_bannerView];
+        [self initAdView];
     }
 
     return self;
@@ -45,16 +37,20 @@ using namespace facebook::react;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder {
     if (self = [super initWithCoder:coder]) {
         _loadOnMount = NO;
-        _bannerView = [[CASBannerView alloc] initWithCoder:coder];
-        _bannerView.isAutoloadEnabled = NO;
-        _bannerView.delegate = self;
-        _bannerView.impressionDelegate = self;
-        _bannerView.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:_bannerView];
-        [self setupConstraintsForBanner:_bannerView];
+        [self initAdView];
     }
 
     return self;
+}
+
+- (void)initAdView {
+    _bannerView = [[CASBannerView alloc] initWithFrame:self.frame];
+    _bannerView.isAutoloadEnabled = NO;
+    _bannerView.delegate = self;
+    _bannerView.impressionDelegate = self;
+    _bannerView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_bannerView];
+    [self setupConstraintsForBanner:_bannerView];
 }
 
 - (NSInteger)refreshInterval {
@@ -80,6 +76,12 @@ using namespace facebook::react;
          [banner.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
          [banner.centerYAnchor constraintEqualToAnchor:self.centerYAnchor]
     ]];
+}
+
+// Invoked after all the JavaScript properties are set when mounting AdView
+- (void)didSetProps:(NSArray<NSString *> *)changedProps
+{
+    [self attachAdViewIfNeeded];
 }
 
 #pragma mark - Public Methods

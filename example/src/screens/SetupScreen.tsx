@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Platform, View, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, View, Text, StyleSheet } from 'react-native';
 import AppButton from '../components/AppButton';
 import { CASMobileAds, Audience, PrivacyGeography } from 'react-native-cas';
 import { useNavigation } from '@react-navigation/native';
@@ -11,22 +11,47 @@ const CAS_IDS = {
 
 export default function SetupScreen() {
   const nav = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const [statusText, setStatusText] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const inited = await CASMobileAds.isInitialized();
+        if (inited) {
+          nav.navigate('Menu' as never);
+        }
+      } catch {}
+    })();
+  }, [nav]);
 
   const init = useCallback(async () => {
+    if (loading) return; 
+    setLoading(true);
+    setError(null);
+    setStatusText('Initializing…');
+
     try {
-      const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios });
+      const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios })!;
       const status = await CASMobileAds.initialize(casId, {
         forceTestAds: true,
         targetAudience: Audience.NotChildren,
         debugPrivacyGeography: PrivacyGeography.europeanEconomicArea,
         showConsentFormIfRequired: true,
       });
+
       console.log('CAS initialized:', status);
+      setStatusText('Initialization complete');
       nav.navigate('Menu' as never);
-    } catch (e) {
+    } catch (e: any) {
       console.warn('CAS init error', e);
+      setError(e?.message ?? 'Initialization failed');
+      setStatusText(null);
+    } finally {
+      setLoading(false);
     }
-  }, [nav]);
+  }, [loading, nav]);
 
   return (
     <View style={S.screen}>
@@ -35,7 +60,20 @@ export default function SetupScreen() {
         <Text style={S.subtitle}>One tap to set up SDK & continue</Text>
 
         <View style={S.stack}>
-          <AppButton title="Initialize" onPress={init} />
+          <AppButton
+            title={loading ? 'Initializing…' : 'Initialize'}
+            onPress={init}
+            enabled={!loading}
+          />
+
+          {loading && (
+            <View style={S.rowCenter}>
+              <ActivityIndicator />
+              <Text style={S.statusText}>{statusText}</Text>
+            </View>
+          )}
+
+          {!!error && <Text style={S.errorText}>{error}</Text>}
         </View>
       </View>
     </View>
@@ -79,5 +117,21 @@ const S = StyleSheet.create({
   },
   stack: {
     gap: 12,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'center',
+    marginTop: 4,
+  },
+  statusText: {
+    color: '#A5B3C5',
+    fontSize: 14,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    textAlign: 'center',
+    marginTop: 6,
   },
 });

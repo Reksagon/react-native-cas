@@ -114,11 +114,10 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - Init
 
-- (void)initializeWithCASId:(NSString *)casId
-                    options:(NSDictionary *)options
-                    resolve:(RCTPromiseResolveBlock)resolve
-                     reject:(RCTPromiseRejectBlock)reject
-{
+RCT_EXPORT_METHOD(initialize:(NSString *)casId
+                  options:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
     if (self.casInitConfig && self.casIdendifier == casId) {
         resolve(self.casInitConfig);
         return;
@@ -151,11 +150,7 @@ RCT_EXPORT_MODULE();
 
     CASManagerBuilder *builder = [CAS buildManager];
 
-    NSNumber *forceTestAds = options[@"forceTestAds"];
-
-    if (forceTestAds != nil) {
-        [builder withTestAdMode:[forceTestAds boolValue]];
-    }
+    [builder withTestAdMode:[options[@"forceTestAds"] boolValue]];
 
     NSNumber *showConsent = options[@"showConsentFormIfRequired"];
 
@@ -172,7 +167,7 @@ RCT_EXPORT_MODULE();
         [builder withConsentFlow:consentFlow];
     }
 
-    [builder withFramework:@"ReactNative" version:@"?"];
+    [builder withFramework:@"ReactNative" version:options[@"reactNativeVersion"]];
 
     // Completion handler
     [builder withCompletionHandler:^(CASInitialConfig *_Nonnull config) {
@@ -194,59 +189,6 @@ RCT_EXPORT_MODULE();
 
     [builder createWithCasId:casId];
 }
-
-#ifdef RCT_NEW_ARCH_ENABLED
-- (void)initialize:(NSString *)casId
-           options:(JS::NativeCASMobileAdsModule::InitializationParams &)options
-           resolve:(RCTPromiseResolveBlock)resolve
-            reject:(RCTPromiseRejectBlock)reject
-{
-    NSMutableDictionary *dictOptions = [NSMutableDictionary dictionary];
-
-    if (auto val = options.forceTestAds()) {
-        dictOptions[@"forceTestAds"] = @(*val);
-    }
-
-    if (auto val = options.showConsentFormIfRequired()) {
-        dictOptions[@"showConsentFormIfRequired"] = @(*val);
-    }
-
-    if (auto val = options.debugPrivacyGeography()) {
-        dictOptions[@"debugPrivacyGeography"] = @(*val);
-    }
-
-    if (auto val = options.targetAudience()) {
-        dictOptions[@"targetAudience"] = @(*val);
-    }
-
-    if (options.testDeviceIds().has_value()) {
-        auto vec = options.testDeviceIds().value();
-        NSMutableArray *devices = [NSMutableArray arrayWithCapacity:vec.size()];
-
-        for (size_t i = 0; i < vec.size(); i++) {
-            [devices addObject:vec.at(i)];
-        }
-
-        dictOptions[@"testDeviceIds"] = devices;
-    }
-
-    id extras = options.mediationExtras();
-
-    if (extras != nil && [extras isKindOfClass:[NSDictionary class]]) {
-        dictOptions[@"mediationExtras"] = (NSDictionary *)extras;
-    }
-
-    [self initializeWithCASId:casId options:dictOptions resolve:resolve reject:reject];
-}
-
-#else  /* ifdef RCT_NEW_ARCH_ENABLED */
-RCT_EXPORT_METHOD(initialize:(NSString *)casId
-                  options:(NSDictionary *)options
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    [self initializeWithCASId:casId options:options resolve:resolve reject:reject];
-}
-#endif /* ifdef RCT_NEW_ARCH_ENABLED */
 
 RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {

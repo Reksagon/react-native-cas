@@ -82,6 +82,10 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
       options.optIntOrNull("targetAudience")?.let { CAS.settings.taggedAudience = it }
       CAS.settings.testDeviceIDs = options.optStringList("testDeviceIds").toSet()
+      
+      val rnVersion: String? = options?.let {
+        if (it.hasKey("reactNativeVersion") && !it.isNull("reactNativeVersion")) it.getString("reactNativeVersion") else null
+      }
 
       val consent = ConsentFlow(showConsent).apply {
         options.optIntOrNull("debugPrivacyGeography")?.let { debugGeography = it }
@@ -94,6 +98,9 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
       val builder = CAS.buildManager()
         .withCasId(casId)
         .withConsentFlow(consent)
+        .apply {
+          rnVersion?.let { withFramework("ReactNative", it) }
+        }
         .withCompletionListener { initConfiguration ->
           val out = WritableNativeMap().apply {
             initConfiguration.error?.let { putString("error", it) }
@@ -124,6 +131,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
       })
     }
   }
+
 
   fun isInitialized(promise: Promise) {
     promise.resolve(casIdentifier != null)

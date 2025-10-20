@@ -4,8 +4,10 @@ import {
   AdView, AdViewSize,
   type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
 } from 'react-native-cas';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MRecExample() {
+  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -67,7 +69,13 @@ export default function MRecExample() {
         </View>
       </View>
 
-      <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
+      <Animated.View style={[
+          S.dock,
+          {
+            paddingBottom: (insets.bottom || 0) + 6,
+            transform: [{ translateY }],
+          },
+        ]} pointerEvents={visible ? 'auto' : 'none'}>
         <View style={S.centerRow}>
           <AdView
             ref={adRef}
@@ -90,7 +98,7 @@ const S = StyleSheet.create({
   screen: {
     flex: 1, paddingHorizontal: 20,
     paddingTop: Platform.select({ ios: 20, android: 12 }),
-    paddingBottom: Platform.select({ ios: 24, android: 16 }),
+    paddingBottom: Platform.select({ ios: 24, android: 86 }),
     backgroundColor: '#0B0F14', alignItems: 'center', justifyContent: 'center',
   },
   card: {

@@ -4,8 +4,10 @@ import {
   AdView, AdViewSize, CASMobileAds,
   type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
 } from 'react-native-cas';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AdaptiveBannerExample() {
+  const insets = useSafeAreaInsets();
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -90,7 +92,14 @@ export default function AdaptiveBannerExample() {
         </View>
       </View>
 
-      <Animated.View style={[S.dock, { transform: [{ translateY }] }]} pointerEvents={visible ? 'auto' : 'none'}>
+      <Animated.View style={[
+          S.dock,
+          {
+            paddingBottom: (insets.bottom || 0) + 16,
+            transform: [{ translateY }],
+          },
+        ]} 
+        pointerEvents={visible ? 'auto' : 'none'}>
         <AdView
           ref={bannerRef}
           size={AdViewSize.ADAPTIVE}
