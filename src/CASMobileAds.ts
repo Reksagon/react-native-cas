@@ -2,8 +2,6 @@ import CASMobileAdsNative from "./modules/NativeCASMobileAdsModule";
 import type { InitializationStatus, InitializationParams, Gender } from './types/Types';
 import { version as reactNativeVersion } from 'react-native/Libraries/Core/ReactNativeVersion';
 
-const RN_VERSION = `${reactNativeVersion.major}.${reactNativeVersion.minor}.${reactNativeVersion.patch}`;
-
 export class CASMobileAds {
 
   /** 
@@ -61,6 +59,7 @@ export class CASMobileAds {
   * Mediation extra parameters.
   */
   static initialize(casId: string, options: InitializationParams = {}): Promise<InitializationStatus> {
+    
     if (typeof casId !== 'string') {
       return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
     }
@@ -76,6 +75,7 @@ export class CASMobileAds {
     if (options.debugPrivacyGeography !== undefined) {
       payload.debugPrivacyGeography = options.debugPrivacyGeography === null ? null : Number(options.debugPrivacyGeography);
     }
+    const RN_VERSION = `${reactNativeVersion.major}.${reactNativeVersion.minor}.${reactNativeVersion.patch}`;
     payload.reactNativeVersion = RN_VERSION;
     
     return CASMobileAdsNative.initialize(casId, Object.keys(payload).length ? payload : null);
