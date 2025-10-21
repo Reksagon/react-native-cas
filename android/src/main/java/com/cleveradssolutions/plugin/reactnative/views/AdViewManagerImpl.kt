@@ -29,7 +29,7 @@ object AdViewManagerImpl {
     }
   }
 
-  fun setIsAutoloadEnabled(view: CASAdView, enabled: Boolean) {
+  fun setAutoReload(view: CASAdView, enabled: Boolean) {
     view.banner.isAutoloadEnabled = enabled
   }
 

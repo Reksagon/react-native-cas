@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: - Configurable Properties
 @property (nonatomic, copy, nullable) NSString *casID;              // JS: casId
 @property (nonatomic, copy) NSString *size;                         // JS: size
-@property (nonatomic) BOOL isAutoloadEnabled;                       // JS: isAutoloadEnabled
+@property (nonatomic) BOOL autoloadReload;                          // JS: autoloadReload
 @property (nonatomic) BOOL loadOnMount;                             // JS: loadOnMount
 @property (nonatomic) NSInteger refreshInterval;                    // JS: refreshInterval
 

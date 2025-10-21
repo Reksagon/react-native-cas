@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Setters (called by manager when props change)
 - (void)setCasID:(NSString *)casID;
 - (void)setAdSize:(CASSize *)adSize;
-- (void)setIsAutoloadEnabled:(BOOL)isAutoloadEnabled;
+- (void)setAutoReload:(BOOL)autoReload;
 - (void)setRefreshInterval:(NSInteger)interval;
 - (void)setLoadOnMount:(BOOL)loadOnMount;
 

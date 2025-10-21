@@ -16,7 +16,7 @@ RCT_EXPORT_MODULE(CASAdView)
 // Export props
 RCT_EXPORT_VIEW_PROPERTY(casID, NSString)
 RCT_EXPORT_VIEW_PROPERTY(size, NSString)         // custom converter to CASSize
-RCT_EXPORT_VIEW_PROPERTY(isAutoloadEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(autoReload, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(loadOnMount, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(refreshInterval, NSInteger)
 

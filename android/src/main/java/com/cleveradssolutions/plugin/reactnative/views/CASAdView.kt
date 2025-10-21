@@ -130,9 +130,8 @@ class CASAdView(context: Context) :
   }
 
   override fun onAdImpression(ad: AdContentInfo) {
-    val map = WritableNativeMap().apply { putMap("impression", ad.toReadableMap()) }
     (context as ThemedReactContext)
       .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(this.id, "onAdViewImpression", map)
+      .receiveEvent(this.id, "onAdViewImpression", ad.toReadableMap())
   }
 }

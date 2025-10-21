@@ -116,7 +116,7 @@ export default function BannerExample() {
             ref={bannerRef}
             size={AdViewSize.BANNER}
             loadOnMount={false}          
-            isAutoloadEnabled={true}
+            autoloadReload={true}
             refreshInterval={30}
             style={S.bannerExact}
             onAdViewLoaded={onLoaded}

@@ -39,8 +39,8 @@
     // Optional: update bannerView layout if already loaded
 }
 
-- (void)setIsAutoloadEnabled:(BOOL)isAutoloadEnabled {
-    self.adView.isAutoloadEnabled = isAutoloadEnabled;
+- (void)setAutoReload:(BOOL)autoReload {
+    self.adView.isAutoloadEnabled = autoReload;
 }
 
 - (void)setRefreshInterval:(NSInteger)interval {

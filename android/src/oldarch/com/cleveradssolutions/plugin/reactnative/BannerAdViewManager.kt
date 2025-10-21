@@ -20,9 +20,9 @@ class BannerAdViewManager : SimpleViewManager<CASAdView>() {
   fun setSize(view: CASAdView, value: String?) =
     AdViewManagerImpl.setSize(view, value)
 
-  @ReactProp(name = "isAutoloadEnabled", defaultBoolean = true)
-  fun setIsAutoloadEnabled(view: CASAdView, value: Boolean) =
-    AdViewManagerImpl.setIsAutoloadEnabled(view, value)
+  @ReactProp(name = "autoReload", defaultBoolean = true)
+  fun setAutoReload(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setAutoReload(view, value)
 
   @ReactProp(name = "loadOnMount", defaultBoolean = true)
   fun setLoadOnMount(view: CASAdView, value: Boolean) =

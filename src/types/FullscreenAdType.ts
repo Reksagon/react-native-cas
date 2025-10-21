@@ -1,3 +1,7 @@
+import type { AdError, AdContentInfo } from './AdContent';
+
+export type Unsubscribe = () => void;
+
 /**
  * Public interfaces for fullscreen ad surfaces.
  * Each function mirrors a native command or emits a native event.
@@ -11,10 +15,6 @@
  * - `add*EventListener` ПОВЕРТАЄ лямбду `() => void` для відписки (рекомендовано).
  * - Методи `remove*EventListener()` залишені для зворотної сумісності (deprecated).
  */
-import type { AdError, AdContentInfo } from './AdView';
-
-export type Unsubscribe = () => void;
-
 export type FullscreenAdBase = {
   /** Resolves `true` if an ad is currently loaded and ready. */
   isAdLoaded(): Promise<boolean>;

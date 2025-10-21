@@ -22,7 +22,7 @@ class BannerAdViewManager :
   override fun getName() = AdViewManagerImpl.NAME
   override fun createViewInstance(ctx: ThemedReactContext): CASAdView = AdViewManagerImpl.createViewInstance(ctx)
   override fun setSize(view: CASAdView, value: String?) = AdViewManagerImpl.setSize(view, value)
-  override fun setIsAutoloadEnabled(view: CASAdView, value: Boolean) = AdViewManagerImpl.setIsAutoloadEnabled(view, value)
+  override fun setAutoReload(view: CASAdView, value: Boolean) = AdViewManagerImpl.setAutoReload(view, value)
   override fun setLoadOnMount(view: CASAdView, value: Boolean) = AdViewManagerImpl.setLoadOnMount(view, value)
   override fun setRefreshInterval(view: CASAdView, @NonNull value: Int) = AdViewManagerImpl.setRefreshInterval(view, value)
   override fun onAfterUpdateTransaction(view: CASAdView) {

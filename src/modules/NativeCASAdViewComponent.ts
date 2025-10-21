@@ -6,25 +6,22 @@ import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativ
 
 export type AdViewSize = 'B' | 'L' | 'M' | 'A' | 'S';
 
-type OnLoadedEvent = { width?: Int32; height?: Int32 };
+type OnLoadedEvent = { width: Int32; height: Int32 };
 type OnFailedEvent = { code: Int32; message: string };
 type OnImpressionEvent = {
-  impression: {
-    format: string;
-    revenue: Double;
-    revenuePrecision: string;
-    sourceUnitId: string;
-    sourceName: string;
-    creativeId?: string;
-    revenueTotal: Double;
-    impressionDepth: Int32;
-  };
+  format: string;
+  revenue: Double;
+  revenuePrecision: string;
+  sourceUnitId: string;
+  sourceName: string;
+  creativeId?: string;
+  revenueTotal: Double;
+  impressionDepth: Int32;
 };
-
 
 export interface NativeProps extends ViewProps {
   size?: WithDefault<AdViewSize, 'B'>;
-  isAutoloadEnabled?: WithDefault<boolean, true>;
+  autoReload?: WithDefault<boolean, true>;
   loadOnMount?: WithDefault<boolean, true>;
   casId?: string;
   refreshInterval?: Int32;
@@ -33,7 +30,6 @@ export interface NativeProps extends ViewProps {
   onAdViewFailed?: BubblingEventHandler<OnFailedEvent>;
   onAdViewClicked?: BubblingEventHandler<{}>;
   onAdViewImpression?: BubblingEventHandler<OnImpressionEvent>;
-  
 }
 
 type NativeComponent = HostComponent<NativeProps>;
@@ -47,4 +43,4 @@ export const Commands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['loadAd', 'destroy'],
 });
 
-export default codegenNativeComponent<NativeProps>('CASAdView')
+export default codegenNativeComponent<NativeProps>('CASAdView');

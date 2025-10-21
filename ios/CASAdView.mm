@@ -61,11 +61,11 @@ using namespace facebook::react;
     self.bannerView.refreshInterval = refreshInterval;
 }
 
-- (BOOL)isAutoloadEnabled {
+- (BOOL)autoReload {
     return self.bannerView.isAutoloadEnabled;
 }
 
-- (void)setIsAutoloadEnabled:(BOOL)isAutoloadEnabled {
+- (void)setAutoReload:(BOOL)isAutoloadEnabled {
     self.bannerView.isAutoloadEnabled = isAutoloadEnabled;
 }
 
@@ -138,7 +138,7 @@ using namespace facebook::react;
 - (void)adDidRecordImpressionWithInfo:(CASContentInfo *_Nonnull)info {
     if (self.onAdViewImpression) {
         NSDictionary *impressionData = [CASMobileAds convertImpressionInfo:info];
-        self.onAdViewImpression(@{ @"impression": impressionData });
+        self.onAdViewImpression(impressionData);
     }
 }
 

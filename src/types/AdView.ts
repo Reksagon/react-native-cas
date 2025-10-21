@@ -1,4 +1,5 @@
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { AdError, AdViewInfo, AdContentInfo } from './AdContent';
 
 /**
  * Supported banner sizes.
@@ -17,68 +18,37 @@ export enum AdViewSize {
   SMART = 'S',
 }
 /**
- * Information returned when an ad has successfully loaded.
- * Some networks may not provide exact dimensions.
- */
-export type AdViewLoaded = {
-  /** The actual width of the loaded creative in pixels (if available). */
-  width?: number;
-  /** The actual height of the loaded creative in pixels (if available). */
-  height?: number;
-};
-/**
- * Error details returned when an ad fails to load.
- */
-export type AdViewFailed = {
-  /** Numeric error code returned by the network or SDK. */
-  code: number;
-  /** Human-readable error message. */
-  message: string;
-};
-/**
- * Normalized impression data containing monetization information.
- * Values may vary depending on the ad network.
- */
-export type AdImpression = {
-  /** The ad format (e.g., Banner, MREC, Adaptive). */
-  format: string;
-  /** Revenue for this impression, typically in USD. */
-  revenue: number;
-  /** Revenue precision (e.g., "estimated", "precise"). */
-  revenuePrecision: string;
-  /** The source unit ID provided by the network. */
-  sourceUnitId: string;
-  /** The ad network name (e.g., AdMob, AppLovin). */
-  sourceName: string;
-  /** The creative ID, if available. */
-  creativeId?: string;
-  /** The total accumulated revenue for the session, if tracked by SDK. */
-  revenueTotal: number;
-  /** The waterfall or auction depth index of this impression. */
-  impressionDepth: number;
-};
-/**
  * Public props for the `<AdView />` React Native component.
  * All callbacks receive plain JavaScript objects (no `NativeSyntheticEvent` wrappers).
  */
 export type AdViewProps = {
-  /** Banner size. Defaults to `BANNER`. */
+  /** Banner size. Defaults to {@link AdViewSize.BANNER}. */
   size?: AdViewSize;
   /**
-   * Enables automatic loading of the next ad once the current one is shown or fails.
-   * Default behavior may vary per platform.
+   * Limit inline adaptive banner height.
+   * By default, inline adaptive banners instantiated without a maxHeight value have a maxHeight equal to the device height.
    */
-  isAutoloadEnabled?: boolean;
+  maxHeight?: number;
+  /**
+   * Sets the width for adaptive banners (inline and anchored).
+   * If not specified, the width defaults to the full device width.
+   */
+  maxWidth?: number;
+  /**
+   * Optional CAS identifier override.
+   * Usually set during SDK initialization; not required for most use cases.
+   */
+  casId?: string;
   /**
    * Automatically load an ad after the component mounts.
    * If `false`, call `ref.loadAd()` manually to start loading.
    */
   loadOnMount?: boolean;
   /**
-   * Optional CAS identifier override.
-   * Usually set during SDK initialization; not required for most use cases.
+   * Enables automatic loading of the next ad once the current one is shown or fails.
+   * Default behavior may vary per platform.
    */
-  casId?: string;
+  autoReload?: boolean;
   /**
    * Automatic refresh interval in seconds.
    * Set to `0` or omit to disable auto-refresh.
@@ -90,13 +60,13 @@ export type AdViewProps = {
    */
   style?: StyleProp<ViewStyle>;
   /** Called when an ad has successfully loaded. */
-  onAdViewLoaded?: (data: AdViewLoaded) => void;
+  onAdViewLoaded?: (info: AdViewInfo) => void;
   /** Called when ad loading fails. */
-  onAdViewFailed?: (err: AdViewFailed) => void;
+  onAdViewFailed?: (error: AdError) => void;
   /** Called when the user clicks the ad. */
   onAdViewClicked?: () => void;
   /** Called when an ad impression is recorded. */
-  onAdViewImpression?: (info: AdImpression) => void;
+  onAdViewImpression?: (info: AdContentInfo) => void;
 };
 
 /** Public methods available through the `<AdView ref={...} />` reference. */
