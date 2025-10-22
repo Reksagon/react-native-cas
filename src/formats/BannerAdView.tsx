@@ -1,5 +1,5 @@
-import React, { forwardRef, useRef, useImperativeHandle, useCallback, useMemo, useState, useReducer, useEffect } from 'react';
-import { View, useWindowDimensions, NativeSyntheticEvent, LayoutChangeEvent, StyleSheet, StyleProp, ViewStyle, PixelRatio, ViewProps, DimensionValue } from 'react-native';
+import React, { forwardRef, useRef, useImperativeHandle, useCallback, useMemo, useState } from 'react';
+import { useWindowDimensions, NativeSyntheticEvent, ViewProps } from 'react-native';
 
 import type { AdViewInfo, AdError, AdContentInfo, BannerAdViewRef, BannerAdViewProps } from '../types';
 import { BannerAdSize } from '../types/BannerAdView';
@@ -18,8 +18,8 @@ export const BannerAdView = forwardRef<BannerAdViewRef, BannerAdViewProps & View
   const sizeConfig = useMemo(
     () => ({
       sizeType: size,
-      maxWidth: maxWidth ?? screenWidth,
-      maxHeight: maxHeight ?? screenHeight,
+      maxWidth: Math.min(maxWidth ?? screenWidth, screenWidth),
+      maxHeight: Math.min(maxHeight ?? screenHeight, screenHeight),
     }),
     [size, maxWidth, maxHeight, screenWidth, screenHeight]
   );

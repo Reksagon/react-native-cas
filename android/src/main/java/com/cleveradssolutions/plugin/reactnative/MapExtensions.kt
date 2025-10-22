@@ -7,7 +7,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 
-fun AdContentInfo.toReadableMap(): WritableMap {
+fun AdContentInfo.toWritableMap(): WritableMap {
   val map = WritableNativeMap()
   map.putString("format", this.format.label)
   map.putDouble("revenue", this.revenue)

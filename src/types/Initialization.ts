@@ -47,7 +47,7 @@ export type InitializationParams = {
    */
   testDeviceIds?: string[];
   /** Overrides detected privacy geography for debugging. */
-  debugPrivacyGeography?: PrivacyGeography;
+  debugGeography?: PrivacyGeography;
   /** Optional mediation extras (network-specific). */
   mediationExtras?: { [key: string]: string };
 };

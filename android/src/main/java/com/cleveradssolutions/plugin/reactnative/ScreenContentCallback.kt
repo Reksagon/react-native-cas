@@ -28,7 +28,7 @@ class ScreenContentCallback(
   }
 
   override fun onAdImpression(ad: AdContentInfo) {
-    emit("on${adType}Impression", ad.toReadableMap())
+    emit("on${adType}Impression", ad.toWritableMap())
   }
 
   override fun onUserEarnedReward(ad: AdContentInfo) {

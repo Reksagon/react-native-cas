@@ -17,8 +17,8 @@ class MobileAds implements MobileAdsModule {
 
     if (Array.isArray(options.testDeviceIds)) params.testDeviceIds = options.testDeviceIds;
     if (options.mediationExtras != null) params.mediationExtras = options.mediationExtras;
-    if (options.debugPrivacyGeography !== undefined) {
-      params.debugPrivacyGeography = options.debugPrivacyGeography;
+    if (options.debugGeography !== undefined) {
+      params.debugPrivacyGeography = options.debugGeography;
     }
     return CASMobileAdsNative.initialize(casId, params);
   }

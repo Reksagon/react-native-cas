@@ -5,8 +5,8 @@ import CASMobileAds, { Audience, PrivacyGeography } from 'react-native-cas';
 import { useNavigation } from '@react-navigation/native';
 
 const CAS_IDS = {
-  android: 'YOUR_ANDROID_CAS_ID',
-  ios: 'YOUR_IOS_CAS_ID',
+  android: 'demo',
+  ios: 'demo',
 };
 
 export default function SetupScreen() {
@@ -32,16 +32,24 @@ export default function SetupScreen() {
     setError(null);
     setStatusText('Initializing…');
 
+    CASMobileAds.setDebugLoggingEnabled(__DEV__);
+
     const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios })!;
     const status = await CASMobileAds.initialize(casId, {
-      forceTestAds: true,
-      targetAudience: Audience.NotChildren,
-      debugGeography: PrivacyGeography.europeanEconomicArea,
+      targetAudience: Audience.UNDEFINED,
       showConsentFormIfRequired: true,
+      forceTestAds: __DEV__,
+      testDeviceIds: [
+        // Test Devide ID
+      ],
+      debugGeography: PrivacyGeography.europeanEconomicArea,
+      mediationExtras: {
+        testKey: 'testValue',
+      },
     });
 
     if (status.error) {
-      console.warn('CAS init error', status.error);
+      console.warn('CAS initialization error:', status.error);
       setStatusText(null);
       setError(status.error);
       setLoading(false);
