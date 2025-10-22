@@ -3,62 +3,83 @@ import { View, Text, StyleSheet } from 'react-native';
 import AppButton from '../components/AppButton';
 import { RewardedAd, type AdError, type AdContentInfo } from 'react-native-cas';
 
-const MAX_RETRY = 6 as const;
+const isAutoloadEnabled = true as const;
 
 export default function RewardedExample() {
-  const [state, setState] = useState<'idle' | 'loading' | 'ready'>('idle');
+  const [loaded, setLoaded] = useState(false);
   const retry = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    (RewardedAd as any).setAutoloadEnabled?.(isAutoloadEnabled);
+
     const offLoaded = RewardedAd.addAdLoadedEventListener(() => {
       console.log('[Rewarded] LOADED');
-      setState('ready'); retry.current = 0;
+      setLoaded(true);
+      retry.current = 0;
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     });
 
     const offLoadFailed = RewardedAd.addAdLoadFailedEventListener((e: AdError) => {
       console.log('[Rewarded] LOAD_FAILED', e);
-      setState('idle');
-      if (retry.current >= MAX_RETRY) return;
-      retry.current += 1;
-      const delay = Math.min(64, 2 ** retry.current);
-      setTimeout(() => { setState('loading'); RewardedAd.loadAd(); }, delay * 1000);
+      setLoaded(false);
+      if (isAutoloadEnabled) {
+        // just wait auto reload
+      } else {
+        retry.current = Math.min(retry.current + 1, 6);
+        const delay = Math.min(64, 2 ** retry.current);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => { timerRef.current = null; RewardedAd.loadAd(); }, delay * 1000);
+      }
     });
 
     const offClicked = RewardedAd.addAdClickedEventListener(() => console.log('[Rewarded] CLICKED'));
-    const offDisplayed = RewardedAd.addAdShowedEventListener(() => console.log('[Rewarded] DISPLAYED'));
-    const offFailShow = RewardedAd.addAdFailedToShowEventListener((e: AdError) => console.log('[Rewarded] FAILED_TO_SHOW', e));
-    const offHidden = RewardedAd.addAdDismissedEventListener(() => { console.log('[Rewarded] HIDDEN'); setState('idle'); });
-    const offImpression = RewardedAd.addAdImpressionEventListener((info: AdContentInfo) => console.log('[Rewarded] IMPRESSION', info));
-    const offEarned = RewardedAd.addAdUserEarnRewardEventListener(() => {
-      console.log('[Rewarded] EARNED_REWARD');
+    const offDisplayed = RewardedAd.addAdShowedEventListener(() => console.log('[Rewarded] SHOWED'));
+    const offFailShow = RewardedAd.addAdFailedToShowEventListener((e: AdError) => {
+      console.log('[Rewarded] FAILED_TO_SHOW', e);
+      setLoaded(false);
+      if (isAutoloadEnabled) {
+        // just wait auto reload
+      } else {
+        RewardedAd.loadAd();
+      }
     });
+    const offHidden = RewardedAd.addAdDismissedEventListener(() => {
+      console.log('[Rewarded] DISMISSED');
+      setLoaded(false);
+      if (isAutoloadEnabled) {
+        // just wait auto reload
+      } else {
+        RewardedAd.loadAd(); 
+      }
+    });
+    const offImpression = RewardedAd.addAdImpressionEventListener((i: AdContentInfo) => console.log('[Rewarded] IMPRESSION', i));
+    const offEarned = RewardedAd.addAdUserEarnRewardEventListener(() => console.log('[Rewarded] EARNED_REWARD'));
+
+    RewardedAd.loadAd();
 
     return () => {
-      offLoaded();
-      offLoadFailed();
-      offClicked();
-      offDisplayed();
-      offFailShow();
-      offHidden();
-      offImpression();
-      offEarned();
+      offLoaded(); offLoadFailed(); offClicked(); offDisplayed(); offFailShow(); offHidden(); offImpression(); offEarned();
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-  const onPress = async () => {
-    if (await RewardedAd.isAdLoaded()) RewardedAd.showAd();
-    else { setState('loading'); RewardedAd.loadAd(); }
-  };
+  const onLoad = () => RewardedAd.loadAd();
 
-  const title = state === 'ready' ? 'Show Rewarded' : state === 'loading' ? 'Loading…' : 'Load Rewarded';
+  const onShow = async () => {
+    if (await RewardedAd.isAdLoaded()) {
+      setLoaded(false);
+      RewardedAd.showAd();
+    }
+  };
 
   return (
     <View style={S.screen}>
       <View style={S.card}>
         <Text style={S.title}>Rewarded</Text>
-        <Text style={S.subtitle}>Get a reward on completion</Text>
-        <View style={S.stack}>
-          <AppButton title={title} onPress={onPress} enabled={state !== 'loading'} />
+        <View style={S.row}>
+          <AppButton title="Load" onPress={onLoad} />
+          <AppButton title="Show" onPress={onShow} enabled={loaded} />
         </View>
       </View>
     </View>
@@ -67,8 +88,7 @@ export default function RewardedExample() {
 
 const S = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, backgroundColor: '#0B0F14', alignItems: 'center', justifyContent: 'center' },
-  card: { width: '100%', maxWidth: 420, borderRadius: 16, backgroundColor: '#121821', padding: 20, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
-  title: { fontSize: 20, fontWeight: '700', color: '#E8EEF6', textAlign: 'center', marginBottom: 12 },
-  subtitle: { fontSize: 14, color: '#A5B3C5', textAlign: 'center', marginBottom: 16 },
-  stack: { gap: 12 },
+  card: { width: '100%', maxWidth: 420, borderRadius: 16, backgroundColor: '#121821', padding: 20, elevation: 6 },
+  title: { fontSize: 20, fontWeight: '700', color: '#E8EEF6', textAlign: 'center', marginBottom: 8 },
+  row: { flexDirection: 'row', gap: 12, justifyContent: 'center', marginBottom: 8 },
 });
