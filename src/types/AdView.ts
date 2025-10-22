@@ -1,4 +1,3 @@
-import type { StyleProp, ViewStyle } from 'react-native';
 import type { AdError, AdViewInfo, AdContentInfo } from './AdContent';
 
 /**
@@ -15,8 +14,10 @@ export enum AdViewSize {
   LEADERBOARD = 'L',
   MREC = 'M',
   ADAPTIVE = 'A',
+  INLINE = 'I',
   SMART = 'S',
 }
+
 /**
  * Public props for the `<AdView />` React Native component.
  * All callbacks receive plain JavaScript objects (no `NativeSyntheticEvent` wrappers).
@@ -40,25 +41,14 @@ export type AdViewProps = {
    */
   casId?: string;
   /**
-   * Automatically load an ad after the component mounts.
-   * If `false`, call `ref.loadAd()` manually to start loading.
+   * Enables automatic reloading of the ad once the current one fails.
    */
-  loadOnMount?: boolean;
-  /**
-   * Enables automatic loading of the next ad once the current one is shown or fails.
-   * Default behavior may vary per platform.
-   */
-  autoReload?: boolean;
+  autoload?: boolean;
   /**
    * Automatic refresh interval in seconds.
-   * Set to `0` or omit to disable auto-refresh.
+   * Set to `0` to disable auto-refresh.
    */
   refreshInterval?: number;
-  /**
-   * Container style. The minimum height is applied automatically
-   * once an ad is successfully loaded.
-   */
-  style?: StyleProp<ViewStyle>;
   /** Called when an ad has successfully loaded. */
   onAdViewLoaded?: (info: AdViewInfo) => void;
   /** Called when ad loading fails. */

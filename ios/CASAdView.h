@@ -23,10 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSInteger refreshInterval;                    // JS: refreshInterval
 
 // MARK: - React Event Callbacks
-@property (nonatomic, copy, nullable) RCTBubblingEventBlock onAdViewLoaded;
-@property (nonatomic, copy, nullable) RCTBubblingEventBlock onAdViewFailed;
-@property (nonatomic, copy, nullable) RCTBubblingEventBlock onAdViewClicked;
-@property (nonatomic, copy, nullable) RCTBubblingEventBlock onAdViewImpression;
+@property (nonatomic, copy, nullable) RCTDirectEventBlock onAdViewLoaded;
+@property (nonatomic, copy, nullable) RCTDirectEventBlock onAdViewFailed;
+@property (nonatomic, copy, nullable) RCTDirectEventBlock onAdViewClicked;
+@property (nonatomic, copy, nullable) RCTDirectEventBlock onAdViewImpression;
 
 // MARK: - Readonly Info
 @property (nonatomic, readonly, strong, nullable) CASBannerView *bannerView;

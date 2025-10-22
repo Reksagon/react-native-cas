@@ -1,10 +1,8 @@
 import type * as React from 'react';
 import type { HostComponent, ViewProps } from 'react-native';
-import type { Int32, Double, WithDefault, BubblingEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
+import type { Int32, Double, WithDefault, DirectEventHandler, Float } from 'react-native/Libraries/Types/CodegenTypes';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-
-export type AdViewSize = 'B' | 'L' | 'M' | 'A' | 'S';
 
 type OnLoadedEvent = { width: Int32; height: Int32 };
 type OnFailedEvent = { code: Int32; message: string };
@@ -20,27 +18,36 @@ type OnImpressionEvent = {
 };
 
 export interface NativeProps extends ViewProps {
-  size?: WithDefault<AdViewSize, 'B'>;
-  autoReload?: WithDefault<boolean, true>;
+  sizeConfig?: { sizeType: string; maxHeight: Float; maxWidth: Float };
+  autoload?: WithDefault<boolean, true>;
   loadOnMount?: WithDefault<boolean, true>;
   casId?: string;
   refreshInterval?: Int32;
 
-  onAdViewLoaded?: BubblingEventHandler<OnLoadedEvent>;
-  onAdViewFailed?: BubblingEventHandler<OnFailedEvent>;
-  onAdViewClicked?: BubblingEventHandler<{}>;
-  onAdViewImpression?: BubblingEventHandler<OnImpressionEvent>;
+  onAdViewLoaded?: DirectEventHandler<OnLoadedEvent>;
+  onAdViewFailed?: DirectEventHandler<OnFailedEvent>;
+  onAdViewClicked?: DirectEventHandler<{}>;
+  onAdViewImpression?: DirectEventHandler<OnImpressionEvent>;
 }
 
-type NativeComponent = HostComponent<NativeProps>;
+type CASAdViewNativeComponentType = HostComponent<NativeProps>;
 
-export interface NativeCommands {
-  loadAd(ref: React.ElementRef<NativeComponent>): void;
-  destroy(ref: React.ElementRef<NativeComponent>): void;
+/**
+ * Native commands callable from JS.
+ */
+interface NativeCommands {
+  loadAd(ref: React.ElementRef<CASAdViewNativeComponentType>): void;
+  destroy(ref: React.ElementRef<CASAdViewNativeComponentType>): void;
 }
 
-export const Commands = codegenNativeCommands<NativeCommands>({
+/**
+ * JS interface to ad view commands.
+ */
+export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['loadAd', 'destroy'],
 });
 
-export default codegenNativeComponent<NativeProps>('CASAdView');
+/**
+ * Native view component for displaying a ad view.
+ */
+export default codegenNativeComponent<NativeProps>('CASAdView') as HostComponent<NativeProps>;

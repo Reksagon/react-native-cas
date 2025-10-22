@@ -1,7 +1,7 @@
 import { TurboModuleRegistry } from 'react-native';
 import type { TurboModule } from 'react-native';
 import type { Int32 } from 'react-native/Libraries/Types/CodegenTypes';
-import type { InitializationStatus } from '../types/Types';
+import type { InitializationStatus } from '../types/Initialization';
 
 export interface Spec extends TurboModule {
   // SDK
