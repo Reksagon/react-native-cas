@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Platform, StyleSheet, View, Button, Text, Animated } from 'react-native';
 import {
-  AdView, AdViewSize,
-  type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
+  BannerAdView, BannerAdSize,
+  type BannerAdViewRef, type AdViewInfo, type AdError, type AdContentInfo
 } from 'react-native-cas';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ export default function MRecExample() {
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  const adRef = useRef<AdViewRef>(null);
+  const adRef = useRef<BannerAdViewRef>(null);
   const translateY = useRef(new Animated.Value(320)).current;
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -30,24 +30,24 @@ export default function MRecExample() {
     return () => anim.stop();
   }, [visible, loaded, translateY]);
 
-  const onLoaded = useCallback((data: AdViewLoaded) => {
+  const onLoaded = useCallback((data: AdViewInfo) => {
     setLoaded(true);
     if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
     console.log('MREC loaded', data);
   }, []);
 
-  const onFailed = useCallback((err: AdViewFailed) => {
+  const onFailed = useCallback((err: AdError) => {
     setLoaded(false);
     console.log('MREC failed', err);
     if (retryRef.current) clearTimeout(retryRef.current);
     retryRef.current = setTimeout(() => {
       retryRef.current = null;
       adRef.current?.loadAd();
-    }, 2000);
+    }, 10000);
   }, []);
 
   const onClicked = useCallback(() => console.log('MREC clicked'), []);
-  const onImpression = useCallback((info: AdImpression) => {
+  const onImpression = useCallback((info: AdContentInfo) => {
     console.log('MREC impression', info);
   }, []);
 
@@ -55,7 +55,6 @@ export default function MRecExample() {
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current);
       retryRef.current = null;
-      adRef.current?.destroy?.();
     };
   }, []);
 
@@ -77,9 +76,9 @@ export default function MRecExample() {
           },
         ]} pointerEvents={visible ? 'auto' : 'none'}>
         <View style={S.centerRow}>
-          <AdView
+          <BannerAdView
             ref={adRef}
-            size={AdViewSize.MREC}
+            size={BannerAdSize.MREC}
             loadOnMount={false}
             refreshInterval={30}
             style={S.mrec}

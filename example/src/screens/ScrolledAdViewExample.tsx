@@ -2,17 +2,17 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppButton from '../components/AppButton';
 import {
-  AdView, AdViewSize,
-  type AdViewRef, type AdViewLoaded, type AdViewFailed
+  BannerAdView, BannerAdSize,
+  type BannerAdViewRef, type AdViewInfo, type AdError
 } from 'react-native-cas';
 
 const REPEATS = 2;
-const TXT = `Lorem ipsum dolor sit amet, consectetur adipiscing elit…`;
+const TXT = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`;
 
 const SAFE_BOTTOM = Platform.OS === 'android' ? 12 : 8;
 
-function InlineAdPreloaded({ size }: { size: AdViewSize }) {
-  const ref = useRef<AdViewRef>(null);
+function InlineAdPreloaded({ size }: { size: BannerAdSize }) {
+  const ref = useRef<BannerAdViewRef>(null);
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
@@ -23,24 +23,23 @@ function InlineAdPreloaded({ size }: { size: AdViewSize }) {
     return () => {
       mountedRef.current = false;
       if (retryRef.current) clearTimeout(retryRef.current);
-      ref.current?.destroy?.();
     };
   }, []);
 
-  const onLoaded = useCallback((_: AdViewLoaded) => {
+  const onLoaded = useCallback((_: AdViewInfo) => {
     if (!mountedRef.current) return;
     if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
     setLoaded(true);
   }, []);
 
-  const onFailed = useCallback((err: AdViewFailed) => {
+  const onFailed = useCallback((err: AdError) => {
     if (!mountedRef.current) return;
     if (retryRef.current) clearTimeout(retryRef.current);
     retryRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       retryRef.current = null;
       ref.current?.loadAd();
-    }, 2000);
+    }, 10000);
   }, []);
 
   return (
@@ -50,10 +49,10 @@ function InlineAdPreloaded({ size }: { size: AdViewSize }) {
       <View
         style={[S.center, !loaded && S.offscreen]}
       >
-        <AdView
+        <BannerAdView
           ref={ref}
           size={size}
-          loadOnMount={false}
+          autoload={false}
           refreshInterval={30}
           onAdViewLoaded={onLoaded}
           onAdViewFailed={onFailed}
@@ -85,13 +84,13 @@ export default function ScrolledAdViewExample() {
 
         <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
           {Array.from({ length: REPEATS }).flatMap((_, i) => [
-            block(`b-${i}`, <InlineAdPreloaded size={AdViewSize.BANNER} />),
-            block(`m-${i}`, <InlineAdPreloaded size={AdViewSize.MREC} />),
+            block(`b-${i}`, <InlineAdPreloaded size={BannerAdSize.BANNER} />),
+            block(`m-${i}`, <InlineAdPreloaded size={BannerAdSize.MREC} />),
           ])}
         </ScrollView>
 
         <View style={{ marginTop: 12, alignItems: 'center', alignSelf: 'stretch' }}>
-          {showAds ? <InlineAdPreloaded size={AdViewSize.BANNER} /> : <Text style={S.placeholder}>Placeholder</Text>}
+          {showAds ? <InlineAdPreloaded size={BannerAdSize.BANNER} /> : <Text style={S.placeholder}>Placeholder</Text>}
         </View>
       </View>
     </View>

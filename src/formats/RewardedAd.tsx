@@ -1,5 +1,5 @@
 import CASMobileAdsNative from '../modules/NativeCASMobileAdsModule';
-import type { RewardedAdType } from '../types/FullscreenAdType';
+import type { RewardedAdType } from '../types/FullscreenAds';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const E = {

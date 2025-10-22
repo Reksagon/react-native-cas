@@ -1,6 +1,5 @@
 package com.cleveradssolutions.plugin.reactnative
 
-import com.cleveradssolutions.plugin.reactnative.extensions.toReadableMap
 import com.cleveradssolutions.sdk.AdContentInfo
 import com.cleveradssolutions.sdk.AdFormat
 import com.cleveradssolutions.sdk.OnAdImpressionListener

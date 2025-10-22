@@ -1,5 +1,5 @@
 import CASMobileAdsNative from '../modules/NativeCASMobileAdsModule';
-import type { InterstitialAdType } from '../types/FullscreenAdType';
+import type { InterstitialAdType } from '../types/FullscreenAds';
 import { addEventListener, removeEventListener } from '../EventEmitter';
 
 const E = {

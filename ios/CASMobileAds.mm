@@ -68,11 +68,31 @@ RCT_EXPORT_MODULE();
 + (NSDictionary *)convertImpressionInfo:(CASContentInfo *)info {
     NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
 
+    NSString *precision = @"";
+
+    switch (info.revenuePrecision) {
+        case CASRevenuePrecisionPrecise:
+            precision = @"precise";
+            break;
+
+        case CASRevenuePrecisionFloor:
+            precision =  @"floor";
+            break;
+
+        case CASRevenuePrecisionEstimated:
+            precision =  @"estimated";
+            break;
+
+        default:
+            precision =  @"unknown";
+            break;
+    }
+
     impressionData[@"format"] = info.format.label;
     impressionData[@"sourceName"] = info.sourceName;
     impressionData[@"sourceUnitId"] = info.sourceUnitID;
     impressionData[@"revenue"] = @(info.revenue);
-    impressionData[@"revenuePrecision"] = @(info.revenuePrecision);
+    impressionData[@"revenuePrecision"] = precision;
     impressionData[@"impressionDepth"] = @(info.impressionDepth);
     impressionData[@"revenueTotal"] = @(info.revenueTotal);
 

@@ -11,7 +11,7 @@ class CASMobileAdsModule(reactContext: ReactApplicationContext) : ReactContextBa
   override fun getName() = CASMobileAdsModuleImpl.NAME
 
   @ReactMethod
-  fun initialize(casId: String, options: ReadableMap?, promise: Promise) =
+  fun initialize(casId: String, options: ReadableMap, promise: Promise) =
     impl.initialize(casId, options, promise)
 
   @ReactMethod fun isInitialized(promise: Promise) = impl.isInitialized(promise)

@@ -17,7 +17,10 @@ export default function AppOpenExample() {
       console.log('[AppOpen] LOADED');
       setLoaded(true);
       retry.current = 0;
-      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     });
 
     const offLoadFailed = AppOpenAd.addAdLoadFailedEventListener((e: AdError) => {
@@ -29,7 +32,10 @@ export default function AppOpenExample() {
         retry.current = Math.min(retry.current + 1, 6);
         const delay = Math.min(64, 2 ** retry.current);
         if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => { timerRef.current = null; AppOpenAd.loadAd(); }, delay * 1000);
+        timerRef.current = setTimeout(() => {
+          timerRef.current = null;
+          AppOpenAd.loadAd();
+        }, delay * 1000);
       }
     });
 
@@ -41,7 +47,7 @@ export default function AppOpenExample() {
       if (isAutoloadEnabled) {
         // just wait auto reload
       } else {
-        AppOpenAd.loadAd(); 
+        AppOpenAd.loadAd();
       }
     });
     const offHidden = AppOpenAd.addAdDismissedEventListener(() => {
@@ -50,7 +56,7 @@ export default function AppOpenExample() {
       if (isAutoloadEnabled) {
         // just wait auto reload
       } else {
-        AppOpenAd.loadAd(); 
+        AppOpenAd.loadAd();
       }
     });
     const offImpression = AppOpenAd.addAdImpressionEventListener((i: AdContentInfo) => console.log('[AppOpen] IMPRESSION', i));
@@ -58,7 +64,13 @@ export default function AppOpenExample() {
     AppOpenAd.loadAd();
 
     return () => {
-      offLoaded(); offLoadFailed(); offClicked(); offDisplayed(); offFailShow(); offHidden(); offImpression();
+      offLoaded();
+      offLoadFailed();
+      offClicked();
+      offDisplayed();
+      offFailShow();
+      offHidden();
+      offImpression();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);

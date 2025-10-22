@@ -11,8 +11,14 @@ class CasPackage : TurboReactPackage() {
 
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
     return listOf(
-      BannerAdViewManager()
+      CASMobileAdsViewManager()
     )
+  }
+
+  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
+    return if (name == CASMobileAdsModuleImpl.NAME) {
+      CASMobileAdsModule(reactContext)
+    } else null
   }
 
   override fun getReactModuleInfoProvider(): ReactModuleInfoProvider = ReactModuleInfoProvider {
@@ -29,11 +35,5 @@ class CasPackage : TurboReactPackage() {
         isTurbo
       )
     )
-  }
-
-  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-    return if (name == CASMobileAdsModuleImpl.NAME) {
-      CASMobileAdsModule(reactContext)
-    } else null
   }
 }

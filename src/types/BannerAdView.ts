@@ -9,7 +9,7 @@ import type { AdError, AdViewInfo, AdContentInfo } from './AdContent';
  * - **ADAPTIVE** – Adaptive banner that adjusts height based on available width.
  * - **SMART** – Automatically selects the most appropriate size for the device.
  */
-export enum AdViewSize {
+export enum BannerAdSize {
   BANNER = 'B',
   LEADERBOARD = 'L',
   MREC = 'M',
@@ -22,9 +22,9 @@ export enum AdViewSize {
  * Public props for the `<AdView />` React Native component.
  * All callbacks receive plain JavaScript objects (no `NativeSyntheticEvent` wrappers).
  */
-export type AdViewProps = {
-  /** Banner size. Defaults to {@link AdViewSize.BANNER}. */
-  size?: AdViewSize;
+export type BannerAdViewProps = {
+  /** Banner size. Defaults to {@link BannerAdSize.BANNER}. */
+  size?: BannerAdSize;
   /**
    * Limit inline adaptive banner height.
    * By default, inline adaptive banners instantiated without a maxHeight value have a maxHeight equal to the device height.
@@ -60,9 +60,7 @@ export type AdViewProps = {
 };
 
 /** Public methods available through the `<AdView ref={...} />` reference. */
-export type AdViewRef = {
+export type BannerAdViewRef = {
   /** Manually triggers ad loading. */
   loadAd: () => void;
-  /** Destroys the native ad view and releases resources. */
-  destroy: () => void;
 };

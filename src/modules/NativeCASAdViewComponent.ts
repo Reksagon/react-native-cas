@@ -20,7 +20,6 @@ type OnImpressionEvent = {
 export interface NativeProps extends ViewProps {
   sizeConfig?: { sizeType: string; maxHeight: Float; maxWidth: Float };
   autoload?: WithDefault<boolean, true>;
-  loadOnMount?: WithDefault<boolean, true>;
   casId?: string;
   refreshInterval?: Int32;
 
@@ -37,14 +36,13 @@ type CASAdViewNativeComponentType = HostComponent<NativeProps>;
  */
 interface NativeCommands {
   loadAd(ref: React.ElementRef<CASAdViewNativeComponentType>): void;
-  destroy(ref: React.ElementRef<CASAdViewNativeComponentType>): void;
 }
 
 /**
  * JS interface to ad view commands.
  */
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-  supportedCommands: ['loadAd', 'destroy'],
+  supportedCommands: ['loadAd'],
 });
 
 /**

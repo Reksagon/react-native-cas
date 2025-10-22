@@ -1,15 +1,15 @@
 import React, { forwardRef, useRef, useImperativeHandle, useCallback, useMemo, useState, useReducer, useEffect } from 'react';
 import { View, useWindowDimensions, NativeSyntheticEvent, LayoutChangeEvent, StyleSheet, StyleProp, ViewStyle, PixelRatio, ViewProps, DimensionValue } from 'react-native';
 
-import type { AdViewInfo, AdError, AdContentInfo, AdViewRef, AdViewProps } from '../types';
-import { AdViewSize } from '../types/AdView';
+import type { AdViewInfo, AdError, AdContentInfo, BannerAdViewRef, BannerAdViewProps } from '../types';
+import { BannerAdSize } from '../types/BannerAdView';
 
-import CASAdViewComponent, { Commands } from '../modules/NativeCASAdViewComponent';
+import CASBannerAdComponent, { Commands } from '../modules/NativeCASAdViewComponent';
 
 type SizeDimensions = { width: number; height: number };
 
-export const AdView = forwardRef<AdViewRef, AdViewProps & ViewProps>(function AdView(
-  { size = AdViewSize.BANNER, maxWidth, maxHeight, autoload = true, refreshInterval, onAdViewLoaded, onAdViewFailed, onAdViewClicked, onAdViewImpression, style, ...otherProps },
+export const BannerAdView = forwardRef<BannerAdViewRef, BannerAdViewProps & ViewProps>(function AdView(
+  { size = BannerAdSize.BANNER, maxWidth, maxHeight, autoload = true, refreshInterval, onAdViewLoaded, onAdViewFailed, onAdViewClicked, onAdViewImpression, style, ...otherProps },
   ref
 ) {
   const adViewRef = useRef(null);
@@ -29,9 +29,6 @@ export const AdView = forwardRef<AdViewRef, AdViewProps & ViewProps>(function Ad
     () => ({
       loadAd: () => {
         adViewRef.current && Commands.loadAd(adViewRef.current);
-      },
-      destroy: () => {
-        adViewRef.current && Commands.destroy(adViewRef.current);
       },
     }),
     []
@@ -68,7 +65,7 @@ export const AdView = forwardRef<AdViewRef, AdViewProps & ViewProps>(function Ad
   const onClickedCallback = useCallback(() => onAdViewClicked?.(), [onAdViewClicked]);
 
   return (
-    <CASAdViewComponent
+    <CASBannerAdComponent
       ref={adViewRef}
       sizeConfig={sizeConfig}
       autoload={autoload}

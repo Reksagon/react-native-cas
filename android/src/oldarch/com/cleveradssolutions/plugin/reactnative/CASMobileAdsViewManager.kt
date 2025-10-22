@@ -9,7 +9,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 @ReactModule(name = AdViewManagerImpl.NAME)
-class BannerAdViewManager : SimpleViewManager<CASAdView>() {
+class CASMobileAdsViewManager : SimpleViewManager<CASAdView>() {
 
   override fun getName() = AdViewManagerImpl.NAME
 
@@ -20,13 +20,9 @@ class BannerAdViewManager : SimpleViewManager<CASAdView>() {
   fun setSize(view: CASAdView, value: String?) =
     AdViewManagerImpl.setSize(view, value)
 
-  @ReactProp(name = "autoReload", defaultBoolean = true)
-  fun setAutoReload(view: CASAdView, value: Boolean) =
-    AdViewManagerImpl.setAutoReload(view, value)
-
-  @ReactProp(name = "loadOnMount", defaultBoolean = true)
-  fun setLoadOnMount(view: CASAdView, value: Boolean) =
-    AdViewManagerImpl.setLoadOnMount(view, value)
+  @ReactProp(name = "autoload", defaultBoolean = true)
+  fun setAutoload(view: CASAdView, value: Boolean) =
+    AdViewManagerImpl.setAutoload(view, value)
 
   @ReactProp(name = "refreshInterval")
   fun setRefreshInterval(view: CASAdView, value: Int) =
@@ -50,14 +46,12 @@ class BannerAdViewManager : SimpleViewManager<CASAdView>() {
     AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
   override fun getCommandsMap(): Map<String, Int> = mapOf(
-    "loadAd"  to 1,
-    "destroy" to 2
+    "loadAd"  to 1
   )
 
   override fun receiveCommand(view: CASAdView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
       1 -> AdViewManagerImpl.commandLoadAd(view)
-      2 -> AdViewManagerImpl.commandDestroy(view)
     }
   }
 }

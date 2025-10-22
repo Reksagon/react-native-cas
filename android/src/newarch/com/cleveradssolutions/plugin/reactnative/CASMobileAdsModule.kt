@@ -11,7 +11,7 @@ class CASMobileAdsModule(reactContext: ReactApplicationContext)
 
   private val impl = CASMobileAdsModuleImpl(reactContext)
 
-  override fun initialize(casId: String, options: ReadableMap?, promise: Promise) = impl.initialize(casId, options, promise)
+  override fun initialize(casId: String, options: ReadableMap, promise: Promise) = impl.initialize(casId, options, promise)
   override fun isInitialized(promise: Promise) = impl.isInitialized(promise)
   override fun showConsentFlow(promise: Promise) = impl.showConsentFlow(promise)
   override fun getSDKVersion(promise: Promise) = impl.getSDKVersion(promise)

@@ -1,5 +1,5 @@
 export * from './Initialization';
 export * from './MobileAds'
 export * from './AdContent'
-export * from './AdView';
-export * from './FullscreenAdType';
+export * from './BannerAdView';
+export * from './FullscreenAds';

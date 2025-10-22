@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Platform, StyleSheet, View, Button, Text, Animated } from 'react-native';
 import {
-  AdView, AdViewSize, CASMobileAds,
-  type AdViewRef, type AdViewLoaded, type AdViewFailed, type AdImpression
+  BannerAdView, BannerAdSize,
+  type AdViewRef, type AdViewInfo, type AdError, type AdContentInfo
 } from 'react-native-cas';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BannerExample() {
   const insets = useSafeAreaInsets();
-  const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -17,30 +16,8 @@ export default function BannerExample() {
   const retryId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const ok = await CASMobileAds.isInitialized();
-        if (mounted) setReady(ok);
-      } catch {
-        if (mounted) setReady(false);
-      }
-    })();
-    return () => { mounted = false; };
+    bannerRef.current.loadAd();
   }, []);
-
-  useEffect(() => {
-    if (ready && bannerRef.current) {
-      setLoaded(false);
-      bannerRef.current.loadAd();
-    }
-  }, [ready]);
-
-  useEffect(() => {
-    if (visible && !loaded && ready && bannerRef.current) {
-      bannerRef.current.loadAd();
-    }
-  }, [visible, loaded, ready]);
 
   useEffect(() => {
     const anim = Animated.timing(translateY, {
@@ -52,24 +29,24 @@ export default function BannerExample() {
     return () => anim.stop();
   }, [visible, loaded, translateY]);
 
-  const onLoaded = useCallback((data: AdViewLoaded) => {
+  const onLoaded = useCallback((data: AdViewInfo) => {
     setLoaded(true);
     if (retryId.current) { clearTimeout(retryId.current); retryId.current = null; }
     console.log('Banner loaded', data);
   }, []);
 
-  const onFailed = useCallback((err: AdViewFailed) => {
+  const onFailed = useCallback((err: AdError) => {
     setLoaded(false);
     console.log('Banner failed', err);
     if (retryId.current) clearTimeout(retryId.current);
     retryId.current = setTimeout(() => {
       retryId.current = null;
       bannerRef.current?.loadAd(); 
-    }, 2000);
+    }, 10000);
   }, []);
 
   const onClicked = useCallback(() => console.log('Banner clicked'), []);
-  const onImpression = useCallback((info: AdImpression) => {
+  const onImpression = useCallback((info: AdContentInfo) => {
     console.log('Banner impression', info);
   }, []);
 
@@ -77,7 +54,6 @@ export default function BannerExample() {
     return () => {
       if (retryId.current) clearTimeout(retryId.current);
       retryId.current = null;
-      bannerRef.current?.destroy?.();
     };
   }, []);
 
@@ -88,7 +64,6 @@ export default function BannerExample() {
         <View style={S.stack}>
           <Button
             title={visible ? 'Hide Banner' : 'Show Banner'}
-            disabled={!ready}
             onPress={() => setVisible(v => !v)}
           />
           <Button
@@ -112,11 +87,10 @@ export default function BannerExample() {
         ]}
       >
         <View style={S.bannerBox}>
-          <AdView
+          <BannerAdView
             ref={bannerRef}
-            size={AdViewSize.BANNER}
-            loadOnMount={false}          
-            autoloadReload={true}
+            size={BannerAdSize.BANNER}      
+            autoload={false}
             refreshInterval={30}
             style={S.bannerExact}
             onAdViewLoaded={onLoaded}

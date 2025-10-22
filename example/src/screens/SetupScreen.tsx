@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View, Text, StyleSheet } from 'react-native';
 import AppButton from '../components/AppButton';
-import { CASMobileAds, Audience, PrivacyGeography } from 'react-native-cas';
+import CASMobileAds, { Audience, PrivacyGeography } from 'react-native-cas';
 import { useNavigation } from '@react-navigation/native';
 
 const CAS_IDS = {
@@ -27,28 +27,28 @@ export default function SetupScreen() {
   }, [nav]);
 
   const init = useCallback(async () => {
-    if (loading) return; 
+    if (loading) return;
     setLoading(true);
     setError(null);
     setStatusText('Initializing…');
 
-    try {
-      const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios })!;
-      const status = await CASMobileAds.initialize(casId, {
-        forceTestAds: true,
-        targetAudience: Audience.NotChildren,
-        debugPrivacyGeography: PrivacyGeography.europeanEconomicArea,
-        showConsentFormIfRequired: true,
-      });
+    const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios })!;
+    const status = await CASMobileAds.initialize(casId, {
+      forceTestAds: true,
+      targetAudience: Audience.NotChildren,
+      debugGeography: PrivacyGeography.europeanEconomicArea,
+      showConsentFormIfRequired: true,
+    });
 
+    if (status.error) {
+      console.warn('CAS init error', status.error);
+      setStatusText(null);
+      setError(status.error);
+      setLoading(false);
+    } else {
       console.log('CAS initialized:', status);
       setStatusText('Initialization complete');
       nav.navigate('Menu' as never);
-    } catch (e: any) {
-      console.warn('CAS init error', e);
-      setError(e?.message ?? 'Initialization failed');
-      setStatusText(null);
-    } finally {
       setLoading(false);
     }
   }, [loading, nav]);
@@ -60,11 +60,7 @@ export default function SetupScreen() {
         <Text style={S.subtitle}>One tap to set up SDK & continue</Text>
 
         <View style={S.stack}>
-          <AppButton
-            title={loading ? 'Initializing…' : 'Initialize'}
-            onPress={init}
-            enabled={!loading}
-          />
+          <AppButton title={loading ? 'Initializing…' : 'Initialize'} onPress={init} enabled={!loading} />
 
           {loading && (
             <View style={S.rowCenter}>

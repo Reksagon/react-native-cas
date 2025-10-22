@@ -5,12 +5,22 @@ import type { InitializationStatus } from '../types/Initialization';
 
 export interface Spec extends TurboModule {
   // SDK
-  initialize(casId: string, options: { [key: string]: any; }): Promise<InitializationStatus>;
+  initialize(
+    casId: string,
+    options: {
+      targetAudience?: Int32;
+      showConsentFormIfRequired?: boolean;
+      forceTestAds?: boolean;
+      testDeviceIds?: string[];
+      debugPrivacyGeography?: Int32;
+      mediationExtras?: { [key: string]: string };
+    }
+  ): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
   getSDKVersion(): Promise<string>;
   showConsentFlow(): Promise<number>;
 
-  // App/Targeting 
+  // App/Targeting
   setUserAge(age: Int32): void;
   setUserGender(gender: Int32): void;
   setAppContentUrl(contentUrl?: string): void;
