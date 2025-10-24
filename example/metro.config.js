@@ -13,9 +13,7 @@ const config = {
   watchFolders: [root],
   resolver: {
     blacklistRE: exclusionList(
-      peerModules.map((m) =>
-        new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
-      )
+      peerModules.map(m => new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)),
     ),
     extraNodeModules: {
       'react-native-cas': root,

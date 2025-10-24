@@ -5,14 +5,14 @@ import type { AdError, AdViewInfo, AdContentInfo } from './AdContent';
  *
  * - **BANNER** – Standard 320×50 phone banner.
  * - **LEADERBOARD** – 728×90 banner for tablets and wide screens.
- * - **MREC** – 300×250 medium rectangle format.
+ * - **MEDIUM_RECTANGLE** – 300×250 medium rectangle format.
  * - **ADAPTIVE** – Adaptive banner that adjusts height based on available width.
  * - **SMART** – Automatically selects the most appropriate size for the device.
  */
 export enum BannerAdSize {
   BANNER = 'B',
   LEADERBOARD = 'L',
-  MREC = 'M',
+  MEDIUM_RECTANGLE = 'M',
   ADAPTIVE = 'A',
   INLINE = 'I',
   SMART = 'S',
@@ -43,7 +43,7 @@ export type BannerAdViewProps = {
   /**
    * Enables automatic reloading of the ad once the current one fails.
    */
-  autoload?: boolean;
+  autoReload?: boolean;
   /**
    * Automatic refresh interval in seconds.
    * Set to `0` to disable auto-refresh.

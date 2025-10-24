@@ -72,7 +72,7 @@ export interface MobileAds {
    * During the interval, no ads are shown except Rewarded.
    */
   setTrialAdFreeInterval(interval: number): void;
-};
+}
 
 /** Optional targeting value. */
 export enum Gender {

@@ -12,7 +12,14 @@ export default function AppButton({ title, onPress, enabled = true, style }: Pro
 }
 
 const s = StyleSheet.create({
-  btn: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, backgroundColor: '#3b82f6', marginVertical: 6, alignSelf: 'stretch' },
+  btn: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#3b82f6',
+    marginVertical: 6,
+    alignSelf: 'stretch',
+  },
   dis: { opacity: 0.5 },
   txt: { color: 'white', fontWeight: '600', textAlign: 'center' },
 });

@@ -9,18 +9,18 @@ class MobileAds implements MobileAdsModule {
     if (typeof casId !== 'string') {
       return Promise.reject(new Error('initialize(casId, options?): casId must be a string'));
     }
-    const params: any = {};
-    params.reactNativeVersion = `${reactNativeVersion.major}.${reactNativeVersion.minor}.${reactNativeVersion.patch}`;
-    if (options.targetAudience != null) params.targetAudience = Number(options.targetAudience);
-    params.showConsentFormIfRequired = options.showConsentFormIfRequired !== undefined ? options.showConsentFormIfRequired : true;
-    params.forceTestAds = options.forceTestAds !== undefined ? options.forceTestAds : false;
 
-    if (Array.isArray(options.testDeviceIds)) params.testDeviceIds = options.testDeviceIds;
-    if (options.mediationExtras != null) params.mediationExtras = options.mediationExtras;
-    if (options.debugGeography !== undefined) {
-      params.debugPrivacyGeography = options.debugGeography;
-    }
-    return CASMobileAdsNative.initialize(casId, params);
+    return CASMobileAdsNative.initialize(casId, {
+      reactNativeVersion: `${reactNativeVersion.major}.${reactNativeVersion.minor}.${reactNativeVersion.patch}`,
+      targetAudience:
+        options.targetAudience !== undefined ? Number(options.targetAudience) : undefined,
+      showConsentFormIfRequired: options.showConsentFormIfRequired ?? true,
+      forceTestAds: options.forceTestAds ?? false,
+      testDeviceIds: options.testDeviceIds,
+      debugGeography:
+        options.debugGeography !== undefined ? Number(options.debugGeography) : undefined,
+      mediationExtras: options.mediationExtras,
+    });
   }
 
   isInitialized(): Promise<boolean> {
@@ -44,11 +44,11 @@ class MobileAds implements MobileAdsModule {
   }
 
   setUserAge(age: number): void {
-    CASMobileAdsNative.setUserAge(age as any);
+    CASMobileAdsNative.setUserAge(age);
   }
 
   setUserGender(gender: number): void {
-    CASMobileAdsNative.setUserGender(gender as any);
+    CASMobileAdsNative.setUserGender(gender);
   }
 
   setAppContentUrl(contentUrl?: string): void {
@@ -64,7 +64,7 @@ class MobileAds implements MobileAdsModule {
   }
 
   setTrialAdFreeInterval(interval: number): void {
-    CASMobileAdsNative.setTrialAdFreeInterval(interval as any);
+    CASMobileAdsNative.setTrialAdFreeInterval(interval);
   }
 }
 

@@ -2,11 +2,20 @@ plugins {
   id 'com.android.application'
   id 'org.jetbrains.kotlin.android'
   id 'com.facebook.react'
-  id 'com.cleveradssolutions.gradle-plugin'
+  id 'com.cleveradssolutions.gradle-plugin' version '4.3.0'
 }
 
 react {
   autolinkLibrariesWithApp()
+}
+
+cas {
+  useAdvertisingId = true
+
+  adapters {
+    // googleAds = true
+  }
+  // includeOptimalAds = true
 }
 
 def enableProguardInReleaseBuilds = false
@@ -60,22 +69,4 @@ dependencies {
   } else {
     implementation jscFlavor
   }
-}
-
-cas {
-  useAdvertisingId = true
-
-  adapters {
-    googleAds = true
-    appLovin  = true
-    ironSource = true
-    chartboost = true
-    mintegral = true
-    pangle = true
-    inMobi = true
-    yandexAds = true
-    unityAds = true
-    liftoffMonetize = true
-  }
-  // includeOptimalAds = true
 }

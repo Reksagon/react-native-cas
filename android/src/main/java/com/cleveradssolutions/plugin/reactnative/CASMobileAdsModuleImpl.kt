@@ -41,7 +41,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
   }
 
   private fun emitLoadError(format: AdFormat) {
-    emitError("on${format.label}LoadFailed")
+    emitError("on${format.label}FailedToLoad")
   }
 
   private fun emitShowError(format: AdFormat) {
@@ -98,7 +98,7 @@ class CASMobileAdsModuleImpl(private val reactContext: ReactApplicationContext) 
 
     val showConsent = options.optBoolean("showConsentFormIfRequired", true)
     val consent = ConsentFlow(showConsent)
-    options.optIntOrNull("debugPrivacyGeography")?.let {
+    options.optIntOrNull("debugGeography")?.let {
       consent.debugGeography = it
     }
     builder.withConsentFlow(consent)

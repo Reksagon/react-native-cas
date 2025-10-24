@@ -1,23 +1,30 @@
-import { useRef, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Platform, StyleSheet, View, Text } from 'react-native';
-import { BannerAdView, BannerAdSize, type BannerAdViewRef, type AdViewInfo, type AdError, type AdContentInfo } from 'react-native-cas';
+import {
+  BannerAdView,
+  BannerAdSize,
+  type BannerAdViewRef,
+  type AdViewInfo,
+  type AdError,
+  type AdContentInfo,
+} from 'react-native-cas';
 
 export default function AdaptiveBannerExample() {
   const bannerRef = useRef<BannerAdViewRef>(null);
 
-  const onLoaded = useCallback((info: AdViewInfo) => {
+  const onLoadedCallback = useCallback((info: AdViewInfo) => {
     console.log('Adaptive banner ad loaded', info);
   }, []);
 
-  const onFailed = useCallback((error: AdError) => {
+  const onFailedCallback = useCallback((error: AdError) => {
     console.log('Adaptive banner ad failed', error);
   }, []);
 
-  const onClicked = useCallback(() => {
+  const onClickedCallback = useCallback(() => {
     console.log('Adaptive banner ad clicked');
   }, []);
 
-  const onImpression = useCallback((info: AdContentInfo) => {
+  const onImpressionCallback = useCallback((info: AdContentInfo) => {
     console.log('Adaptive banner ad impression', info);
   }, []);
 
@@ -29,12 +36,15 @@ export default function AdaptiveBannerExample() {
       <BannerAdView
         ref={bannerRef}
         size={BannerAdSize.ADAPTIVE}
-        autoload={true}
+        // The Adaptive size has the width of the screen.
+        // You can limit it by specifying a maxWidth.
+        //maxWidth={}
+        autoReload={true}
         refreshInterval={30}
-        onAdViewLoaded={onLoaded}
-        onAdViewFailed={onFailed}
-        onAdViewClicked={onClicked}
-        onAdViewImpression={onImpression}
+        onAdViewLoaded={onLoadedCallback}
+        onAdViewFailed={onFailedCallback}
+        onAdViewClicked={onClickedCallback}
+        onAdViewImpression={onImpressionCallback}
       />
     </View>
   );
@@ -63,7 +73,13 @@ const S = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 6,
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#E8EEF6', textAlign: 'center', marginBottom: 12 },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#E8EEF6',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
   subtitle: { fontSize: 14, color: '#A5B3C5', textAlign: 'center', marginBottom: 16 },
   stack: { gap: 12 },
 });

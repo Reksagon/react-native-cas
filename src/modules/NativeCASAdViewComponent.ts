@@ -1,10 +1,16 @@
 import type * as React from 'react';
 import type { HostComponent, ViewProps } from 'react-native';
-import type { Int32, Double, WithDefault, DirectEventHandler, Float } from 'react-native/Libraries/Types/CodegenTypes';
+import type {
+  Int32,
+  Double,
+  WithDefault,
+  DirectEventHandler,
+  Float,
+} from 'react-native/Libraries/Types/CodegenTypes';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 
-type OnLoadedEvent = { width: Int32; height: Int32 };
+type OnLoadedEvent = { width: Float; height: Float };
 type OnFailedEvent = { code: Int32; message: string };
 type OnImpressionEvent = {
   format: string;
@@ -18,14 +24,18 @@ type OnImpressionEvent = {
 };
 
 export interface NativeProps extends ViewProps {
-  sizeConfig?: { sizeType: string; maxHeight: Float; maxWidth: Float };
-  autoload?: WithDefault<boolean, true>;
+  sizeConfig?: {
+    sizeType: string;
+    maxHeight: Float;
+    maxWidth: Float;
+  };
+  autoReload?: WithDefault<boolean, true>;
   casId?: string;
   refreshInterval?: Int32;
 
   onAdViewLoaded?: DirectEventHandler<OnLoadedEvent>;
   onAdViewFailed?: DirectEventHandler<OnFailedEvent>;
-  onAdViewClicked?: DirectEventHandler<{}>;
+  onAdViewClicked?: DirectEventHandler<object>;
   onAdViewImpression?: DirectEventHandler<OnImpressionEvent>;
 }
 

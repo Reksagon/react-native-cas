@@ -1,6 +1,5 @@
-import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import AppButton from '../components/AppButton';
+import React, { ScrollView, View, Text, StyleSheet } from 'react-native';
+import AppButton from './components/AppButton';
 import { useNavigation } from '@react-navigation/native';
 
 export default function MenuScreen() {
@@ -13,11 +12,7 @@ export default function MenuScreen() {
         <Text style={S.title}>Examples</Text>
         <Text style={S.subtitle}>Choose an ad format to test</Text>
 
-        <ScrollView
-          contentContainerStyle={S.menuList}
-          showsVerticalScrollIndicator={false}
-          bounces
-        >
+        <ScrollView contentContainerStyle={S.menuList} showsVerticalScrollIndicator={false} bounces>
           <AppButton title="Interstitial" onPress={go('Interstitial')} />
           <AppButton title="Rewarded" onPress={go('Rewarded')} />
           <AppButton title="App Open" onPress={go('AppOpen')} />

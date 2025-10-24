@@ -8,13 +8,14 @@ export interface Spec extends TurboModule {
   initialize(
     casId: string,
     options: {
+      reactNativeVersion: string;
       targetAudience?: Int32;
-      showConsentFormIfRequired?: boolean;
-      forceTestAds?: boolean;
+      showConsentFormIfRequired: boolean;
+      forceTestAds: boolean;
       testDeviceIds?: string[];
-      debugPrivacyGeography?: Int32;
+      debugGeography?: Int32;
       mediationExtras?: { [key: string]: string };
-    }
+    },
   ): Promise<InitializationStatus>;
   isInitialized(): Promise<boolean>;
   getSDKVersion(): Promise<string>;

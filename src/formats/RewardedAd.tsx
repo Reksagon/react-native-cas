@@ -1,17 +1,17 @@
 import CASMobileAdsNative from '../modules/NativeCASMobileAdsModule';
 import type { RewardedAdType } from '../types/FullscreenAds';
-import { addEventListener, removeEventListener } from '../EventEmitter';
+import { addAdEventListener } from '../EventEmitter';
 
-const E = {
-  LOADED: 'onRewardedLoaded',
-  LOAD_FAILED: 'onRewardedLoadFailed',
-  CLICKED: 'onRewardedClicked',
-  DISPLAYED: 'onRewardedDisplayed',
-  FAILED_TO_SHOW: 'onRewardedFailedToShow',
-  HIDDEN: 'onRewardedHidden',
-  COMPLETED: 'onRewardedCompleted',
-  IMPRESSION: 'onRewardedImpression',
-};
+export enum RewardedAdEvent {
+  LOADED = 'onRewardedLoaded',
+  FAILED_TO_LOAD = 'onRewardedFailedToLoad',
+  FAILED_TO_SHOW = 'onRewardedFailedToShow',
+  SHOWED = 'onRewardedShowed',
+  CLICKED = 'onRewardedClicked',
+  IMPRESSION = 'onRewardedImpression',
+  REWARD = 'onRewardedCompleted',
+  DISMISSED = 'onRewardedDismissed',
+}
 
 export const RewardedAd: RewardedAdType = {
   isAdLoaded: CASMobileAdsNative.isRewardedAdLoaded,
@@ -20,21 +20,12 @@ export const RewardedAd: RewardedAdType = {
   setAutoloadEnabled: CASMobileAdsNative.setRewardedAutoloadEnabled,
   destroy: CASMobileAdsNative.destroyRewarded,
 
-  addAdUserEarnRewardEventListener: (l) => addEventListener(E.COMPLETED, l),
-  addAdLoadedEventListener: (l) => addEventListener(E.LOADED, l),
-  addAdLoadFailedEventListener: (l) => addEventListener(E.LOAD_FAILED, l),
-  addAdClickedEventListener: (l) => addEventListener(E.CLICKED, l),
-  addAdShowedEventListener: (l) => addEventListener(E.DISPLAYED, l),
-  addAdFailedToShowEventListener: (l) => addEventListener(E.FAILED_TO_SHOW, l),
-  addAdDismissedEventListener: (l) => addEventListener(E.HIDDEN, l),
-  addAdImpressionEventListener: (l) => addEventListener(E.IMPRESSION, l),
-
-  removeAdUserEarnRewardLoadedEventListener: () => removeEventListener(E.COMPLETED),
-  removeAdLoadedEventListener: () => removeEventListener(E.LOADED),
-  removeAdLoadFailedEventListener: () => removeEventListener(E.LOAD_FAILED),
-  removeAdClickedEventListener: () => removeEventListener(E.CLICKED),
-  removeAdShowedEventListener: () => removeEventListener(E.DISPLAYED),
-  removeAdFailedToShowEventListener: () => removeEventListener(E.FAILED_TO_SHOW),
-  removeAdDismissedEventListener: () => removeEventListener(E.HIDDEN),
-  removeAdImpressionEventListener: () => removeEventListener(E.IMPRESSION),
+  addAdUserEarnRewardEventListener: l => addAdEventListener(RewardedAdEvent.REWARD, l),
+  addAdLoadedEventListener: l => addAdEventListener(RewardedAdEvent.LOADED, l),
+  addAdFailedToLoadEventListener: l => addAdEventListener(RewardedAdEvent.FAILED_TO_LOAD, l),
+  addAdClickedEventListener: l => addAdEventListener(RewardedAdEvent.CLICKED, l),
+  addAdShowedEventListener: l => addAdEventListener(RewardedAdEvent.SHOWED, l),
+  addAdFailedToShowEventListener: l => addAdEventListener(RewardedAdEvent.FAILED_TO_SHOW, l),
+  addAdDismissedEventListener: l => addAdEventListener(RewardedAdEvent.DISMISSED, l),
+  addAdImpressionEventListener: l => addAdEventListener(RewardedAdEvent.IMPRESSION, l),
 };

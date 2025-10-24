@@ -19,9 +19,9 @@ class CASMobileAdsViewManager : SimpleViewManager<CASBannerView>() {
   fun setSize(view: CASBannerView, value: String?) =
     AdViewManagerImpl.setSize(view, value)
 
-  @ReactProp(name = "autoload", defaultBoolean = true)
-  fun setAutoload(view: CASBannerView, value: Boolean) =
-    AdViewManagerImpl.setAutoload(view, value)
+  @ReactProp(name = "autoReload", defaultBoolean = true)
+  fun setAutoReload(view: CASBannerView, value: Boolean) =
+    AdViewManagerImpl.setAutoReload(view, value)
 
   @ReactProp(name = "refreshInterval")
   fun setRefreshInterval(view: CASBannerView, value: Int) =

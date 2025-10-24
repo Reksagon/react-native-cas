@@ -3,14 +3,14 @@
 #import <CleverAdsSolutions/CleverAdsSolutions-Swift.h>
 #import <CleverAdsSolutions/CleverAdsSolutions.h>
 #import "CASMobileAds.h"
-#import "CASMobileAdsConstants.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
+#import <React/RCTConversions.h>
+
 using namespace facebook::react;
 #endif
 
 @interface CASMobileAds ()
-@property (nonatomic, strong) NSString *casIdendifier;
 
 @property (nonatomic, strong, nullable) NSMutableDictionary *casInitConfig;
 @property (nonatomic, strong, nullable) CASInterstitial *interstitialAds;
@@ -25,105 +25,14 @@ using namespace facebook::react;
 
 RCT_EXPORT_MODULE();
 
-#pragma mark - Events
 
-- (NSArray<NSString *> *)supportedEvents {
-    return @[
-        kOnAppOpenLoaded,
-        kOnAppOpenLoadFailed,
-        kOnAppOpenDisplayed,
-        kOnAppOpenFailedToShow,
-        kOnAppOpenHidden,
-        kOnAppOpenClicked,
-        kOnAppOpenImpression,
-        kOnInterstitialLoaded,
-        kOnInterstitialLoadFailed,
-        kOnInterstitialClicked,
-        kOnInterstitialDisplayed,
-        kOnInterstitialFailedToShow,
-        kOnInterstitialHidden,
-        kOnInterstitialImpression,
-        kOnRewardedLoaded,
-        kOnRewardedLoadFailed,
-        kOnRewardedClicked,
-        kOnRewardedDisplayed,
-        kOnRewardedFailedToShow,
-        kOnRewardedHidden,
-        kOnRewardedCompleted,
-        kOnRewardedImpression,
-        kConsentFlowDismissed
-    ];
+static NSString *_casIdentifier = @"";
+
++ (NSString *)casIdendifier {
+    return _casIdentifier;
 }
 
-#pragma mark - TurboModule Spec Methods
-
-#ifdef RCT_NEW_ARCH_ENABLED
-- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
-{
-    return std::make_shared<NativeCASMobileAdsModuleSpecJSI>(params);
-}
-
-#endif
-
-+ (NSDictionary *)convertImpressionInfo:(CASContentInfo *)info {
-    NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
-
-    NSString *precision = @"";
-
-    switch (info.revenuePrecision) {
-        case CASRevenuePrecisionPrecise:
-            precision = @"precise";
-            break;
-
-        case CASRevenuePrecisionFloor:
-            precision =  @"floor";
-            break;
-
-        case CASRevenuePrecisionEstimated:
-            precision =  @"estimated";
-            break;
-
-        default:
-            precision =  @"unknown";
-            break;
-    }
-
-    impressionData[@"format"] = info.format.label;
-    impressionData[@"sourceName"] = info.sourceName;
-    impressionData[@"sourceUnitId"] = info.sourceUnitID;
-    impressionData[@"revenue"] = @(info.revenue);
-    impressionData[@"revenuePrecision"] = precision;
-    impressionData[@"impressionDepth"] = @(info.impressionDepth);
-    impressionData[@"revenueTotal"] = @(info.revenueTotal);
-
-    if (info.creativeID) {
-        impressionData[@"creativeId"] = info.creativeID;
-    }
-
-    return impressionData;
-}
-
-+ (instancetype)shared {
-    static dispatch_once_t onceToken;
-    static CASMobileAds *instance;
-
-    dispatch_once(&onceToken, ^{
-        instance = [[self alloc] init];
-    });
-    return instance;
-}
-
-// `init` requires main queue b/c of UI code
-+ (BOOL)requiresMainQueueSetup
-{
-    return YES;
-}
-
-// Invoke all exported methods from main queue
-- (dispatch_queue_t)methodQueue
-{
-    return dispatch_get_main_queue();
-}
+#pragma mark - Initialization
 
 - (instancetype)init
 {
@@ -132,18 +41,67 @@ RCT_EXPORT_MODULE();
     return self;
 }
 
-#pragma mark - Init
+#ifdef RCT_NEW_ARCH_ENABLED
+
+- (void)initialize:(nonnull NSString *)casId
+           options:(JS::NativeCASMobileAdsModule::SpecInitializeOptions &)options
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject {
+    NSMutableDictionary *map = [[NSMutableDictionary alloc] initWithCapacity:6];
+
+    map[@"forceTestAds"] = @(options.forceTestAds());
+    map[@"reactNativeVersion"] = options.reactNativeVersion();
+    map[@"showConsentFormIfRequired"] = @(options.showConsentFormIfRequired());
+
+    if (auto val = options.targetAudience()) {
+        map[@"targetAudience"] = @(*val);
+    }
+
+    if (auto val = options.debugGeography()) {
+        map[@"debugGeography"] = @(*val);
+    }
+
+    if (options.testDeviceIds().has_value()) {
+        auto vec = options.testDeviceIds().value();
+        NSMutableArray *devices = [NSMutableArray arrayWithCapacity:vec.size()];
+
+        for (size_t i = 0; i < vec.size(); i++) {
+            [devices addObject:vec.at(i)];
+        }
+
+        map[@"testDeviceIds"] = devices;
+    }
+
+    id extras = options.mediationExtras();
+
+    if (extras != nil && [extras isKindOfClass:[NSDictionary class]]) {
+        map[@"mediationExtras"] = (NSDictionary *)extras;
+    }
+
+    [self internalInitWithCASID:casId options:map resolver:resolve rejecter:reject];
+}
+
+#else  /* ifdef RCT_NEW_ARCH_ENABLED */
 
 RCT_EXPORT_METHOD(initialize:(NSString *)casId
                   options:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    if (self.casInitConfig && self.casIdendifier == casId) {
+    [self internalInitWithCASID:casId options:options resolver:resolve rejecter:reject];
+}
+
+#endif /* ifdef RCT_NEW_ARCH_ENABLED */
+
+- (void)internalInitWithCASID:(NSString *)casId
+                      options:(NSDictionary *)options
+                     resolver:(RCTPromiseResolveBlock)resolve
+                     rejecter:(RCTPromiseRejectBlock)reject {
+    if (self.casInitConfig && _casIdentifier == casId) {
         resolve(self.casInitConfig);
         return;
     }
 
-    self.casIdendifier = casId;
+    _casIdentifier = casId;
 
     // Tagged audience
     NSNumber *audience = options[@"targetAudience"];
@@ -174,22 +132,19 @@ RCT_EXPORT_METHOD(initialize:(NSString *)casId
 
     NSNumber *showConsent = options[@"showConsentFormIfRequired"];
 
-    if (showConsent != nil && [showConsent boolValue]) {
-        CASConsentFlow *consentFlow = [[CASConsentFlow alloc] initWithEnabled:YES];
+    CASConsentFlow *consentFlow = [[CASConsentFlow alloc] initWithEnabled:[showConsent boolValue]];
 
-        // Privacy geography
-        NSNumber *privacyGeo = options[@"debugPrivacyGeography"];
+    NSNumber *privacyGeo = options[@"debugGeography"];
 
-        if (privacyGeo != nil) {
-            consentFlow.debugGeography = (CASUserDebugGeography)[privacyGeo integerValue];
-        }
-
-        [builder withConsentFlow:consentFlow];
+    if (privacyGeo != nil) {
+        consentFlow.debugGeography = (CASUserDebugGeography)[privacyGeo integerValue];
     }
+
+    [builder withConsentFlow:consentFlow];
 
     [builder withFramework:@"ReactNative" version:options[@"reactNativeVersion"]];
 
-    // Completion handler
+    __block RCTPromiseResolveBlock resolveBlock = resolve;
     [builder withCompletionHandler:^(CASInitialConfig *_Nonnull config) {
         self.casInitConfig = [NSMutableDictionary dictionary];
 
@@ -204,7 +159,10 @@ RCT_EXPORT_METHOD(initialize:(NSString *)casId
         self.casInitConfig[@"isConsentRequired"] = @(config.isConsentRequired);
         self.casInitConfig[@"consentFlowStatus"] = @(config.consentFlowStatus);
 
-        resolve(self.casInitConfig);
+        if (resolveBlock) {
+            resolveBlock(self.casInitConfig);
+            resolveBlock = nil;
+        }
     }];
 
     [builder createWithCasId:casId];
@@ -217,8 +175,40 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
     resolve(@(initialized));
 }
 
+RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    resolve([CAS getSDKVersion]);
+}
 
-#pragma mark - Event Emmiter
+
+#pragma mark - Event Emitter
+
+- (NSArray<NSString *> *)supportedEvents {
+    return @[
+        kOnAppOpenLoaded,
+        kOnAppOpenLoadFailed,
+        kOnAppOpenShowed,
+        kOnAppOpenFailedToShow,
+        kOnAppOpenHidden,
+        kOnAppOpenClicked,
+        kOnAppOpenImpression,
+        kOnInterstitialLoaded,
+        kOnInterstitialLoadFailed,
+        kOnInterstitialClicked,
+        kOnInterstitialShowed,
+        kOnInterstitialFailedToShow,
+        kOnInterstitialHidden,
+        kOnInterstitialImpression,
+        kOnRewardedLoaded,
+        kOnRewardedLoadFailed,
+        kOnRewardedClicked,
+        kOnRewardedShowed,
+        kOnRewardedFailedToShow,
+        kOnRewardedHidden,
+        kOnRewardedCompleted,
+        kOnRewardedImpression
+    ];
+}
 
 - (void)startObserving {
     self.hasListeners = YES;
@@ -228,13 +218,19 @@ RCT_EXPORT_METHOD(isInitialized:(RCTPromiseResolveBlock)resolve
     self.hasListeners = NO;
 }
 
-#pragma mark - SDK Version
-
-RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject) {
-    resolve([CAS getSDKVersion]);
+// Invoke all exported methods from main queue
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
 }
 
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<NativeCASMobileAdsModuleSpecJSI>(params);
+}
+
+#endif
 
 #pragma mark - Consent Flow
 
@@ -242,9 +238,15 @@ RCT_EXPORT_METHOD(showConsentFlow:(nonnull RCTPromiseResolveBlock)resolve
                   reject:(nonnull RCTPromiseRejectBlock)reject) {
     CASConsentFlow *flow = [[CASConsentFlow alloc] init];
 
+    __block RCTPromiseResolveBlock resolveBlock = resolve;
+
     flow.completionHandler = ^(enum CASConsentFlowStatus status) {
         NSNumber *statusNumber = @(status);
-        resolve(statusNumber);
+
+        if (resolveBlock) {
+            resolveBlock(statusNumber);
+            resolveBlock = nil;
+        }
     };
     [flow present];
 }
@@ -358,7 +360,7 @@ RCT_EXPORT_METHOD(setInterstitialAutoshowEnabled:(BOOL)enabled) {
 RCT_EXPORT_METHOD(destroyInterstitial) {
     if (self.interstitialAds) {
         [self.interstitialAds destroy];
-        self.interstitialAds = [[CASInterstitial alloc] initWithCasID:self.casIdendifier];
+        self.interstitialAds = [[CASInterstitial alloc] initWithCasID:_casIdentifier];
         self.interstitialAds.delegate = self;
         self.interstitialAds.impressionDelegate = self;
     }
@@ -410,7 +412,7 @@ RCT_EXPORT_METHOD(setAppOpenAutoshowEnabled:(BOOL)enabled) {
 RCT_EXPORT_METHOD(destroyAppOpen) {
     if (self.appOpenAds) {
         [self.appOpenAds destroy];
-        self.appOpenAds = [[CASAppOpen alloc] initWithCasID:self.casIdendifier];
+        self.appOpenAds = [[CASAppOpen alloc] initWithCasID:_casIdentifier];
         self.appOpenAds.delegate = self;
         self.appOpenAds.impressionDelegate = self;
     }
@@ -462,7 +464,7 @@ RCT_EXPORT_METHOD(setRewardedAutoloadEnabled:(BOOL)enabled) {
 RCT_EXPORT_METHOD(destroyRewarded) {
     if (self.rewardedAds) {
         [self.rewardedAds destroy];
-        self.rewardedAds = [[CASRewarded alloc] initWithCasID:self.casIdendifier];
+        self.rewardedAds = [[CASRewarded alloc] initWithCasID:_casIdentifier];
         self.rewardedAds.delegate = self;
         self.rewardedAds.impressionDelegate = self;
     }
@@ -476,15 +478,6 @@ RCT_EXPORT_METHOD(destroyRewarded) {
     [self sendEventWithName:event body:@{ @"code": @(error.code), @"message": error.description }];
 }
 
-- (void)sendEvent:(NSString *)event withInfo:(CASContentInfo *_Nonnull)info {
-    if (!self.hasListeners) {
-        return;
-    }
-
-    NSDictionary *impressionData = [CASMobileAds convertImpressionInfo:info];
-    [self sendEventWithName:event body:impressionData];
-}
-
 #pragma mark - CASScreenContentDelegate
 
 - (void)screenAdDidLoadContent:(id<CASScreenContent>)ad {
@@ -492,17 +485,13 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedLoaded;
+        [self sendEventWithName:kOnRewardedLoaded body:nil];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialLoaded;
+        [self sendEventWithName:kOnInterstitialLoaded body:nil];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenLoaded;
+        [self sendEventWithName:kOnAppOpenLoaded body:nil];
     }
-
-    [self sendEventWithName:event body:nil];
 }
 
 - (void)screenAd:(id<CASScreenContent>)ad didFailToLoadWithError:(CASError *)error {
@@ -510,17 +499,13 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedLoadFailed;
+        [self sendAdEvent:kOnRewardedLoadFailed withError:error];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialLoadFailed;
+        [self sendAdEvent:kOnInterstitialLoadFailed withError:error];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenLoadFailed;
+        [self sendAdEvent:kOnAppOpenLoadFailed withError:error];
     }
-
-    [self sendAdEvent:event withError:error];
 }
 
 - (void)screenAdWillPresentContent:(id<CASScreenContent>)ad {
@@ -528,17 +513,13 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedDisplayed;
+        [self sendEventWithName:kOnRewardedShowed body:nil];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialDisplayed;
+        [self sendEventWithName:kOnInterstitialShowed body:nil];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenDisplayed;
+        [self sendEventWithName:kOnAppOpenShowed body:nil];
     }
-
-    [self sendEventWithName:event body:nil];
 }
 
 - (void)screenAd:(id<CASScreenContent>)ad didFailToPresentWithError:(CASError *)error {
@@ -546,17 +527,13 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedFailedToShow;
+        [self sendAdEvent:kOnRewardedFailedToShow withError:error];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialFailedToShow;
+        [self sendAdEvent:kOnInterstitialFailedToShow withError:error];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenFailedToShow;
+        [self sendAdEvent:kOnAppOpenFailedToShow withError:error];
     }
-
-    [self sendAdEvent:event withError:error];
 }
 
 - (void)screenAdDidClickContent:(id<CASScreenContent>)ad {
@@ -564,17 +541,13 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedClicked;
+        [self sendEventWithName:kOnRewardedClicked body:nil];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialClicked;
+        [self sendEventWithName:kOnInterstitialClicked body:nil];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenClicked;
+        [self sendEventWithName:kOnAppOpenClicked body:nil];
     }
-
-    [self sendEventWithName:event body:nil];
 }
 
 - (void)screenAdDidDismissContent:(id<CASScreenContent>)ad {
@@ -582,49 +555,82 @@ RCT_EXPORT_METHOD(destroyRewarded) {
         return;
     }
 
-    NSString *event = @"";
-
     if ([ad isKindOfClass:[CASRewarded class]]) {
-        event = kOnRewardedHidden;
+        [self sendEventWithName:kOnRewardedHidden body:nil];
     } else if ([ad isKindOfClass:[CASInterstitial class]]) {
-        event = kOnInterstitialHidden;
+        [self sendEventWithName:kOnInterstitialHidden body:nil];
     } else if ([ad isKindOfClass:[CASAppOpen class]]) {
-        event = kOnAppOpenHidden;
+        [self sendEventWithName:kOnAppOpenHidden body:nil];
     }
-
-    [self sendEventWithName:event body:nil];
 }
+
+#pragma mark - CASImpressionDelegate
 
 - (void)adDidRecordImpressionWithInfo:(CASContentInfo *_Nonnull)info {
     if (!self.hasListeners) {
         return;
     }
 
-    NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
+    NSDictionary *impressionData = RNCASNSDictionaryFromContentInfo(info);
 
-    if (info.format) {
-        impressionData[@"format"] = info.format.label;
-    }
-
-    impressionData[@"sourceName"] = info.sourceName ? : @"";
-    impressionData[@"sourceUnitId"] = info.sourceUnitID ? : @"";
-
-    if (info.creativeID) {
-        impressionData[@"creativeId"] = info.creativeID;
-    }
-
-    impressionData[@"revenue"] = @(info.revenue);
-    impressionData[@"revenuePrecision"] = @(info.revenuePrecision);
-    impressionData[@"impressionDepth"] = @(info.impressionDepth);
-    impressionData[@"revenueTotal"] = @(info.revenueTotal);
-
-    if ([info.format isEqual:[CASFormat interstitial]]) {
+    if ([info.format isEqual:CASFormat.interstitial]) {
         [self sendEventWithName:kOnInterstitialImpression body:impressionData];
-    } else if ([info.format isEqual:[CASFormat rewarded]]) {
+    } else if ([info.format isEqual:CASFormat.rewarded]) {
         [self sendEventWithName:kOnRewardedImpression body:impressionData];
-    } else if ([info.format isEqual:[CASFormat appOpen]]) {
+    } else if ([info.format isEqual:CASFormat.appOpen]) {
         [self sendEventWithName:kOnAppOpenImpression body:impressionData];
     }
 }
 
 @end
+
+#pragma mark - Plugin utilities
+
+NSDictionary * RNCASNSDictionaryFromContentInfo(CASContentInfo *info) {
+    NSMutableDictionary *impressionData = [NSMutableDictionary dictionary];
+
+    impressionData[@"format"] = info.format.label;
+    impressionData[@"sourceName"] = info.sourceName;
+    impressionData[@"sourceUnitId"] = info.sourceUnitID;
+    impressionData[@"revenue"] = @(info.revenue);
+    impressionData[@"revenuePrecision"] = RNCASNSStringFromRevenuePresision(info.revenuePrecision);
+    impressionData[@"impressionDepth"] = @(info.impressionDepth);
+    impressionData[@"revenueTotal"] = @(info.revenueTotal);
+
+    if (info.creativeID) {
+        impressionData[@"creativeId"] = info.creativeID;
+    }
+
+    return impressionData;
+}
+
+NSString * RNCASNSStringFromRevenuePresision(CASRevenuePrecision precision) {
+    switch (precision) {
+        case CASRevenuePrecisionPrecise: return @"precise";
+
+        case CASRevenuePrecisionFloor: return @"floor";
+
+        case CASRevenuePrecisionEstimated: return @"estimated";
+
+        default: return @"unknown";
+    }
+}
+
+CASSize * RNCASSizeWithType(unichar sizeType, CGFloat maxWidth, CGFloat maxHeight) {
+    switch (sizeType) {
+        case 'B': return CASSize.banner;
+
+        case 'L': return CASSize.leaderboard;
+
+        case 'M': return CASSize.mediumRectangle;
+
+        case 'S': return [CASSize getSmartBanner];
+
+        case 'A': return [CASSize getAdaptiveBannerForMaxWidth:maxWidth];
+
+        case 'I': return [CASSize getInlineBannerWithWidth:maxWidth
+                                                 maxHeight:maxHeight];
+
+        default: return CASSize.banner;
+    }
+}

@@ -29,13 +29,6 @@ object BannerViewManagerImpl {
     )
 
   fun setSizeConfig(view: CASBannerView, value: ReadableMap?) {
-    Log.e(
-      "CAS.AI.React", "Banner size config: " +
-        "type=${value?.getString("sizeType")}, " +
-        "width=${value?.getDouble("maxWidth")?.roundToInt()}, " +
-        "height=${value?.getDouble("maxHeight")?.roundToInt()}"
-    )
-
     if (value == null) return
     view.size = when (value.getString("sizeType")) {
       "B" -> AdSize.BANNER
@@ -62,7 +55,7 @@ object BannerViewManagerImpl {
     }
   }
 
-  fun setAutoload(view: CASBannerView, enabled: Boolean) {
+  fun setAutoReload(view: CASBannerView, enabled: Boolean) {
     // Set not to banner for wait all other properties
     val listener = view.adListener as? BannerViewListener ?: return
     listener.isAutoloadEnabled = enabled

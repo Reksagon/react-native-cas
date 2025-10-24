@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Platform, StyleSheet, View, Button, Text, Animated } from 'react-native';
 import {
-  BannerAdView, BannerAdSize,
-  type AdViewRef, type AdViewInfo, type AdError, type AdContentInfo
+  BannerAdView,
+  BannerAdSize,
+  type AdViewRef,
+  type AdViewInfo,
+  type AdError,
+  type AdContentInfo,
 } from 'react-native-cas';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,10 +17,13 @@ export default function BannerExample() {
 
   const bannerRef = useRef<AdViewRef>(null);
   const translateY = useRef(new Animated.Value(120)).current;
-  const retryId = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    bannerRef.current.loadAd();
+    return () => {
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -29,32 +36,31 @@ export default function BannerExample() {
     return () => anim.stop();
   }, [visible, loaded, translateY]);
 
-  const onLoaded = useCallback((data: AdViewInfo) => {
+  const onAdLoadedCallback = useCallback((data: AdViewInfo) => {
+    console.log('Banner Ad loaded', data);
     setLoaded(true);
-    if (retryId.current) { clearTimeout(retryId.current); retryId.current = null; }
-    console.log('Banner loaded', data);
+    if (retryTimer.current) {
+      clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    }
   }, []);
 
-  const onFailed = useCallback((err: AdError) => {
+  const onAdFailedCallback = useCallback((err: AdError) => {
+    console.log('Banner Ad load failed', err);
     setLoaded(false);
-    console.log('Banner failed', err);
-    if (retryId.current) clearTimeout(retryId.current);
-    retryId.current = setTimeout(() => {
-      retryId.current = null;
-      bannerRef.current?.loadAd(); 
+    if (retryTimer.current) clearTimeout(retryTimer.current);
+    retryTimer.current = setTimeout(() => {
+      retryTimer.current = null;
+      bannerRef.current?.loadAd();
     }, 10000);
   }, []);
 
-  const onClicked = useCallback(() => console.log('Banner clicked'), []);
-  const onImpression = useCallback((info: AdContentInfo) => {
-    console.log('Banner impression', info);
+  const onAdClickedCallback = useCallback(() => {
+    console.log('Banner Ad clicked');
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (retryId.current) clearTimeout(retryId.current);
-      retryId.current = null;
-    };
+  const onAdImpressionCallback = useCallback((info: AdContentInfo) => {
+    console.log('Banner Ad impression', info);
   }, []);
 
   return (
@@ -67,10 +73,10 @@ export default function BannerExample() {
             onPress={() => setVisible(v => !v)}
           />
           <Button
-            title="Reload (ref)"
+            title="Reload Ad"
             onPress={() => {
               setLoaded(false);
-              bannerRef.current?.loadAd(); 
+              bannerRef.current?.loadAd();
             }}
           />
         </View>
@@ -78,7 +84,7 @@ export default function BannerExample() {
 
       <Animated.View
         pointerEvents={visible ? 'auto' : 'none'}
-       style={[
+        style={[
           S.dock,
           {
             paddingBottom: (insets.bottom || 0) + 6,
@@ -89,14 +95,13 @@ export default function BannerExample() {
         <View style={S.bannerBox}>
           <BannerAdView
             ref={bannerRef}
-            size={BannerAdSize.BANNER}      
-            autoload={false}
+            size={BannerAdSize.SMART}
+            autoReload={false}
             refreshInterval={30}
-            style={S.bannerExact}
-            onAdViewLoaded={onLoaded}
-            onAdViewFailed={onFailed}
-            onAdViewClicked={onClicked}
-            onAdViewImpression={onImpression}
+            onAdViewLoaded={onAdLoadedCallback}
+            onAdViewFailed={onAdFailedCallback}
+            onAdViewClicked={onAdClickedCallback}
+            onAdViewImpression={onAdImpressionCallback}
           />
         </View>
       </Animated.View>
@@ -115,13 +120,32 @@ const S = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    width: '100%', maxWidth: 420, borderRadius: 16, backgroundColor: '#121821',
-    padding: 20, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 }, elevation: 6,
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 16,
+    backgroundColor: '#121821',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#E8EEF6', textAlign: 'center', marginBottom: 12 },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#E8EEF6',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
   stack: { gap: 12 },
-  dock: { position: 'absolute', left: 0, right: 0, bottom: Platform.select({ ios: 36, android: 0 }), backgroundColor: '#000', paddingVertical: 6 },
-  bannerBox: { width: '100%', alignItems: 'center', justifyContent: 'center' },
-  bannerExact: { width: 320, height: 50, alignSelf: 'center' },
+  dock: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: Platform.select({ ios: 36, android: 0 }),
+    backgroundColor: '#000',
+    paddingVertical: 6,
+  },
+  bannerBox: { width: '100%', alignItems: 'center' },
 });

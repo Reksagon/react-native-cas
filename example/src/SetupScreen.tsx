@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View, Text, StyleSheet } from 'react-native';
-import AppButton from '../components/AppButton';
+import AppButton from './components/AppButton';
 import CASMobileAds, { Audience, PrivacyGeography } from 'react-native-cas';
 import { useNavigation } from '@react-navigation/native';
 
@@ -34,7 +34,7 @@ export default function SetupScreen() {
 
     CASMobileAds.setDebugLoggingEnabled(__DEV__);
 
-    const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios })!;
+    const casId = Platform.select({ android: CAS_IDS.android, ios: CAS_IDS.ios });
     const status = await CASMobileAds.initialize(casId, {
       targetAudience: Audience.UNDEFINED,
       showConsentFormIfRequired: true,
@@ -68,7 +68,11 @@ export default function SetupScreen() {
         <Text style={S.subtitle}>One tap to set up SDK & continue</Text>
 
         <View style={S.stack}>
-          <AppButton title={loading ? 'Initializing…' : 'Initialize'} onPress={init} enabled={!loading} />
+          <AppButton
+            title={loading ? 'Initializing…' : 'Initialize'}
+            onPress={init}
+            enabled={!loading}
+          />
 
           {loading && (
             <View style={S.rowCenter}>

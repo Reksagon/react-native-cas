@@ -40,11 +40,11 @@ class ScreenContentCallback(
   }
 
   override fun onAdFailedToLoad(format: AdFormat, error: AdError) {
-    emit("on${adType}LoadFailed", errorMap(error))
+    emit("on${adType}FailedToLoad", errorMap(error))
   }
 
   override fun onAdShowed(ad: AdContentInfo) {
-    emit("on${adType}Displayed", WritableNativeMap())
+    emit("on${adType}Showed", WritableNativeMap())
   }
 
   override fun onAdFailedToShow(format: AdFormat, error: AdError) {
@@ -56,6 +56,6 @@ class ScreenContentCallback(
   }
 
   override fun onAdDismissed(ad: AdContentInfo) {
-    emit("on${adType}Hidden", WritableNativeMap())
+    emit("on${adType}Dismissed", WritableNativeMap())
   }
 }

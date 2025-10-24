@@ -5,26 +5,29 @@ type Unsubscribe = () => void;
 
 const counts = new Map<string, number>();
 
-const emitter = new NativeEventEmitter(CASMobileAdsNative as any);
+const emitter = new NativeEventEmitter(CASMobileAdsNative);
 
-export function addEventListener<T = void>(
+export function addAdEventListener<T = void>(
   event: string,
-  cb: (payload: T) => void,
+  listener: (payload: T) => void,
 ): Unsubscribe {
+  if (typeof listener !== 'function') {
+    throw new Error(`addAdEventListener(_, *) 'listener' expected a function.`);
+  }
   CASMobileAdsNative.addListener(event);
   counts.set(event, (counts.get(event) ?? 0) + 1);
 
-  const sub = emitter.addListener(event, cb as any);
+  const sub = emitter.addListener(event, listener);
 
   return () => {
-    sub.remove(); 
-    CASMobileAdsNative.removeListeners(1); 
+    sub.remove();
+    CASMobileAdsNative.removeListeners(1);
     const next = (counts.get(event) ?? 1) - 1;
     next <= 0 ? counts.delete(event) : counts.set(event, next);
   };
 }
 
-export function removeEventListener(event: string): void {
+export function removeAllAdEventListeners(event: string): void {
   const n = counts.get(event) ?? 0;
   if (n > 0) {
     CASMobileAdsNative.removeListeners(n);

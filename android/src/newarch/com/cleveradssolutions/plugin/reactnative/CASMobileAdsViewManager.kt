@@ -25,8 +25,8 @@ class CASMobileAdsViewManager :
   override fun setSizeConfig(view: CASBannerView, value: ReadableMap?) =
     BannerViewManagerImpl.setSizeConfig(view, value)
 
-  override fun setAutoload(view: CASBannerView, value: Boolean) =
-    BannerViewManagerImpl.setAutoload(view, value)
+  override fun setAutoReload(view: CASBannerView, value: Boolean) =
+    BannerViewManagerImpl.setAutoReload(view, value)
 
   override fun setRefreshInterval(view: CASBannerView, value: Int) =
     BannerViewManagerImpl.setRefreshInterval(view, value)
