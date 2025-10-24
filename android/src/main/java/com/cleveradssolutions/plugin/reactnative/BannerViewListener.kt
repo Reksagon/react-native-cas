@@ -1,7 +1,5 @@
 package com.cleveradssolutions.plugin.reactnative
 
-import android.R.attr.height
-import android.R.attr.width
 import android.view.View
 import com.cleveradssolutions.sdk.AdContentInfo
 import com.cleveradssolutions.sdk.OnAdImpressionListener
@@ -20,6 +18,7 @@ class BannerViewListener(
 ) : AdViewListener, OnAdImpressionListener {
   var viewId: Int = View.NO_ID
   var isAutoloadEnabled = true
+  var isWaitOfLoad = true
 
   override fun onAdViewLoaded(view: CASBannerView) {
     val adSize = view.size

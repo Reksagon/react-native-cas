@@ -2,55 +2,52 @@ package com.cleveradssolutions.plugin.reactnative
 
 import com.cleversolutions.ads.android.CASBannerView
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
-@ReactModule(name = AdViewManagerImpl.NAME)
+@ReactModule(name = BannerViewManagerImpl.NAME)
 class CASMobileAdsViewManager : SimpleViewManager<CASBannerView>() {
 
-  override fun getName() = AdViewManagerImpl.NAME
+  override fun getName() = BannerViewManagerImpl.NAME
 
   override fun createViewInstance(ctx: ThemedReactContext): CASBannerView =
-    AdViewManagerImpl.createViewInstance(ctx)
+    BannerViewManagerImpl.createViewInstance(ctx)
 
-  @ReactProp(name = "size")
-  fun setSize(view: CASBannerView, value: String?) =
-    AdViewManagerImpl.setSize(view, value)
+  @ReactProp(name = "sizeConfig")
+  fun setSizeConfig(view: CASBannerView, value: ReadableMap?) =
+    BannerViewManagerImpl.setSizeConfig(view, value)
 
   @ReactProp(name = "autoReload", defaultBoolean = true)
   fun setAutoReload(view: CASBannerView, value: Boolean) =
-    AdViewManagerImpl.setAutoReload(view, value)
+    BannerViewManagerImpl.setAutoReload(view, value)
 
   @ReactProp(name = "refreshInterval")
   fun setRefreshInterval(view: CASBannerView, value: Int) =
-    AdViewManagerImpl.setRefreshInterval(view, value)
+    BannerViewManagerImpl.setRefreshInterval(view, value)
 
   @ReactProp(name = "casId")
   fun setCasId(view: CASBannerView, value: String?) =
-    AdViewManagerImpl.setCasId(view, value)
+    BannerViewManagerImpl.setCasId(view, value)
 
   override fun onAfterUpdateTransaction(view: CASBannerView) {
     super.onAfterUpdateTransaction(view)
-    AdViewManagerImpl.onAfterUpdateTransaction(view)
+    BannerViewManagerImpl.onAfterUpdateTransaction(view)
   }
 
   override fun onDropViewInstance(view: CASBannerView) {
-    AdViewManagerImpl.onDropViewInstance(view)
+    BannerViewManagerImpl.onDropViewInstance(view)
     super.onDropViewInstance(view)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
-    AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
+    BannerViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
-  override fun getCommandsMap(): Map<String, Int> = mapOf(
-    "loadAd"  to 1
-  )
-
-  override fun receiveCommand(view: CASBannerView, commandId: Int, args: ReadableArray?) {
-    when (commandId) {
-      1 -> AdViewManagerImpl.commandLoadAd(view)
+  override fun receiveCommand(root: CASBannerView, commandId: String?, args: ReadableArray?) {
+    if(commandId == "loadAd"){
+      BannerViewManagerImpl.commandLoadAd(root)
     }
   }
 }

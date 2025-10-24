@@ -31,14 +31,21 @@ using namespace facebook::react;
 /// 3. `handleCommand` – function calls from JavaScript
 /// 4. `prepareForRecycle` – when the view is unmounted
 /// 5. After that, the same container can be reused for another mount, starting from step 2.
+/// Recycle enabled by default and can be disabled by function:
+/// ```
+/// + (BOOL)shouldBeRecycled {
+///   return NO;
+/// }
+/// ```
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         static const auto defaultProps = std::make_shared<const CASAdViewProps>();
         _props = defaultProps;
     }
-
+  
     return self;
 }
+
 
 - (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &)oldProps {
     const auto &newProps = *std::static_pointer_cast<CASAdViewProps const>(props);
@@ -68,9 +75,9 @@ using namespace facebook::react;
     }
 
     self.bannerView.refreshInterval = newProps.refreshInterval;
-    self.bannerView.isAutoloadEnabled = newProps.autoload;
+    self.bannerView.isAutoloadEnabled = newProps.autoReload;
 
-    if (firstLoad && !newProps.autoload) {
+    if (firstLoad && !newProps.autoReload) {
         [self.bannerView loadAd];
     }
 
