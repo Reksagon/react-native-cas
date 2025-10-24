@@ -10,9 +10,10 @@ import type {
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 
-type OnLoadedEvent = { width: Float; height: Float };
-type OnFailedEvent = { code: Int32; message: string };
-type OnImpressionEvent = {
+type OnAdEvent = {}
+type OnAdLoadedEvent = { width: Float; height: Float };
+type OnAdFailedEvent = { code: Int32; message: string };
+type OnAdImpressionEvent = {
   format: string;
   revenue: Double;
   revenuePrecision: string;
@@ -33,10 +34,10 @@ export interface NativeProps extends ViewProps {
   casId?: string;
   refreshInterval?: Int32;
 
-  onAdViewLoaded?: DirectEventHandler<OnLoadedEvent>;
-  onAdViewFailed?: DirectEventHandler<OnFailedEvent>;
-  onAdViewClicked?: DirectEventHandler<object>;
-  onAdViewImpression?: DirectEventHandler<OnImpressionEvent>;
+  onAdViewLoaded?: DirectEventHandler<OnAdLoadedEvent>;
+  onAdViewFailed?: DirectEventHandler<OnAdFailedEvent>;
+  onAdViewClicked?: DirectEventHandler<OnAdEvent>;
+  onAdViewImpression?: DirectEventHandler<OnAdImpressionEvent>;
 }
 
 type CASAdViewNativeComponentType = HostComponent<NativeProps>;

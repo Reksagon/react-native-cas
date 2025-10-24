@@ -1,3 +1,4 @@
+source 'https://github.com/CocoaPods/Specs.git'
 # Add CAS Specs source
 source 'https://github.com/cleveradssolutions/CAS-Specs.git'
 
