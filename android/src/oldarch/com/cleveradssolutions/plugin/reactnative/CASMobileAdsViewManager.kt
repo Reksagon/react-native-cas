@@ -43,7 +43,7 @@ class CASMobileAdsViewManager : SimpleViewManager<CASBannerView>() {
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
-    AdViewManagerImpl.getExportedCustomDirectEventTypeConstants()
+    BannerViewManagerImpl.getExportedCustomDirectEventTypeConstants()
 
   override fun getCommandsMap(): Map<String, Int> = mapOf(
     "loadAd"  to 1
@@ -51,7 +51,7 @@ class CASMobileAdsViewManager : SimpleViewManager<CASBannerView>() {
 
   override fun receiveCommand(view: CASBannerView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
-      1 -> AdViewManagerImpl.commandLoadAd(view)
+      1 -> BannerViewManagerImpl.commandLoadAd(view)
     }
   }
 }
