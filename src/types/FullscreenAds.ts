@@ -12,58 +12,94 @@ export type Unsubscribe = () => void;
  * - Impression: contains parsed revenue/partner payload (see AdContentInfo)
  */
 export type FullscreenAdBase = {
-  /** Resolves `true` if an ad is currently loaded and ready. */
+  /**
+   * Indicates whether the ad is currently loaded and ready to be shown.
+   * Use before calling {@link showAd} when your flow requires it.
+   */
   isAdLoaded(): Promise<boolean>;
 
-  /** Starts loading an ad; results are delivered via events. */
+  /**
+   * Manual retry to load the ad.
+   * If autoload is enabled, loading/retry happens automatically when needed.
+   */
   loadAd(): void;
-  /** Attempts to show a loaded ad immediately. */
+
+  /**
+   * Display this ad on top of the application.
+   * Register event listeners before calling to get lifecycle callbacks.
+   */
   showAd(): void;
-  /** Releases underlying native resources. */
+
+  /** Frees the underlying native resources. */
   destroy(): void;
 
-  /** Automatically load the next ad as soon as possible. */
+  /**
+   * Enables automatic loading of the next ad.
+   * When enabled, the SDK loads a new ad after dismissal and retries on load errors.
+   */
   setAutoloadEnabled(enabled: boolean): void;
 
-  /** Fired when an ad has been loaded successfully. Returns unsubscribe. */
+  /** Fired when the ad content has been successfully loaded. Returns unsubscribe. */
   addAdLoadedEventListener(l: () => void): Unsubscribe;
 
-  /** Fired when an ad has failed to load. Returns unsubscribe. */
+  /** Fired when the ad content fails to load. Returns unsubscribe. */
   addAdFailedToLoadEventListener(l: (error: AdError) => void): Unsubscribe;
 
   /** Fired when the ad fails to present. Returns unsubscribe. */
   addAdFailedToShowEventListener(l: (error: AdError) => void): Unsubscribe;
 
-  /** Fired when the ad is presented. Returns unsubscribe. */
+  /** Fired when the ad is presented to the user. Returns unsubscribe. */
   addAdShowedEventListener(l: () => void): Unsubscribe;
 
   /** Fired when the ad is clicked. Returns unsubscribe. */
   addAdClickedEventListener(l: () => void): Unsubscribe;
 
-  /** Fired on impression; provides parsed monetization payload. Returns unsubscribe. */
+  /**
+   * Fired when an impression occurs. Provides monetization payload.
+   * Available for allowlisted accounts only.
+   * Returns unsubscribe.
+   */
   addAdImpressionEventListener(l: (info: AdContentInfo) => void): Unsubscribe;
 
-  /** Fired when the ad is dismissed/closed by the user. Returns unsubscribe. */
+  /**
+   * Fired when the ad is closed/dismissed by the user.
+   * Returns unsubscribe.
+   */
   addAdDismissedEventListener(l: () => void): Unsubscribe;
 };
 
 /** App-open specific options. */
 export type AppOpenAdType = FullscreenAdBase & {
-  /** Shows ad automatically once it loads (cold start flows). */
+  /**
+   * Controls whether the ad should be automatically displayed when the user returns to the app.
+   * Note: the ad must be ready at the moment the app returns to foreground.
+   */
   setAutoshowEnabled(enabled: boolean): void;
 };
 
 export type InterstitialAdType = FullscreenAdBase & {
   /** Shows ad automatically once it loads. */
   setAutoshowEnabled(enabled: boolean): void;
-  /** Minimal interval in seconds between shows. */
+
+  /**
+   * The minimum interval between showing interstitial ads, in seconds.
+   * Showing earlier will trigger onAdFailedToShow with codeNotPassedInterval.
+   * The timer is shared across instances; values may differ per instance.
+   */
   setMinInterval(seconds: number): void;
-  /** Restarts the interval countdown from now. */
+
+  /**
+   * Restarts the interval countdown until the next interstitial ad display.
+   * Useful to delay an interstitial after showing Rewarded/AppOpen.
+   */
   restartInterval(): void;
 };
 
 /** Rewarded specific events. */
 export type RewardedAdType = FullscreenAdBase & {
-  /** Fired when the user has earned the reward. Returns unsubscribe. */
+  /**
+   * Called when the user has earned the reward.
+   * Note: This differs from the dismissed callback — a user might dismiss without earning a reward.
+   */
   addAdUserEarnRewardEventListener(l: () => void): Unsubscribe;
 };

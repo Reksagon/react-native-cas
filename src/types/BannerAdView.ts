@@ -20,44 +20,59 @@ export enum BannerAdSize {
 
 /**
  * Public props for the `<AdView />` React Native component.
- * All callbacks receive plain JavaScript objects (no `NativeSyntheticEvent` wrappers).
+ * All callbacks receive plain JavaScript objects (no NativeSyntheticEvent wrappers).
  */
 export type BannerAdViewProps = {
   /** Banner size. Defaults to {@link BannerAdSize.BANNER}. */
   size?: BannerAdSize;
+
   /**
-   * Limit inline adaptive banner height.
-   * By default, inline adaptive banners instantiated without a maxHeight value have a maxHeight equal to the device height.
+   * Maximum height for Inline banners.
+   * By default, inline adaptive banners without an explicit maxHeight use the device height.
+   * Automatically clamped to the screen bounds and updated on orientation changes.
    */
   maxHeight?: number;
+
   /**
-   * Sets the width for adaptive banners (inline and anchored).
-   * If not specified, the width defaults to the full device width.
+   * Maximum width for Adaptive/Inline banners.
+   * If omitted, the width defaults to the full device width.
+   * Automatically clamped to the screen bounds and updated on orientation changes.
    */
   maxWidth?: number;
+
   /**
-   * Optional CAS identifier override.
+   * Optional CAS identifier override for this specific view.
    * Usually set during SDK initialization; not required for most use cases.
    */
   casId?: string;
+
   /**
-   * Enables automatic reloading of the ad once the current one fails.
+   * If enabled, the ad will automatically retry loading when a load error occurs.
    */
   autoReload?: boolean;
+
   /**
-   * Automatic refresh interval in seconds.
-   * Set to `0` to disable auto-refresh.
+   * Sets the refresh interval in seconds for displaying ads.
+   * The countdown runs only while the view is visible.
+   * Once elapsed, a new ad automatically loads and displays.
+   * Set `0` to disable. Default: 30 seconds.
+   * Works regardless of {@link autoReload}.
    */
   refreshInterval?: number;
-  /** Called when an ad has successfully loaded. */
+
+  /** Fired when an ad is loaded. Provides actual creative `width`/`height` in dp. */
   onAdViewLoaded?: (info: AdViewInfo) => void;
-  /** Called when ad loading fails. */
+
+  /** Fired when the ad fails to load with a normalized error code and message. */
   onAdViewFailed?: (error: AdError) => void;
-  /** Called when the user clicks the ad. */
+
+  /** Fired when the user taps the ad. */
   onAdViewClicked?: () => void;
-  /** Called when an ad impression is recorded. */
+
+  /** Fired on impression with monetization info (revenue, network, unit ID, etc.). */
   onAdViewImpression?: (info: AdContentInfo) => void;
 };
+
 
 /** Public methods available through the `<AdView ref={...} />` reference. */
 export type BannerAdViewRef = {

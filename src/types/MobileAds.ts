@@ -1,6 +1,3 @@
-import type { InitializationStatus, InitializationParams } from './Initialization';
-import { ConsentFlowStatus } from './Initialization';
-
 export interface MobileAds {
   /**
    * Initializes the CAS Mobile Ads SDK.
@@ -17,66 +14,100 @@ export interface MobileAds {
    *
    * If an error occurs, the SDK will attempt automatic reinitialization internally.
    * However, this {@link Promise} will not be updated with subsequent {@link InitializationStatus}.
-   *
    * For the most up-to-date {@link InitializationStatus}, call this method again at a later time.
    *
    * @param casId
-   * The unique identifier for the CAS content.
-   * Use `demo` value to force test ads mode for all devices.
+   * The unique identifier for the CAS content registered for your app on each platform.
+   * You can use the value `demo` to force test ads mode on all devices if you haven't registered a casId yet.
    */
   initialize(casId: string, options: InitializationParams): Promise<InitializationStatus>;
 
-  /**
-   * Is SDK initialized.
-   */
+  /** Is SDK initialized. */
   isInitialized(): Promise<boolean>;
 
-  /** Presents the consent flow form; resolves with provider-specific result code. */
+  /**
+   * Call `CASMobileAds.showConsentFlow()` to show the built-in consent form manually.
+   * If the consent is required, the SDK loads the form and immediately presents it.
+   * The `Promise<ConsentFlowStatus>` completes after the form is dismissed.
+   * If consent is not required, the `Promise` resolves instantly.
+   */
   showConsentFlow(): Promise<ConsentFlowStatus>;
 
   /** Returns the underlying native SDK version, e.g. "4.3.0". */
   getSDKVersion(): Promise<string>;
 
-  /** Enables verbose logging to the native console/logcat. */
+  /** Enables or disables debug logging to the console (native logcat/console). */
   setDebugLoggingEnabled(enabled: boolean): void;
 
-  /** Mutes/unmutes ad sounds where supported by networks. */
+  /**
+   * Sets whether the ad source is muted.
+   *
+   * Affects initial mute state for fullscreen ads.
+   * Use this method only if your application has its own volume controls
+   * (e.g., custom music or sound effect muting).
+   *
+   * Not muted by default.
+   */
   setAdSoundsMuted(muted: boolean): void;
 
   /**
-   * Sets the user’s age for ad targeting. Provide a positive integer.
+   * Sets the user’s age.
+   *
+   * Limitation: 1–99, and 0 is 'unknown'.
    * Note: Only pass data you are legally allowed to share.
    */
   setUserAge(age: number): void;
 
   /**
-   * Sets the user’s gender for ad targeting.
-   * @param gender See {@link Gender}
+   * Set targeting to user’s gender.
+   *
+   * Limitation: `UNKNOWN`, `MALE`, `FEMALE`.
    */
   setUserGender(gender: number): void;
 
   /**
-   * Sets a content URL to help contextual targeting, e.g. an article URL.
+   * Sets a list of keywords, interests, or intents related to your application.
+   *
+   * Words or phrases describing the current activity of the user for targeting purposes.
+   */
+  setAppKeywords(keywords: string[]): void;
+
+  /**
+   * Sets the content URL for a website whose content matches the app's primary content.
+   * This website content is used for targeting and brand safety purposes.
+   *
+   * Limitation: max URL length 512.
    * Pass `undefined` to clear the value.
    */
   setAppContentUrl(contentUrl?: string): void;
 
-  /** Sets a list of keywords to help contextual targeting. */
-  setAppKeywords(keywords: string[]): void;
-
-  /** Enables/disables coarse location collection where permitted. Disabled by default. */
+  /**
+   * Collect from the device the latitude and longitude coordinates truncated to the
+   * hundredths decimal place.
+   *
+   * * Collect only if your application already has the relevant end-user permissions.
+   * * Does not collect if the target audience is children.
+   * * Disabled by default.
+   */
   setLocationCollectionEnabled(enabled: boolean): void;
 
   /**
-   * Sets the trial ad-free interval (in seconds) since first install.
-   * During the interval, no ads are shown except Rewarded.
+   * Defines the time interval, in seconds, starting from the moment of the initial app installation,
+   * during which users can use the application without ads being displayed while still retaining
+   * access to the Rewarded Ads format.
+   * Within this interval, users enjoy privileged access to the application's features without intrusive advertisements.
+   *
+   * Default: 0 seconds.
    */
   setTrialAdFreeInterval(interval: number): void;
 }
 
 /** Optional targeting value. */
 export enum Gender {
+  /** Unknown gender. */ 
   UNKNOWN = 0,
+  /** Male. */ 
   MALE = 1,
-  FEMALE = 2,
+  /** Female. */ 
+  FEMALE = 2
 }

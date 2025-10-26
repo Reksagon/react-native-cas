@@ -3,23 +3,24 @@
  * Values may vary depending on the ad network.
  */
 export type AdContentInfo = {
-  /** The ad format (e.g., Banner, MREC, Interstitial). */
+  /** The ad format (e.g., Banner, MREC, Interstitial, Rewarded, AppOpen). */
   format: string;
-  /** Revenue for this impression, typically in USD. */
+  /** The impression revenue in USD. This value can be either estimated or precise depending on the network. */
   revenue: number;
-  /** Revenue precision (e.g., "estimated", "precise"). */
+  /** Indicates whether the revenue is "estimated" or "precise". */
   revenuePrecision: string;
-  /** The source unit ID provided by the network. */
+  /** The network’s ad unit ID that served this impression. */
   sourceUnitId: string;
-  /** The ad network name (e.g., AdMob, AppLovin). */
+  /** Display name of the ad network that purchased the impression. */
   sourceName: string;
-  /** The creative ID, if available. */
+  /** Creative identifier, if available (useful for reporting issues). */
   creativeId?: string;
-  /** The total accumulated revenue for the session, if tracked by SDK. */
+  /** Accumulated ad revenue in USD across all formats for the current user. */
   revenueTotal: number;
-  /** The waterfall or auction depth index of this impression. */
+  /** Total number of impressions shown to this user across all sessions. */
   impressionDepth: number;
 };
+
 
 /**
  * Information returned when an ad has successfully loaded.
