@@ -1,6 +1,7 @@
 package com.cleveradssolutions.plugin.reactnative
 
 import com.cleversolutions.ads.android.CASBannerView
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager

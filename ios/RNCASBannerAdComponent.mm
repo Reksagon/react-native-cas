@@ -18,7 +18,6 @@
 }
 
 - (void)didSetProps:(NSArray<NSString *> *)changedProps {
-    NSLog(@"RNCASBannerAdComponent didSetProps");
     CASSize *adSize = RNCASSizeWithType([self.sizeConfig[@"sizeType"] characterAtIndex:0],
                                         [self.sizeConfig[@"maxWidth"] doubleValue],
                                         [self.sizeConfig[@"maxHeight"] doubleValue]);

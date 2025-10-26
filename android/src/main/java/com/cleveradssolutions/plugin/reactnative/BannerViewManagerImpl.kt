@@ -1,6 +1,5 @@
 package com.cleveradssolutions.plugin.reactnative
 
-import android.util.Log
 import com.cleversolutions.ads.AdSize
 import com.cleversolutions.ads.android.CASBannerView
 import com.facebook.react.bridge.ReadableMap
@@ -30,7 +29,7 @@ object BannerViewManagerImpl {
 
   fun setSizeConfig(view: CASBannerView, value: ReadableMap?) {
     if (value == null) return
-    view.size = when (value.getString("sizeType")) {
+    val adSize = when (value.getString("sizeType")) {
       "B" -> AdSize.BANNER
       "M" -> AdSize.MEDIUM_RECTANGLE
       "L" -> AdSize.LEADERBOARD
@@ -46,6 +45,11 @@ object BannerViewManagerImpl {
       )
 
       else -> AdSize.BANNER
+    }
+    if (view.size != adSize) {
+      val listener = view.adListener as BannerViewListener
+      listener.isWaitOfLoad = true
+      view.size = adSize
     }
   }
 
@@ -72,6 +76,12 @@ object BannerViewManagerImpl {
       view.casId = CASMobileAdsModuleImpl.casIdentifier
     }
     view.isAutoloadEnabled = listener.isAutoloadEnabled
+    if (listener.isWaitOfLoad) {
+      listener.isWaitOfLoad = false
+      if (!listener.isAutoloadEnabled) {
+        view.load()
+      }
+    }
   }
 
   fun onDropViewInstance(view: CASBannerView) {
