@@ -1,3 +1,5 @@
+import type { InitializationStatus, InitializationParams, ConsentFlowStatus } from "./Initialization.ts"
+
 export interface MobileAds {
   /**
    * Initializes the CAS Mobile Ads SDK.
