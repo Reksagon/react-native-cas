@@ -13,8 +13,13 @@ export type Unsubscribe = () => void;
  */
 export type FullscreenAdBase = {
   /**
+   * Enables automatic loading of the next ad.
+   * When enabled, the SDK loads a new ad after dismissal and retries on load errors.
+   */
+  setAutoloadEnabled(enabled: boolean): void;
+
+  /**
    * Indicates whether the ad is currently loaded and ready to be shown.
-   * Use before calling {@link showAd} when your flow requires it.
    */
   isAdLoaded(): Promise<boolean>;
 
@@ -30,40 +35,43 @@ export type FullscreenAdBase = {
    */
   showAd(): void;
 
-  /** Frees the underlying native resources. */
+  /** 
+   * Frees the underlying native resources. 
+   */
   destroy(): void;
 
-  /**
-   * Enables automatic loading of the next ad.
-   * When enabled, the SDK loads a new ad after dismissal and retries on load errors.
+  /** 
+   * Called when an ad is successfully loaded. 
    */
-  setAutoloadEnabled(enabled: boolean): void;
-
-  /** Fired when the ad content has been successfully loaded. Returns unsubscribe. */
   addAdLoadedEventListener(l: () => void): Unsubscribe;
 
-  /** Fired when the ad content fails to load. Returns unsubscribe. */
+  /** 
+   * Called when an ad load failed. 
+   */
   addAdFailedToLoadEventListener(l: (error: AdError) => void): Unsubscribe;
 
-  /** Fired when the ad fails to present. Returns unsubscribe. */
+  /** 
+   * Called when the ad failed to show full screen content. 
+   */
   addAdFailedToShowEventListener(l: (error: AdError) => void): Unsubscribe;
 
-  /** Fired when the ad is presented to the user. Returns unsubscribe. */
+  /** 
+   * Called when the ad showed the full screen content.
+   */
   addAdShowedEventListener(l: () => void): Unsubscribe;
 
-  /** Fired when the ad is clicked. Returns unsubscribe. */
+  /** 
+   * Called when a click is recorded for an ad.
+   */
   addAdClickedEventListener(l: () => void): Unsubscribe;
 
   /**
-   * Fired when an impression occurs. Provides monetization payload.
-   * Available for allowlisted accounts only.
-   * Returns unsubscribe.
+   * Called when an impression occurs on the ad. 
    */
   addAdImpressionEventListener(l: (info: AdContentInfo) => void): Unsubscribe;
 
   /**
-   * Fired when the ad is closed/dismissed by the user.
-   * Returns unsubscribe.
+   * Called when the ad dismissed full screen content. 
    */
   addAdDismissedEventListener(l: () => void): Unsubscribe;
 };
@@ -78,7 +86,10 @@ export type AppOpenAdType = FullscreenAdBase & {
 };
 
 export type InterstitialAdType = FullscreenAdBase & {
-  /** Shows ad automatically once it loads. */
+  /**
+   * Controls whether the ad should be automatically displayed when the user returns to the app.
+   * Note: the ad must be ready at the moment the app returns to foreground.
+   */
   setAutoshowEnabled(enabled: boolean): void;
 
   /**

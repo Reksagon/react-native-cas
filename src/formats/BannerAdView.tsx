@@ -24,7 +24,7 @@ type SizeDimensions = { width: number; height: number };
 export const BannerAdView = forwardRef<BannerAdViewRef, BannerAdViewProps & ViewProps>(
   function AdView(
     {
-      size = BannerAdSize.BANNER,
+      size = BannerAdSize.SMART,
       maxWidth,
       maxHeight,
       autoReload = true,

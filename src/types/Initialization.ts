@@ -1,15 +1,20 @@
 /** Audience category used for regulatory handling and content filtering. */
 export enum Audience {
-  /** If your app's target age groups include both children and older audiences, any ads that may be shown to children must comply with Google Play's Families Ads Program.
+  /** 
+   * If your app's target age groups include both children and older audiences, any ads that may be shown to children must comply with Google Play's Families Ads Program.
    *
    * A neutral age screen must be implemented so that any ads not suitable for children are only shown to older audiences.
    * A neutral age screen is a mechanism to verify a user's age in a way that doesn't encourage them to falsify their age
    * and gain access to areas of your app that aren't designed for children, for example, an age gate.
    */
   UNDEFINED = 0,
-  /** Compliance with all applicable legal regulations and industry standards relating to advertising to children. */
+  /** 
+   * Compliance with all applicable legal regulations and industry standards relating to advertising to children. 
+   */
   CHILDREN = 1,
-  /** Audiences over the age of 13 NOT subject to the restrictions of child protection laws. */
+  /** 
+   * Audiences over the age of 13 NOT subject to the restrictions of child protection laws. 
+   */
   NOT_CHILDREN = 2,
 }
 

@@ -1,26 +1,42 @@
 /**
- * Normalized impression data containing monetization information.
- * Values may vary depending on the ad network.
+ * The data structure, which contains information about the displayed ad.
  */
 export type AdContentInfo = {
-  /** The ad format (e.g., Banner, MREC, Interstitial, Rewarded, AppOpen). */
+  /** 
+   * The format of the ad that is shown. (e.g. `Banner`, `MREC`, `Interstitial`, `Rewarded`, `AppOpen`).
+   */
   format: string;
-  /** The impression revenue in USD. This value can be either estimated or precise depending on the network. */
-  revenue: number;
-  /** Indicates whether the revenue is "estimated" or "precise". */
-  revenuePrecision: string;
-  /** The network’s ad unit ID that served this impression. */
+  /** 
+   * The display name of the mediated network that purchased the impression.
+   */
   sourceUnitId: string;
-  /** Display name of the ad network that purchased the impression. */
+  /** 
+   * The Ad Unit ID from the mediated network that purchased the impression.
+   */
   sourceName: string;
-  /** Creative identifier, if available (useful for reporting issues). */
+  /** 
+   * The Creative ID associated with the ad, if available.
+   * You can use this ID to report creative issues to the Ad review team. 
+   */
   creativeId?: string;
-  /** Accumulated ad revenue in USD across all formats for the current user. */
+  /** 
+   * The revenue generated from the impression, in USD. 
+   * The revenue value may be either estimated or exact, depending on the precision specified by `revenuePrecision`. 
+   */
+  revenue: number;
+  /** 
+   * The precision type of the revenue field. (e.g. `estimated`, `precise`, `floor`).
+   */
+  revenuePrecision: string;
+  /** 
+   * The accumulated value of user ad revenue in USD from all ad format impressions. 
+   */
   revenueTotal: number;
-  /** Total number of impressions shown to this user across all sessions. */
+  /**
+   * The total number of impressions across all ad formats for the current user, across all sessions.
+   */
   impressionDepth: number;
 };
-
 
 /**
  * Information returned when an ad has successfully loaded.
@@ -35,13 +51,11 @@ export type AdViewInfo = {
 
 /**
  * Normalized network/mediation error codes.
- *
- * To see the error code, use {@link AdError.code}.
- * To see a human-readable description, use {@link AdError.message}.
- * See the constants below for the list of possible codes.
  */
 export enum AdErrorCode {
-  /** Indicates an internal error occurred. */
+  /**
+   * Indicates an internal error occurred.
+   */
   INTERNAL_ERROR = 0,
 
   /**
@@ -64,10 +78,14 @@ export enum AdErrorCode {
    */
   NO_FILL = 3,
 
-  /** Indicates that the ad creative has reached its daily cap for the user (typically for cross-promotion only). */
+  /**
+   * Indicates that the ad creative has reached its daily cap for the user (typically for cross-promotion only).
+   */
   REACHED_CAP = 6,
 
-  /** Indicates that the CAS SDK is not initialized. Ensure you add CAS initialization code. */
+  /**
+   * Indicates that the CAS SDK is not initialized. Ensure you add CAS initialization code.
+   */
   NOT_INITIALIZED = 7,
 
   /**
@@ -76,7 +94,9 @@ export enum AdErrorCode {
    */
   TIMEOUT = 8,
 
-  /** Indicates that there is no internet connection available, which prevents ads from loading. */
+  /**
+   * Indicates that there is no internet connection available, which prevents ads from loading.
+   */
   NO_CONNECTION = 9,
 
   /**
@@ -97,16 +117,20 @@ export enum AdErrorCode {
    */
   ALREADY_DISPLAYED = 12,
 
-  /** Indicates that ads cannot be shown because the application is not currently in the foreground. */
+  /**
+   * Indicates that ads cannot be shown because the application is not currently in the foreground.
+   */
   NOT_FOREGROUND = 13,
 }
 
-
 /**
- * Error details returned when an ad fails to load.
+ * Error details returned when an ad fails to load/show.
+ *
+ * To see the error code, use {@link AdError.code}.
+ * To see a human-readable description, use {@link AdError.message}.
  */
 export type AdError = {
-  /** Numeric error code returned by the network or SDK. */
+  /** Numeric error code returned by the SDK. */
   code: AdErrorCode;
   /** Human-readable error message. */
   message: string;
